@@ -1,0 +1,42 @@
+# =====================================================================
+# Execution Result Schema — v1.2
+# =====================================================================
+# 记录一次执行的结果，连接 Quality / Observability；失败必须连接 Recovery。
+# =====================================================================
+
+version: 1
+layer: "execution-engine-result"
+stage: "v1.2"
+owner: "engops-lead"
+schema_for: ".ai/context/execution-engine/execution-results.yaml"
+
+result_schema:
+  - field: "execution_id"
+    type: "string"
+    required: true
+  - field: "executor"
+    type: "string"
+    required: true
+  - field: "output"
+    type: "string"
+    required: false           # 执行输出摘要 / 产物指针
+  - field: "artifacts"
+    type: "list"
+    required: false           # .ai/artifacts/** 指针
+  - field: "errors"
+    type: "list"
+    required: false           # 失败错误；非空必须有 recovery_ref
+  - field: "quality_ref"
+    type: "string"
+    required: false           # Quality Gate 指针
+  - field: "observability_ref"
+    type: "string"
+    required: false           # observability metrics 指针
+  - field: "recovery_ref"
+    type: "string"
+    required: false           # 失败时指向 Recovery（errors 非空必填）
+
+rules:
+  - "completed → 生成 quality_ref + observability_ref（连 Quality / Observability）"
+  - "failed（errors 非空）→ 必须有 recovery_ref（连接 Recovery，ee-5）"
+  - "result 不得含 skip_quality / bypass_permission 字段"

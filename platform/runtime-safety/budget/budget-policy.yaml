@@ -1,0 +1,20 @@
+# Budget Policy — v1.4.2
+version: 1
+layer: "runtime-safety-budget-policy"
+stage: "v1.4.2"
+owner: "engops-lead"
+
+policy:
+  - "每个任务创建 token / cost 预算（safe-by-default）"
+  - "超过预算 → 进入 waiting-human（不自动继续）"
+  - "禁止自动增加预算（auto_expand_budget forbidden）"
+  - "预算调整须人工，经 human-escalation-policy"
+
+defaults:
+  token_limit_per_task: 200000
+  cost_limit_per_task_usd: 5.0
+  warning_threshold: 0.8      # 用量达 80% → warning
+
+boundaries:
+  - "budget 只记录 / 阻断，不执行 / 不批准"
+  - "budget 不改 Model Routing（只限制用量，不改推荐）"

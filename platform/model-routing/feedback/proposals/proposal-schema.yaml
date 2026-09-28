@@ -1,0 +1,70 @@
+# Improvement Proposal Schema (v0.6.9)
+# -----------------------------------------------------------------------------
+# Model Routing Feedback Loop：策略改进提案（Improvement Proposal）Schema。
+#
+# 定位：
+#   - 当 feedback analytics 发现「任务 ↔ 档位」适配存在改进空间时，以 proposal
+#     形式提出【候选策略调整】。
+#   - Proposal 由 engops-lead 人工审核；批准 → 更新 routing-policy；拒绝 → 关闭。
+#   - 【不通过 proposal 之外的任何途径自动改策略】。
+#
+# 流程：
+#   feedback → analytics → proposal(draft) → engops-lead review
+#      → approved：更新 routing-policy（可追踪）
+#      → rejected：关闭，policy 不变（Case5）
+# -----------------------------------------------------------------------------
+
+proposal_schema_version: 1
+layer: model-routing-feedback
+stage: v0.6.9
+owner: engops-lead
+updated_at: "2026-09-21"
+policy_ref: "platform/model-routing/routing-policy.yaml"
+
+# ===================== 提���字段 =====================
+proposal:
+  proposal_id:
+    type: string
+    description: "Proposal ID（P-069-NN）"
+  title:
+    type: string
+  triggered_by_feedback:
+    description: "触发本提案的反馈记录（feedback_id 列表）"
+    type: "list[string]"
+  evidence_findings:
+    description: "支撑本提案的分析结论（F-069-NN）"
+    type: "list[string]"
+  proposed_change:
+    description: "拟对 routing-policy / model-registry 做的调整"
+    type: string
+    fields:
+      target:
+        enum: ["routing-policy", "model-registry", "recommendation-schema"]
+      affected_rule:
+        type: string      # e.g. MR-6
+      change_detail:
+        type: string
+      impact_analysis:
+        type: string
+      risk:
+        enum: [low, medium, high]
+  status:
+    enum: [draft, under-review, approved, rejected, merged]
+  decided_by:
+    type: string
+    description: "审核人（engops-lead / 人工）"
+  decision_note:
+    type: string
+
+# ===================== 审核原则 =====================
+review_principles:
+  - "proposal 只建议，不自动落地"
+  - "approved → 由 engops-lead 依版本/发布流程更新 routing-policy，并留档"
+  - "rejected → 关闭，policy 保持原样（不变化）"
+  - "任何提案调整都必须可追踪、可回滚"
+
+# ===================== 约束 =====================
+constraints:
+  - "proposal 不得直接修改 policy；只作为变更候选与审核载体"
+  - "未经 engops-lead 人工批准，proposal 一律不落地"
+  - "变更默认保守：优先在不破坏已确认规则（MR-2 / MR-5）的前提下调整"

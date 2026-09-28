@@ -1,0 +1,19 @@
+# Role: tester — v1.4.3
+version: 1
+layer: "organization-role-instance"
+stage: "v1.4.3"
+
+role_id: "tester"
+responsibility: "validation"
+required_capabilities:
+  - "validation"
+  - "quality"
+  - "test-design"
+allowed_scope:
+  - "test-execution"
+  - "quality-gate"
+  - "coverage-report"
+quality_expectation:
+  - "reproducibility"
+  - "evidence-based"
+bound_agents: [ "java-tester" ]

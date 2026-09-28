@@ -1,0 +1,15 @@
+version: 1
+task_id: "refund-feature"
+updated_at: "2026-09-20T14:30:00"
+
+duration_sec: 5400
+steps_total: 4
+steps_completed: 3
+steps_failed: 1
+retries: 2
+recovery_count: 1              # Case3：Recovery 成功次数
+rework_count: 1                # review rejected 返工次数
+quality_gate_failures: 1       # Case4：质量 Gate 失败统计
+first_pass_rate: 0.75          # 一次通过率（3/4）
+
+archived: false                # Case5：归档前置 task-metrics 定稿

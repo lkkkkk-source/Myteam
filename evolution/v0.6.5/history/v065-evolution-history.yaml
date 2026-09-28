@@ -1,0 +1,38 @@
+# v0.6.5 History — Agent Prompt Evolution Execution
+
+version: v0.6.5
+label: Agent Prompt Evolution Execution
+completed_at: "2026-09-21"
+source: "D:/data/code/Agent/MyTeam"
+
+## 本轮升级
+- agent: java-developer
+- 版本: v1 → v2
+- 来源: external/agency-agents（engineering-senior-developer / minimal-change-engineer / code-reviewer，只读参考）
+- 提案: P-065-01
+- benchmark: BM-065-01（decision: accept）
+- 应用: APP-065-01（已合并至 source + agents）
+
+## 事件流
+| step | 时间 | 事件 | 结果 |
+|------|------|------|------|
+| 1 | 2026-09-21 | 外部 Prompt 研究（对比 senior-developer / minimal-change / code-reviewer） | done |
+| 2 | 2026-09-21 | Proposal P-065-01 生成（additive） | done |
+| 3 | 2026-09-21 | Proposal approved（人工审核模拟） | done |
+| 4 | 2026-09-21 | 生成 applied/java-developer-v2.md | done |
+| 5 | 2026-09-21 | Benchmark BM-065-01 执行 → accept | done |
+| 6 | 2026-09-21 | 评估：六维度 v2 ≥ v1，纯加法 | done |
+| 7 | 2026-09-21 | 合并至 source + agents（v1→v2） | done |
+| 8 | 2026-09-21 | 测试 v0.6.5 5/5 PASS + build 正常 | done |
+
+## 不变式校验
+- Agent = 30 ⭐
+- MCP = 5 ⭐
+- Skill = 26 ⭐
+- Workflow = 8 ⭐
+- source prompts = 30 ⭐
+- Runtime 未修改 ⭐
+- reject 不覆盖 source（已测）⭐
+
+## 结论
+已建立 Agent 持续进化闭环：外部研究 → Proposal → approved 升级 → Benchmark → 评估 → 合并。本次完成 java-developer 单 Agent 完整升级。

@@ -1,0 +1,83 @@
+# Model Routing History (v0.6.8)
+# -----------------------------------------------------------------------------
+# Model Routing Recommendation Layer：历史数据集成（只记录，不学习）。
+#
+# 产生方式：
+#   - 读取 Observability metrics / Capability Analytics / Evolution Benchmark。
+#   - 每次推荐落地后追加一条记录：task_type / agent / recommended_class / actual_result。
+#
+# 只记录、不自动学习：
+#   - 本阶段【不自动学习】：历史数据仅登记，不据此自动优化推荐 / 自动调整模型选择。
+#   - 未来（v0.6.9+）才考虑根据历史成功趋势调整推荐权重。
+#
+# 读取来源（第七 / 八阶段集成）：
+#   - .ai/context/router/rules/routing-rules.yaml（task classification）
+#   - .ai/context/scheduler/*（step information / risk）
+#   - .ai/context/capability/agent-capabilities.yaml（required capabilities）
+#   - .ai/context/analytics/metrics/*（historical performance）
+#   - evolution/version-registry.yaml + evolution/evolution-state.yaml（Agent version quality）
+# -----------------------------------------------------------------------------
+
+model_routing_history_version: 1
+layer: model-routing-recommendation
+stage: v0.6.8
+owner: engops-lead
+created_at: "2026-09-21"
+auto_learn: false          # 明确：当前不自动学习
+
+# 单条记录字段：task_id / task_type / team / agent / recommended_class / actual_result
+entries:
+
+  - task_id: "T-068-001"
+    task_type: "architecture-design"
+    team: "java"
+    agent: "java-architect"
+    recommended_class: "high-reasoning"
+    actual_result: "success"                 # 模拟：推荐被接受，任务成功
+    recommended_at: "2026-09-21"
+    reference: "platform/model-routing/history/T-068-001-architecture-case.yaml"
+
+  - task_id: "T-068-002"
+    task_type: "research"
+    team: "research"
+    agent: "research-analyst"
+    recommended_class: "long-context"
+    actual_result: "success"
+    recommended_at: "2026-09-21"
+    reference: "platform/model-routing/history/T-068-002-research-case.yaml"
+
+  - task_id: "T-068-003"
+    task_type: "feature"
+    team: "java"
+    agent: "java-developer"
+    recommended_class: "fast-coding"
+    actual_result: "success"
+    recommended_at: "2026-09-21"
+    reference: "platform/model-routing/history/T-068-003-fast-coding-case.yaml"
+
+  - task_id: "T-068-004"
+    task_type: "content"
+    team: "creative"
+    agent: "writing-agent"
+    recommended_class: "general"
+    actual_result: "success"
+    recommended_at: "2026-09-21"
+    reference: "platform/model-routing/history/T-068-004-general-case.yaml"
+
+  - task_id: "T-068-005"
+    task_type: "ops"
+    team: "engops"
+    agent: "release-agent"
+    recommended_class: "high-reasoning"
+    human_confirm: true
+    actual_result: "pending-user-confirmation"   # 高风险：人工确认前不视为执行
+    recommended_at: "2026-09-21"
+    reference: "platform/model-routing/history/T-068-005-high-risk-case.yaml"
+
+# 统计（只记录，不据此自动优化）
+summary:
+  total_recommendations: 5
+  confirmed: 4
+  pending_confirmation: 1
+  success_after_use: 4       # actual_result=success 的推荐数
+  rejected: 0

@@ -1,0 +1,26 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case1-usage-count"
+created_at: "2026-09-20T15:50:00"
+
+# Case1：能力使用
+# 验证：usage_count 增加
+
+scenario:
+  trigger: "spring-boot 能力在 task-001 / task-002 / refund-feature 中被使用"
+  source: "capability/capability-feedback.yaml + observability/history/"
+
+expected:
+  capability: "spring-boot"
+  usage_count_before: 1
+  usage_count_after: 3        # 使用次数增加
+  capability_metrics_updated: true
+
+actual:
+  capability: "spring-boot"
+  usage_count_before: 1
+  usage_count_after: 3
+  ref: "analytics/metrics/capability-metrics.yaml"
+
+result: "PASS"
+assertion: "能力使用 → usage_count 增加（1→3）"

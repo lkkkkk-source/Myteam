@@ -1,0 +1,45 @@
+version: 1
+last_updated: "2026-09-20T13:00:00"
+
+registry:
+  - error_class: "compile"
+    strategy: "debugger"
+    target_agent: "java-debugger"
+    behavior: "定位错误根因 → 修复 → 重试原 step"
+    requires_user: false
+
+  - error_class: "runtime"
+    strategy: "debugger"
+    target_agent: "java-debugger"
+    behavior: "定位运行时异常 → 修复 → 重试原 step"
+    requires_user: false
+
+  - error_class: "dependency"
+    strategy: "wait"
+    target_agent: ""
+    behavior: "等待依赖 step 完成后再进入"
+    requires_user: false
+
+  - error_class: "mcp_timeout"
+    strategy: "retry"
+    target_agent: "原 Agent"
+    behavior: "指数退避重试 3 次（2s/4s/8s）"
+    requires_user: false
+
+  - error_class: "permission"
+    strategy: "waiting_user"
+    target_agent: "project-manager-agent"
+    behavior: "上报 PM → 用户授权后继续"
+    requires_user: true
+
+  - error_class: "interruption"
+    strategy: "resume_point"
+    target_agent: "对应 Lead"
+    behavior: "读 current-task.yaml resume_point.step 重入"
+    requires_user: false
+
+  - error_class: "blocked"
+    strategy: "escalate"
+    target_agent: "project-manager-agent"
+    behavior: "上报 PM 决策，不自动重试"
+    requires_user: true

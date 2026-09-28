@@ -1,0 +1,23 @@
+# Action Snapshot AS-20260921-0001 — 只读留底（v0.8）
+# 本快照为 Action Ledger 状态留底，只读、不可修改 / 回填、不用于自动执行。
+# 字段集见 platform/runtime-action/snapshot-schema.yaml。
+version: 1
+snapshot_id: "AS-20260921-0001"
+captured_at: "2026-09-21T16:00:00"
+owner: "engops-lead"
+
+proposals_summary:
+  - proposal_id: "AP-0001"
+    status: "approved"
+    risk_level: "medium"
+    approval_model: "agent-approval"
+  - proposal_id: "AP-0002"
+    status: "pending"
+    risk_level: "high"
+    approval_model: "human-approval"
+  - proposal_id: "AP-0003"
+    status: "draft"
+    risk_level: "high"
+    approval_model: "human-approval"
+
+ledger_ref: "../action-ledger.yaml"

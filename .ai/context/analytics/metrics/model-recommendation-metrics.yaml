@@ -1,0 +1,49 @@
+version: 1
+updated_at: "2026-09-21"
+# Model Recommendation Metrics（v0.6.8）
+# Model Routing Recommendation Layer 的效果指标。只记录，不自动优化。
+# 由 engops-lead 依据 model-routing-history.yaml + observability 汇总。
+# 注意：本层只记录 recommendation 结果，不据此自动调整模型选择 / 档位权重。
+
+metrics:
+  recommendation_count: 5        # 总推荐次数
+  accepted_count: 4              # 被接受（确认后落地）的推荐数
+  rejected_count: 0              # 被拒绝的推荐数
+  pending_confirmation: 1        # 等待人工确认（高风险 T-068-005）
+  success_after_use: 4           # 采纳推荐后任务成功的次数
+
+breakdown_by_class:
+  high-reasoning:
+    recommendation_count: 2      # T-068-001（架构）, T-068-005（高风险发布）
+    accepted_count: 1
+    rejected_count: 0
+    pending_confirmation: 1
+    success_after_use: 1
+  long-context:
+    recommendation_count: 1      # T-068-002（研究）
+    accepted_count: 1
+    rejected_count: 0
+    pending_confirmation: 0
+    success_after_use: 1
+  fast-coding:
+    recommendation_count: 1      # T-068-003（简单代码修改）
+    accepted_count: 1
+    rejected_count: 0
+    pending_confirmation: 0
+    success_after_use: 1
+  general:
+    recommendation_count: 1      # T-068-004（默认）
+    accepted_count: 1
+    rejected_count: 0
+    pending_confirmation: 0
+    success_after_use: 1
+
+# 只记录，不自动学习：
+#   - 不根据 acceptance / success 调整 routing-policy.yaml 的档位权重
+#   - 不自动选择模型 / 不自动切换 Provider（那是未来阶段）
+auto_optimize: false
+
+sources:
+  - "platform/model-routing/history/model-routing-history.yaml"
+  - "observability/metrics/task-metrics.yaml"
+  - "analytics/metrics/agent-performance.yaml"

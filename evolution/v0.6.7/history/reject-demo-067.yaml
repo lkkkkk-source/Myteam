@@ -1,0 +1,23 @@
+# reject demo (v0.6.7) — Evolution Knowledge 只建议、不自动覆盖 source
+# -----------------------------------------------------------------------------
+# 演示：知识层中的「候选复用」（next_candidates / pattern 建议）即便被 reject，
+#      也不触碰任何 source；证明 Evolution Knowledge 是 advisory-only。
+# Q: 为什么需要这个 demo？
+# A: 知识层如果被误当作「自动 Selection / 自动 Model Routing」用于 source，
+#    就会违反只读原则。本 demo 用「reject 候选 → source 不变」固定该不变量。
+
+proposal: research-analyst-v3-hypothetical
+agent: research-analyst
+status: rejected
+decision: reject
+note: demo only — 候选议案被拒，不得把 pattern 建议直接写回 source
+reject_reason: |
+  该候选欲复用 PATTERN-004 severity-gated 于 research-analyst 的分析文本输出，
+  但分析报告面向的是"内部研究参考"，尚无下游消费方（无 reviewer 类 Gate），
+  分级门控收益未实证 → 评审建议延后，不进入 Proposal。
+marker: REJECT_DEMO_067_NEVER_IN_SOURCE
+created_at: "2026-09-21"
+invariant:
+  - marker 字符串绝不会出现在 source/prompts/**
+  - pattern 候选 reject 后，Agent prompt 保持当前 released 版本（research-analyst v2）不变
+  - next_candidates 中该条目保持"仅登记"状态，不自动应用

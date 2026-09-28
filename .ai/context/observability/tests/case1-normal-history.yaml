@@ -1,0 +1,29 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case1-normal-history"
+created_at: "2026-09-20T14:40:00"
+
+# Case1：正常任务
+# 验证：execution-history 生成
+
+scenario:
+  trigger: "step-1 执行结束（java-architect completed）"
+
+expected:
+  history_record_created: true
+  record_fields:
+    - "seq"
+    - "step"
+    - "agent"
+    - "duration_sec"
+    - "status"
+    - "gate_validation"
+    - "gate_review"
+    - "gate_acceptance"
+
+actual:
+  history_record_created: true
+  ref: "observability/history/refund-feature-history.yaml"
+
+result: "PASS"
+assertion: "正常任务 step 结束 → execution-history 生成一条记录"

@@ -1,0 +1,43 @@
+# =====================================================================
+# Change Record Schema — v1.3
+# =====================================================================
+# 记录 workspace 内每次修改（文件变化追踪）。连接 execution。
+# =====================================================================
+
+version: 1
+layer: "workspace-change"
+stage: "v1.3"
+owner: "engops-lead"
+schema_for: ".ai/context/workspace/changes/CH-*.yaml"
+
+change_record:
+  - field: "change_id"
+    type: "string"
+    required: true            # CH-NNNN
+  - field: "workspace_id"
+    type: "string"
+    required: true
+  - field: "agent"
+    type: "string"
+    required: true
+  - field: "files"
+    type: "list"
+    required: true            # 受影响文件
+  - field: "operation"
+    type: "string"
+    required: true            # create / modify / refactor / delete
+  - field: "reason"
+    type: "string"
+    required: true
+  - field: "execution_ref"
+    type: "string"
+    required: true            # 关联 execution-engine EE-*（每次修改来自受治理执行）
+  - field: "timestamp"
+    type: "string"
+    required: true
+
+constraints:
+  - "每次修改必须来自受治理执行（execution_ref 指向 EE-*）"
+  - "change 记录 agent 必须有对应 workspace 权限（agent-workspace scope / changes_allowed）"
+  - "reviewer / architect（changes_allowed=none）不得产生 modify/create change"
+  - "change 只增记录（审计），不覆盖历史"

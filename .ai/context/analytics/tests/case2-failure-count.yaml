@@ -1,0 +1,27 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case2-failure-count"
+created_at: "2026-09-20T15:52:00"
+
+# Case2：任务失败
+# 验证：failure_count 增加
+
+scenario:
+  trigger: "refund step-4 validation failed（integration-testing 失败）"
+  source: "observability/failures/refund-feature-failures.yaml"
+
+expected:
+  capability: "integration-testing"
+  failure_count_before: 0
+  failure_count_after: 1     # 增加
+  success_rate_updated: true
+
+actual:
+  capability: "integration-testing"
+  failure_count_before: 0
+  failure_count_after: 1
+  success_rate: 0.0
+  ref: "analytics/metrics/capability-metrics.yaml"
+
+result: "PASS"
+assertion: "任务失败 → failure_count 增 1，success_rate 降为 0.0"

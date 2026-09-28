@@ -1,0 +1,33 @@
+version: 1
+case_id: "MR-STM-003"
+created_at: "2026-09-21"
+layer: model-routing-recommendation
+stage: v0.6.8
+
+# STM-003：Simple edit → fast-coding（Phase 5 / Case1）
+# 验证：简单代码修改（低复杂度）→ fast-coding 档位
+
+scenario:
+  input:
+    task_id: "T-068-003"
+    task_type: "feature"
+    team: "java"
+    agent: "java-developer"
+    agent_role: "execution"
+    complexity: "low"
+    risk_level: "normal"
+    context_size: "medium"
+    required_capabilities: ["routine-coding", "test-writing"]
+  expected:
+    model_class: "fast-coding"
+    fallback: "general"
+    human_confirm: false
+  actual:
+    model_class: "fast-coding"
+    fallback: "general"
+    human_confirm: false
+    reasoning: "feature + low complexity + execution → fast-coding（MR-5）"
+
+result: "PASS"
+assertion: "简单代码修改（low complexity）→ fast-coding 推荐"
+ref: "platform/model-routing/history/T-068-003-fast-coding-case.yaml"

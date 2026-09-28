@@ -1,0 +1,17 @@
+# Executor: code-executor — v1.2
+version: 1
+id: "code-executor"
+layer: "execution-engine-executor"
+stage: "v1.2"
+type: "workspace"
+supported_actions: [ "create_file", "modify_file", "refactor_code" ]
+risk_level: "medium"
+sandbox_required: "workspace-clone"    # 代码修改默认 workspace-clone
+permission_required: true
+permissions: [ "workspace_write" ]
+rollback_support: true
+rollback_strategy: [ "artifact_restore", "workspace_restore" ]
+quality_gate: "validation"             # 完成后必须过 validation gate
+notes:
+  - "只在 approved action 下执行；不自动决定改哪个文件"
+  - "失败 → result.errors 连 Recovery"

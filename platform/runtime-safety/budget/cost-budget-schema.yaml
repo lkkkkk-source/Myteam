@@ -1,0 +1,26 @@
+# Cost Budget Schema — v1.4.2
+version: 1
+layer: "runtime-safety-cost-budget"
+stage: "v1.4.2"
+owner: "engops-lead"
+
+cost_budget:
+  - field: "task_id"
+    type: "string"
+    required: true
+  - field: "estimated_cost"
+    type: "number"
+    required: true
+  - field: "actual_cost"
+    type: "number"
+    required: true
+  - field: "limit"
+    type: "number"
+    required: true
+  - field: "status"
+    type: "string"
+    required: true            # normal / warning / waiting-human
+
+rules:
+  - "actual_cost > limit → status=waiting-human"
+  - "禁止自动扩大 limit（sf-3, auto_expand_budget forbidden）"

@@ -1,0 +1,30 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case5-registry-vs-observability"
+created_at: "2026-09-20T15:48:00"
+
+# Case5：Capability 声明 vs Observability 数据对比
+# 验证：历史数据可查询（声明 vs 实际使用的核对）
+
+scenario:
+  declared: "capability/agent-capabilities.yaml"
+  observed: "observability/metrics/task-metrics.yaml + observability/history/"
+
+expected:
+  queryable: true
+  capability_declared: "tdd"             # 声明 java-developer 有 tdd
+  capability_observed: true              # history 中 java-developer 使用 tdd
+  consistency: "declared ∩ observed = java-developer"   # 可对比，可追溯
+
+actual:
+  queryable: true
+  declared:
+    java-developer: ["spring-boot", "mybatis", "java", "tdd", "sql", "rest-api"]
+    java-tester: ["unit-testing", "integration-testing", "validation-gate"]
+  observed:
+    java-developer: ["spring-boot", "tdd"]      # 从 history 提取
+    java-tester: ["unit-testing", "integration-testing"]  # 从 validation/失败记录
+  feedback_ref: "capability/capability-feedback.yaml"
+
+result: "PASS"
+assertion: "Capability 声明与 Observability 实际使用可对比查询（提供 Scoring 输入基础）"

@@ -1,0 +1,42 @@
+# Recommendation Records — v1.5
+# 全部为 draft（生成即待人工审批）；禁止自动应用 / 禁止直接进入 source（oi-3）。
+version: 1
+layer: "organization-intelligence-recommendation-records"
+stage: "v1.5"
+owner: "engops-lead"
+updated_at: "2026-09-23T11:00:00"
+
+recommendations:
+  - id: "RECO-0001"
+    source_metrics: [ "bottleneck-analysis#review_delay", "role-performance#reviewer", "workflow-metrics#quality/review" ]
+    evidence_refs: [ "TR-0001#EV-0009" ]
+    suggestion: "review 阶段耗时与 rework 上升，建议人工评估是否引入 review 前自检清单（不自动改 workflow）"
+    risk: "low"
+    status: "draft"
+  - id: "RECO-0002"
+    source_metrics: [ "failure-patterns#integration_test_failure", "agent-performance#java-tester" ]
+    evidence_refs: [ "gate-state#validation", "analytics-report#integration-testing" ]
+    suggestion: "integration-testing 首用失败，建议人工评估在 developer→tester 交接前补充集成测试样例（仅建议）"
+    risk: "medium"
+    status: "draft"
+  - id: "RECO-0003"
+    source_metrics: [ "workload-analysis#software-engineering" ]
+    evidence_refs: [ "team-performance#software-engineering" ]
+    suggestion: "software-engineering 负载偏高（tasks_per_agent 17.1），建议人工评估任务分布（不自动重分配、不新增 Agent）"
+    risk: "low"
+    status: "draft"
+  - id: "RECO-0004"
+    source_metrics: [ "agent-performance#java-tester" ]
+    evidence_refs: [ "java-tester-analytics" ]
+    suggestion: "java-tester 声明能力 browser-testing / e2e-testing 长期未使用，建议人工评估能力声明（不自动精简、不改 Prompt）"
+    risk: "low"
+    status: "draft"
+
+summary:
+  total: 4
+  draft: 4
+  review: 0
+  approved: 0
+  rejected: 0
+  auto_applied: 0
+  note: "all recommendations are draft; require human approval; none auto-applied (oi-3)"

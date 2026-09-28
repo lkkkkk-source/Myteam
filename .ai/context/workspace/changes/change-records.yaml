@@ -1,0 +1,33 @@
+# Change Records — v1.3（只增审计）
+# workspace 内每次修改；每条来自受治理执行（execution_ref → EE-*）。
+version: 1
+layer: "workspace-change"
+stage: "v1.3"
+task_id: "refund-feature"
+updated_at: "2026-09-21T19:00:00"
+
+changes:
+  - change_id: "CH-0001"
+    workspace_id: "WS-0001"
+    agent: "java-developer"
+    files: [ "src/services/refund/calculate-refund.ts" ]
+    operation: "modify"
+    reason: "修正阶梯退费 boundary case"
+    execution_ref: "EE-0002"
+    timestamp: "2026-09-21T18:40:00"
+  - change_id: "CH-0002"
+    workspace_id: "WS-0002"
+    agent: "java-tester"
+    files: [ "src/test/refund/refund.spec.ts" ]
+    operation: "create"
+    reason: "补退款回归测试"
+    execution_ref: "EE-0006"
+    timestamp: "2026-09-21T18:45:00"
+
+# reviewer WS-0003 无 change（changes_allowed=none，只读评审）
+summary:
+  total_changes: 2
+  by_agent:
+    java-developer: 1
+    java-tester: 1
+    java-reviewer: 0     # 只读，无修改（权限正确）

@@ -1,0 +1,17 @@
+# Concurrency Limit — v1.4.2
+version: 1
+layer: "runtime-safety-concurrency-limit"
+stage: "v1.4.2"
+owner: "engops-lead"
+
+concurrency:
+  max_parallel_execution: 5
+  max_parallel_per_agent: 2
+  max_parallel_per_workspace: 1     # 同一 workspace 串行（避免冲突，对齐 v1.3）
+
+rules:
+  - "超过并发上限 → 排队（pending），不自动扩并发（sf-3）"
+  - "同一 workspace 串行执行（避免并发写冲突）"
+
+boundaries:
+  - "concurrency limit 只排队 / 限制；不自动扩容 / 不改调度决策"

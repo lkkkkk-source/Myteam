@@ -1,0 +1,29 @@
+# Agent Workspace Bindings — v1.3
+# 当前任务各 Agent 的 workspace 权限（对齐 platform/workspace/agents/agent-workspace-schema.yaml）。
+version: 1
+layer: "workspace-agent"
+stage: "v1.3"
+task_id: "refund-feature"
+updated_at: "2026-09-21T19:00:00"
+
+bindings:
+  - agent: "java-developer"
+    workspace_id: "WS-0001"
+    permissions: [ "source_modify", "test_create", "read" ]
+    scope: "src/**"
+    changes_allowed: [ "create_file", "modify_file", "refactor_code" ]
+  - agent: "java-tester"
+    workspace_id: "WS-0002"
+    permissions: [ "test_create", "run_test", "read" ]
+    scope: "src/test/**"
+    changes_allowed: [ "create_file", "run_test" ]
+  - agent: "java-reviewer"
+    workspace_id: "WS-0003"
+    permissions: [ "read", "review" ]
+    scope: "src/**"
+    changes_allowed: [ "none" ]        # 只读，禁止改代码（Case: reviewer 不修改）
+
+constraints:
+  - "reviewer changes_allowed=none → 不得产生 modify/create change"
+  - "developer/tester 只能在各自 scope 内改，不越 scope、不改他人 workspace"
+  - "权限人工维护，不自动改权限"

@@ -1,0 +1,30 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case3-review-rejected"
+created_at: "2026-09-20T14:24:00"
+
+# Case3：review 发现问题
+# 验证：rejected → 返回 developer 返工
+
+scenario:
+  step: "step-3b"
+  review_by: "java-reviewer"
+  review_result: "rejected"
+
+expected:
+  status: "rejected"
+  back_to: "java-developer"    # 返回 developer
+  acceptance_gate: "pending"   # acceptance 不得启动
+  scheduler: "rework"          # 返工 decision
+
+actual:
+  status: "rejected"
+  back_to: "java-developer"
+  acceptance_gate: "pending"
+  scheduler: "rework"
+  issues:
+    - "RefundService 缺少入参校验（null 订单）"
+    - "魔法数字未抽常量（REFUND_LIMIT_DAYS）"
+
+result: "PASS"
+assertion: "review rejected → 返工 developer；acceptance 未启动"

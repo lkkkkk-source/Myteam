@@ -1,0 +1,19 @@
+# Role: developer — v1.4.3
+version: 1
+layer: "organization-role-instance"
+stage: "v1.4.3"
+
+role_id: "developer"
+responsibility: "implementation"
+required_capabilities:
+  - "coding"
+  - "debugging"
+  - "testing"
+allowed_scope:
+  - "implementation"
+  - "bug-fix"
+  - "unit-test"
+quality_expectation:
+  - "minimal-change"
+  - "test-coverage"
+bound_agents: [ "java-developer", "java-debugger" ]

@@ -1,0 +1,20 @@
+# Role: lead — v1.4.3
+# 附加 role 原语（超出 spec 最小 5 role 集），用于对齐 team lead 职责，
+# 保证 30/30 Agent 诚实绑定（org-2）。非运行时自动新增（org-7）。
+version: 1
+layer: "organization-role-instance"
+stage: "v1.4.3"
+
+role_id: "lead"
+responsibility: "team-leadership-and-coordination"
+required_capabilities:
+  - "coordination"
+  - "task-decomposition"
+  - "review"
+allowed_scope:
+  - "team-coordination"
+  - "sub-agent-dispatch"
+  - "handoff"
+quality_expectation:
+  - "no-auto-execution"    # lead 只协调 / 交接，不代批不直接执行
+bound_agents: [ "java-lead", "research-lead", "creative-lead", "engops-lead" ]

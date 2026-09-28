@@ -1,0 +1,41 @@
+# Team: pm — v1.4.3
+# Agent Organization Model：Team -> Role -> Agent
+# 引用 team-registry（Runtime Registry）id="pm"，不替代（org-4）。
+# 注：knowledge（adr-recorder / project-knowledge-manager）与 memory（task-memory-agent）
+#     作为跨域治理/编排职责，归入 pm team 的 manager role（org-2 全覆盖需要）。
+version: 1
+layer: "organization-team-instance"
+stage: "v1.4.3"
+
+team_id: "pm"
+name: "Project Management Team"
+lead: "project-manager-agent"
+registry_ref: ".ai/context/team-registry.yaml#pm"
+domain: "orchestration"
+
+roles:
+  - "manager"
+
+agents:
+  - "project-manager-agent"     # manager (pm lead / orchestration)
+  - "adr-recorder"              # manager (knowledge)
+  - "project-knowledge-manager" # manager (knowledge)
+  - "task-memory-agent"         # manager (memory)
+
+capabilities:
+  - "orchestration"
+  - "task-decomposition"
+  - "router"
+  - "knowledge-management"
+  - "memory-management"
+
+workflows:
+  - "project-planning"
+  - "router-classification"
+
+quality_rules:
+  - "platform-state-aware"
+  - "no-auto-install"
+  - "evolution-compliant"
+
+status: "active"

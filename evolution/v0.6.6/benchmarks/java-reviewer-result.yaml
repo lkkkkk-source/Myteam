@@ -1,0 +1,11 @@
+﻿# java-reviewer Benchmark Result (v0.6.6)
+
+benchmark_id: BM-066-01
+proposal: P-066-02
+agent: java-reviewer
+aggregate: evolution/v0.6.6/benchmarks/BM-066-01-multi-agent-result.yaml
+compared: v1 vs v2
+decision: accept
+evaluated_at: "2026-09-21"
+
+> 本文件为批次 BM-066-01 的按 Agent 条目引用；维度评分见 aggregate 文件。

@@ -1,0 +1,37 @@
+# Proposal P-067-01 — research-analyst v2 （跨 Team 复用）
+proposal_id: P-067-01
+agent: research-analyst
+team: research
+from_version: v1
+to_version: v2
+phase: v0.6.7
+type: additive
+patterns_used: [PATTERN-001 evidence-based-output]
+reused_from:
+  pattern: PATTERN-001
+  origin_team: java
+  evidence: [BM-065-01, BM-066-01]
+status: approved
+benchmark: BM-067-01
+decision: accept
+created_at: "2026-09-21"
+
+change_summary:
+  - Evidence field：趋势/空白/方向建议必须附文献/数据/方法来源引用；无来源 → 标注推测（证据化输出）
+  - 反幻想：无证据的"方向很热/值得做"默认低置信 / 不采信
+  - 优先级分级：方向建议按证据强度分级（Strong hypothesis / Candidate / Speculative）
+  - 反遗漏 bias：多源观点覆盖清单（分析反对 / 反例视角）
+
+non_changes:
+  - 不删除 v1 任何职责（纯加法）
+  - 不改 MCP / Skill / Workflow / Runtime
+  - 不改 team / capabilities / quality_rules 元数据
+  - 不复制外部内容（仅参考 + 转写为本平台协议）
+
+rationale:
+  - v0.6.5/0.6.6 已在 Java 链 4 个 Agent 实证 evidence-based-output 平均 +4~+6，
+    证明其为「判定/建议输出型 Agent」的通性模式 → 首次跨 Team 复用（java → research）。
+  - research-analyst 与 java-developer 同属"输出结论型 Agent"，v1 差距点为「论断无证据」，
+    与 BM-066-01 识别思路完全一致。
+  - 复用而非新增：从 evolution/patterns/pattern-registry.yaml 选取已验证 PATTERN-001，
+    而非重新研究。

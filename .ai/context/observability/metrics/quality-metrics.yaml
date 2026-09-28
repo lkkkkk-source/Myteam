@@ -1,0 +1,10 @@
+version: 1
+updated_at: "2026-09-20T14:30:00"
+
+tasks:
+  - task_id: "refund-feature"
+    gate_pass_rate: 0.75
+    validation_failures: 1
+    review_rejections: 1
+    acceptance_first_pass: true
+    first_pass_rate: 0.75

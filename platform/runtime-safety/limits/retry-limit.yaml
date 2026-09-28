@@ -1,0 +1,21 @@
+# Retry Limit — v1.4.2
+version: 1
+layer: "runtime-safety-retry-limit"
+stage: "v1.4.2"
+owner: "engops-lead"
+
+retry:
+  scope: [ "task", "action", "execution" ]   # 同一 task/action/execution 计数
+  max_retry: 3
+
+rules:
+  - "同一 task / action / execution 最大 retry=3"
+  - "禁止无限失败循环（auto_retry_forever forbidden）"
+  - "达到上限 → 进入 Recovery 或 Human Escalation（不自动继续）"
+
+flow:
+  - "failure → retry (< max) → retry"
+  - "failure → retry (= max) → blocked → Recovery / human-escalation"
+
+boundaries:
+  - "retry guard 只限制次数；不改变任务目标 / 不替换 Agent"

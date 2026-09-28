@@ -1,0 +1,130 @@
+# =====================================================================
+# Runtime Action Policy — v0.8
+# =====================================================================
+# 目标：在 Runtime Context Contract（v0.7）之上，为"具体运行时动作"建立
+#       **Action Proposal & Approval** 治理层（Runtime Governance Layer 的一环）。
+#
+# 核心问题：Scheduler 产出计划、Runtime Context 记录状态，但"具体要执行的动作"
+#   （跑命令 / 触发工作流 / 部署 / 发布）必须在执行前，先被**提案（Proposal）**
+#   并经**批准（Approval）**，再进入 Execution Interface。
+#
+# 本质：Action Policy = "什么动作、什么风险、需要谁批准" 的治理"宪法"。
+#   - 定义动作类型（action_type）与风险分级（risk_level）
+#   - 定义批准模型（approval_model）：谁批 / 需要哪些批准
+#   - 明确禁止哪些"自动"行为（auto-execute / auto-approve / auto-bypass）
+#   - Record 机制：Action Proposal 每个生命周期都有记录，可追溯、可回滚
+#
+# 阶段：v0.8 · Runtime Action Proposal & Approval Layer（只提案 / 只记录 / 只检查，不执行）
+# 基线：Agent=30 · MCP=5 · Skill=26 · Workflow=8（不新增 / 不删除 / 不改核心行为）
+# =====================================================================
+
+version: 1
+layer: "runtime-action-proposal-approval"
+stage: "v0.8"
+status: "designed"            # designed / governing（本阶段只设计并记录，不驱动执行）
+
+# 上游依赖：v0.7 Runtime Contract 定义模块归属与 only-read 消费者
+depends_on:
+  - "v0.7-runtime-integration-contract"
+  - "v0.6.6-scheduler"
+
+owner: "engops-lead"
+approver: "project-manager-agent | human"
+
+# ---------------------------------------------------------------------
+# 一、验收不变量（Action Governance 的四条铁律）
+# ---------------------------------------------------------------------
+invariants:
+  - "ap-1: 可执行动作必须先有 Action Proposal，未经批准不得进入 Execution Interface"
+  - "ap-2: 高风险动作（high）必须 explicit human approval，低风险（low）可 auto-approve（记录在案）"
+  - "ap-3: 任何 Action Proposal 不得包含 / 引用 forbidden auto 字段（auto-execute / auto-approve / auto-bypass）"
+  - "ap-4: Scheduler 只产出计划，不产出自批准动作；Execution Interface 本阶段不实现"
+
+# ---------------------------------------------------------------------
+# 二、Action 类型（action_type）
+# ---------------------------------------------------------------------
+action_types:
+  - id: "run-command"
+    label: "运行命令 / 脚本"
+    exec_interface: "execution-cli"      # 未来阶段绑定，本阶段只登记
+    default_risk: "high"
+  - id: "trigger-workflow"
+    label: "触发工作流"
+    exec_interface: "execution-workflow"
+    default_risk: "high"
+  - id: "write-file"
+    label: "修改 / 创建源文件"
+    exec_interface: "execution-edit"
+    default_risk: "medium"
+  - id: "deploy-artifact"
+    label: "构建 / 部署产物"
+    exec_interface: "execution-deploy"
+    default_risk: "high"
+  - id: "release-publish"
+    label: "发布 / 推送 / 打 tag"
+    exec_interface: "execution-release"
+    default_risk: "high"
+  - id: "config-change"
+    label: "平台配置变更"
+    exec_interface: "execution-config"
+    default_risk: "high"
+
+# ---------------------------------------------------------------------
+# 三、风险分级（risk_level）与批准模型（approval_model）
+# ---------------------------------------------------------------------
+risk_levels:
+  - level: "low"
+    label: "低风险"
+    approval_model: "auto-approve"
+    approver: null
+    note: "纯只读 / 探查类动作，可自动批准并记录"
+  - level: "medium"
+    label: "中风险"
+    approval_model: "agent-approval"
+    approver: "project-manager-agent"
+    note: "写文件 / 改内容类，PM 批准"
+  - level: "high"
+    label: "高风险"
+    approval_model: "human-approval"
+    approver: "human"
+    note: "执行 / 部署 / 发布 / 配置类，必须显式人工批准"
+
+# 批准状态机
+approval_states:
+  - "draft"      # 提案创建，待提交
+  - "pending"    # 已提交，等待批准
+  - "approved"   # 已批准，可进入 Execution Interface（本阶段不执行）
+  - "rejected"   # 被拒绝，关闭
+  - "cancelled"  # 撤销 / 撤回
+
+# ---------------------------------------------------------------------
+# 四、Execution Interface 边界（本阶段显式标注）
+# ---------------------------------------------------------------------
+execution_interface:
+  status: "not-implemented"          # 本阶段不实现真正执行
+  note: >
+    本层只完成 Action Proposal → Approval 的记录与治理；
+    Approval 通过后的动作【不】真正执行（Execution Interface 为未来阶段）。
+  gate: "approved-action-only"       # 只有 approved 的 action 才允许（未来）进入执行
+
+# ---------------------------------------------------------------------
+# 五、硬性边界（强制：本阶段【不】实现）
+# ---------------------------------------------------------------------
+not_implemented:
+  - "auto-execution"          # 不自动执行
+  - "auto-schedule"           # 不自动调度
+  - "auto-model-switching"    # 不自动切换模型
+  - "auto-agent-selection"    # 不自动 Agent 选择
+  - "auto-approval"           # 低风险外不自动批准；批准权归属 approver / human
+  - "auto-bypass"             # 不得绕过 Approval 直接进入 Execution
+  - "auto-action-mutation"    # 不自动改写 Action Policy / Action Proposal（由 engops-lead 人工维护）
+
+# ---------------------------------------------------------------------
+# 六、Snapshot 机制（可追溯 / 可回滚）
+# ---------------------------------------------------------------------
+snapshot:
+  schema: "platform/runtime-action/snapshot-schema.yaml"
+  trigger: "on-ledger-change"
+  field: "action-ledger.version"
+  history: ".ai/context/runtime-action/snapshots/"
+  purpose: "给 Action Proposal / Approval 状态留底，保证治理可追溯；快照只读、不用于自动执行"

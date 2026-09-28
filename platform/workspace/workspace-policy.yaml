@@ -1,0 +1,47 @@
+# =====================================================================
+# Workspace Policy — v1.3
+# =====================================================================
+# 定义 workspace 创建 / 使用 / checkpoint 规则。
+# =====================================================================
+
+version: 1
+layer: "workspace-policy"
+stage: "v1.3"
+owner: "engops-lead"
+
+# ---------------------------------------------------------------------
+# 创建规则
+# ---------------------------------------------------------------------
+creation:
+  - rule: "每个复杂任务（≥5 文件 / 跨模块 / 多 Agent）创建独立 workspace"
+  - rule: "每个执行 Agent 默认 workspace-local（独立分支）"
+  - rule: "简单只读任务可共用只读视图，但不得写 shared workspace"
+
+# ---------------------------------------------------------------------
+# 使用规则
+# ---------------------------------------------------------------------
+usage:
+  default_scope: "workspace-local"
+  shared_workspace_write: false        # 禁止直接改 shared workspace（ws-1）
+  cross_agent_write: false             # 禁止改其他 Agent workspace（ws-2）
+
+# ---------------------------------------------------------------------
+# checkpoint 规则
+# ---------------------------------------------------------------------
+checkpoint:
+  high_risk_requires_checkpoint: true  # 高风险修改前必须 checkpoint
+  before_merge: true                   # merge 前 checkpoint
+  retention: "append-only"             # 只增不删（ws-4）
+  reuse_recovery: ".ai/context/recovery/checkpoints/"
+
+# ---------------------------------------------------------------------
+# 权限规则
+# ---------------------------------------------------------------------
+permission:
+  auto_change: false                   # 不自动改权限（ws-7）
+  source: "platform/workspace/agents/agent-workspace-schema.yaml"
+
+constraints:
+  - "Agent 默认 workspace-local；禁止直接修改主分支 / shared workspace"
+  - "高风险修改前必须 checkpoint；checkpoint 只增不删"
+  - "权限变更人工维护；不自动提权 / 不自动改权限"

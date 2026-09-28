@@ -1,0 +1,128 @@
+# =====================================================================
+# Runtime Integration Contract — v0.7
+# =====================================================================
+# 目标：将多个 Agent Platform 能力模块，从"各自独立工作"升级为
+#       "统一 Runtime Context 驱动的平台"——所有模块通过 Runtime Contract 协作。
+#
+# 本质：Runtime Contract = 模块协作的"宪法"。
+#   - 谁是某块 Runtime 上下文的主（owner）：谁有权限写
+#   - 谁是只读消费者（reader）：只能读，用于跨模块协调 / 汇总 / 一致性检查
+#   - 明确禁止哪些"自动"行为（auto-execute / auto-schedule / auto-switch / auto-select）
+#   - Snapshot 机制：给"模块间协作状态"定期留底，保证可追溯、可回滚
+#
+# 阶段：v0.7 · Runtime Integration Contract Layer（只记录/定义/检查，不执行）
+# 基线：Agent=30 · MCP=5 · Skill=26 · Workflow=8（不新增 / 不删除 / 不改核心行为）
+# =====================================================================
+
+version: 1
+layer: "runtime-integration-contract"
+stage: "v0.7"
+status: "designed"            # designed / active（本阶段 designed，随平台启用）
+
+# ---------------------------------------------------------------------
+# 一、Runtime Context 总览
+# ---------------------------------------------------------------------
+# Runtime Context 是"模块协作的统一运行时上下文"：
+#   一份集成台账（ledger）+ 各模块自有的上下文文件。
+# 集成台账只记录【谁 / 提供什么 / 状态 / 契约是否合规】，不复制各模块细节。
+runtime_context:
+  ledger: ".ai/context/runtime/runtime-context.yaml"   # 集成台账（本层维护）
+  snapshots_dir: ".ai/context/runtime/snapshots/"        # 快照目录
+  snapshot_policy: "on-contract-change"                  # 契约/台账变化时留快照
+
+# ---------------------------------------------------------------------
+# 二、模块清单 + 上下文归属（Contract Matrix）
+# ---------------------------------------------------------------------
+# mode 取值：
+#   owner   = 该模块是这段上下文的作者（有权写入）
+#   reader  = 只读消费者（用于协调 / 汇总 / 一致性检查，无权写入）
+# 每个模块的上下文文件路径即其"提供物"。
+modules:
+  - id: "router"
+    name: "Router"
+    provides: ".ai/context/router/"
+    owner_agent: "project-manager-agent"
+    reader_agents: [ "engops-lead", "project-health-agent" ]
+    contract_ok: true
+  - id: "team"
+    name: "Team Abstraction"
+    provides: ".ai/context/team-registry.yaml"
+    owner_agent: "project-manager-agent"
+    reader_agents: [ "engops-lead" ]
+    contract_ok: true
+  - id: "agent"
+    name: "Agent / Capability"
+    provides: ".ai/context/capability/"
+    owner_agent: "engops-lead"
+    reader_agents: [ "project-manager-agent", "project-health-agent" ]
+    contract_ok: true
+  - id: "model-routing"
+    name: "Model Recommendation"
+    provides: "platform/model-routing/"
+    owner_agent: "engops-lead"
+    reader_agents: [ "project-manager-agent", "project-health-agent" ]
+    contract_ok: true
+  - id: "scheduler"
+    name: "Scheduler"
+    provides: ".ai/context/scheduler/"
+    owner_agent: "project-manager-agent"
+    reader_agents: [ "engops-lead" ]
+    contract_ok: true
+  - id: "execution"
+    name: "Execution State"
+    provides: ".ai/context/runtime/execution-state.yaml"
+    owner_agent: "project-manager-agent"      # Lead 在关键节点更新（人工，非自动）
+    reader_agents: [ "engops-lead", "project-health-agent" ]
+    contract_ok: true
+  - id: "quality"
+    name: "Quality Gate"
+    provides: ".ai/context/quality/"
+    owner_agent: "project-manager-agent"
+    reader_agents: [ "engops-lead" ]
+    contract_ok: true
+  - id: "observability"
+    name: "Observability"
+    provides: ".ai/context/observability/"
+    owner_agent: "engops-lead"
+    reader_agents: [ "project-health-agent" ]
+    contract_ok: true
+  - id: "memory"
+    name: "Task Memory / Context"
+    provides: ".ai/context/memory/"
+    owner_agent: "project-knowledge-manager"
+    reader_agents: [ "project-manager-agent" ]
+    contract_ok: true
+  - id: "evolution"
+    name: "Evolution / Knowledge"
+    provides: "evolution/"
+    owner_agent: "engops-lead"
+    reader_agents: [ "project-health-agent" ]
+    contract_ok: true
+
+# ---------------------------------------------------------------------
+# 三、跨模块流转路径（Final Architecture）
+# ---------------------------------------------------------------------
+flow:
+  sequence: [ "router", "team", "agent", "model-routing", "scheduler", "execution", "quality", "observability", "evolution" ]
+  description: "User → Router → Team → Agent → Model Recommendation → Scheduler → Execution → Quality → Observability → Evolution"
+  contract_binding: true   # 每步流转都通过 Runtime Contract 校验上游提供物存在且合规
+
+# ---------------------------------------------------------------------
+# 四、硬性边界（强制：本阶段【不】实现）
+# ---------------------------------------------------------------------
+not_implemented:
+  - "auto-execution"          # 不自动执行
+  - "auto-schedule"           # 不自动调度
+  - "auto-model-switching"    # 不自动切换模型
+  - "auto-agent-selection"    # 不自动 Agent Selection
+  - "auto-contract-mutation"  # 不自动改写 Runtime Contract / 台账（由 engops-lead 人工维护）
+
+# ---------------------------------------------------------------------
+# 五、Snapshot 机制
+# ---------------------------------------------------------------------
+snapshot:
+  schema: "platform/runtime/snapshot/snapshot-schema.yaml"
+  trigger: "on-contract-change"
+  field: "runtime-context.contract_version"
+  history: ".ai/context/runtime/snapshots/"
+  purpose: "给模块间协作状态留底，保证跨模块协调可追溯；快照只读、不用于自动调度"

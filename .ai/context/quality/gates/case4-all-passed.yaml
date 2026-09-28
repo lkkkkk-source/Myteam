@@ -1,0 +1,29 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case4-all-passed"
+created_at: "2026-09-20T14:26:00"
+
+# Case4：全部 Gate 通过
+# 验证：approved → 进入 COMPLETE
+
+scenario:
+  step: "step-1"
+  gates:
+    validation: "passed"
+    review: "approved"
+    acceptance: "approved"
+
+expected:
+  result: "approved"
+  task_can_complete: true
+  task_gate: "passed"
+  next: "COMPLETE"
+
+actual:
+  result: "approved"
+  task_can_complete: true
+  task_gate: "passed"
+  next: "COMPLETE"
+
+result: "PASS"
+assertion: "三 Gate 全通过 → task 可 COMPLETE"

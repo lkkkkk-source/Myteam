@@ -1,0 +1,137 @@
+# =====================================================================
+# Runtime Execution Schema — v0.9
+# =====================================================================
+# 目标：在 v0.8 Action Proposal & Approval 之上，建立【受治理的执行接口】。
+#       将 Approved Action Proposal 转换为 Controlled Execution Request。
+#
+# 本质：Execution Schema = "一次受治理执行请求"的字段契约。
+#   - 只执行【已经批准】的 Action（approved）；未批准一律拒绝
+#   - 执行必须绑定 executor / permission / sandbox / rollback 上下文
+#   - 全生命周期状态化，可追溯、可回滚
+#
+# 阶段：v0.9 · Runtime Controlled Execution Interface Layer
+#   （只定义接口 + 记录 + 检查；本阶段【不实现真实执行引擎】）
+# 基线：Agent=30 · MCP=5 · Skill=26 · Workflow=8（不新增 / 不删除 / 不改核心行为）
+# =====================================================================
+
+version: 1
+layer: "runtime-controlled-execution"
+stage: "v0.9"
+status: "designed"            # designed / executing（本阶段 designed，不实现执行引擎）
+schema_for: "platform/runtime-execution/records/*.yaml + .ai/context/runtime-execution/execution-ledger.yaml"
+
+# 上游依赖：只接收 v0.8 approved 的 Action Proposal
+depends_on:
+  - "v0.8-runtime-action-proposal-approval"
+  - "v0.7-runtime-integration-contract"
+  - "v0.3.3-recovery"          # rollback 复用已有 Recovery，不重设计
+
+# ---------------------------------------------------------------------
+# 一、验收不变量（Execution Governance 铁律）
+# ---------------------------------------------------------------------
+invariants:
+  - "ex-1: Execution Request 必须引用一个 status=approved 的 Action Proposal；未批准不得创建 running"
+  - "ex-2: 每个 Execution 必须绑定 executor_id（存在于 executor-registry）+ permission_context（满足 permission-policy）"
+  - "ex-3: 执行在 sandbox_context 隔离下进行（本阶段只声明接口）"
+  - "ex-4: 失败 → rollback_strategy 生成 rollback（复用 Recovery），不自动重跑不自动推进"
+  - "ex-5: 本阶段【不实现真实执行引擎】：status 只做状态登记，不触发真实副作用"
+  - "ex-6: Execution 不得绕过 Action Proposal / Approval，不自动生成 Action / 不自动选 Agent / 不自动选 Model"
+
+# ---------------------------------------------------------------------
+# 二、Execution Request 字段
+# ---------------------------------------------------------------------
+execution_request:
+  - field: "execution_id"
+    type: "string"
+    required: true            # 形如 EX-0001
+  - field: "action_proposal_ref"
+    type: "string"
+    required: true            # 引用 platform/runtime-action/records/AP-*.yaml（必须 approved）
+  - field: "runtime_context_ref"
+    type: "string"
+    required: true            # 引用 .ai/context/runtime/runtime-context.yaml（task 对齐）
+  - field: "executor_id"
+    type: "string"
+    required: true            # 必须存在于 executor-registry.yaml
+  - field: "target"
+    type: "string"
+    required: true            # 执行对象（文件 / 命令 / 工作流 / 产物）
+  - field: "input"
+    type: "map"
+    required: false           # 执行输入参数（只登记，不执行）
+  - field: "permission_context"
+    type: "map"
+    required: true            # 见 permission_context 子字段（满足 permission-policy）
+  - field: "sandbox_context"
+    type: "map"
+    required: true            # 见 sandbox_context 子字段（隔离声明）
+  - field: "rollback_strategy"
+    type: "string"
+    required: true            # artifact_restore / workspace_restore / state_restore
+  - field: "status"
+    type: "string"
+    required: true            # 见 states
+  - field: "created_at"
+    type: "string"
+    required: true
+  - field: "completed_at"
+    type: "string"
+    required: false
+
+permission_context:
+  - field: "risk_level"
+    type: "string"
+    required: true            # low / medium / high / critical（对齐 permission-policy）
+  - field: "granted_permission"
+    type: "string"
+    required: true            # workspace_write / review_required / human_approval / explicit_user_confirmation
+  - field: "approved_by"
+    type: "string"
+    required: true            # 与 Action Proposal 的 decision.approved_by 对齐
+
+sandbox_context:
+  - field: "sandbox_id"
+    type: "string"
+    required: true            # 引用 sandbox/*.yaml
+  - field: "workspace"
+    type: "string"
+    required: true
+  - field: "isolation"
+    type: "string"
+    required: false           # none / workspace-clone / temp-env / container（本阶段声明）
+
+# ---------------------------------------------------------------------
+# 三、执行状态机（本阶段只定义状态，不真实执行）
+# ---------------------------------------------------------------------
+states:
+  - "prepared"     # 已根据 approved action 生成执行请求，未运行
+  - "approved"     # 权限校验通过，允许（未来）进入执行
+  - "running"      # 执行中（本阶段仅状态占位，不触发真实副作用）
+  - "completed"    # 执行完成
+  - "failed"       # 执行失败 → 触发 rollback
+  - "rolled_back"  # 已回滚（复用 Recovery）
+  - "cancelled"    # 撤销
+
+# ---------------------------------------------------------------------
+# 四、硬性边界（强制：本阶段【不】实现）
+# ---------------------------------------------------------------------
+not_implemented:
+  - "real-execution-engine"    # 不实现真实执行引擎（只登记状态）
+  - "auto-execution"           # 不自动执行
+  - "auto-task-advance"        # 不自动推进任务
+  - "auto-action-generation"   # 不自动生成 Action
+  - "auto-agent-selection"     # 不自动选 Agent
+  - "auto-model-switching"     # 不自动切换 Model
+  - "approval-bypass"          # 不得绕过 Action Proposal / Approval
+  - "scheduler-decision-mutation" # 不修改 Scheduler 决策
+  - "auto-policy-mutation"     # 不自动修改 Policy
+
+# ---------------------------------------------------------------------
+# 五、forbidden 字段（出现即 Execution Contract 违规 Critical）
+# ---------------------------------------------------------------------
+forbidden_fields:
+  - "auto_exec"
+  - "auto_advance"
+  - "bypass_approval"
+  - "auto_generated_action"
+  note: "Execution Request / Ledger 不得出现自动执行 / 自动推进 / 绕过批准 / 自动生成动作字段"

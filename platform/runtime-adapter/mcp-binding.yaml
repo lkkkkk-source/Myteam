@@ -1,0 +1,54 @@
+# =====================================================================
+# MCP Binding — v1.0
+# =====================================================================
+# MCP Registry → OpenCode MCP Runtime declaration 映射（5 MCP）。
+# 规则：只同步声明，不自动新增 MCP（用户 MCP block 不触碰）。
+# 阶段：v1.0（只声明 / 只检查；不自动安装、不自动新增）
+# =====================================================================
+
+version: 1
+layer: "runtime-adapter-mcp-binding"
+stage: "v1.0"
+owner: "engops-lead"
+total_mcp: 5
+source_registry: ".ai/context/capability/mcp-registry.yaml"
+runtime_target: "opencode.json#mcp (declaration-only)"
+
+bindings:
+  - platform_mcp: "context7"
+    runtime_mcp: "context7"
+    capabilities: [ "docs-query", "code-examples", "framework-documentation" ]
+    version: "v1"
+    status: "declared"          # declared / synced（本阶段 declared，不自动新增）
+  - platform_mcp: "fetch"
+    runtime_mcp: "fetch"
+    capabilities: [ "url-fetch", "web-retrieval" ]
+    version: "v1"
+    status: "declared"
+  - platform_mcp: "memory"
+    runtime_mcp: "memory"
+    capabilities: [ "knowledge-persistence", "cross-task-memory" ]
+    version: "v1"
+    status: "declared"
+  - platform_mcp: "playwright"
+    runtime_mcp: "playwright"
+    capabilities: [ "browser-testing", "e2e-testing", "ui-automation" ]
+    version: "v1"
+    status: "declared"
+  - platform_mcp: "sequential-thinking"
+    runtime_mcp: "sequential-thinking"
+    capabilities: [ "multi-step-reasoning", "problem-decomposition" ]
+    version: "v1"
+    status: "declared"
+
+# ---------------------------------------------------------------------
+# 规则 / 约束
+# ---------------------------------------------------------------------
+rules:
+  - "只同步 MCP 声明；不自动新增 MCP、不覆盖用户 opencode.json 的 mcp block"
+  - "platform_mcp 必须存在于 .ai/context/capability/mcp-registry.yaml（5 个）"
+  - "MCP 实体安装 / provider key 归用户管理，本层不碰"
+
+summary:
+  bound_mcp: 5
+  deployment_status: "declared"

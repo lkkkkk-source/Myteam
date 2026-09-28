@@ -1,0 +1,72 @@
+version: 1
+generated_at: "2026-09-20T15:30:00"
+# Analytics Report（v0.5.1 + v0.6.7 Evolution Pattern）
+# 汇总 + 洞察 + 建议（只建议，不执行；Selection/Recommendation 下一阶段）。
+
+summary:
+  capabilities_tracked: 4
+  agents_analyzed: 3
+  overall_success_rate: 0.83   # (2+2+1+0)/(2+2+1+1)
+  overall_quality_pass_rate: 0.94
+  tasks_in_scope: 3            # task-001 / task-002 / refund-feature
+  evolution_patterns: 5        # v0.6.7：接入 evolution/patterns/pattern-registry 的有效性指标
+  model_recommendations: 5     # v0.6.8：Model Routing Recommendation 推荐数（4 accepted / 1 待确认）
+  routing_feedback: 5          # v0.6.9：Model Routing Feedback 实际反馈记录数（4 valid / 1 pending）
+  feedback_proposals: 2        # v0.6.9：改进提案（P-069-01 approved / P-069-02 rejected）
+  runtime_contract_modules: 10 # v0.7：Runtime Contract 覆盖模块数（集成台账 modules）
+  action_records: 3           # v0.8：Action Proposal 记录数（AP-0001 approved / AP-0002 pending / AP-0003 draft）
+  action_approved_high: 0      # v0.8：high 风险自动批准数为 0（强制显式人工批准，无自动批准）
+  action_contract_ok: 3        # v0.8：Ledger 中 contract_ok=true 的提案数（3/3）
+  execution_not_implemented: true # v0.8：Execution Interface 未实现（只提案只记录只检查，不执行）
+  execution_records: 3         # v0.9：Controlled Execution 记录数（EX-0001 completed / EX-0002 cancelled / EX-0003 rolled_back）
+  execution_rollback_count: 1  # v0.9：回滚数（EX-0003 → RB-0001，复用 Recovery）
+  execution_approved_before_rate: 1.0 # v0.9：running/completed 均来自 approved action（EX-0002 未批准即拒绝）
+  real_execution_engine: false # v0.9：本阶段不实现真实执行引擎（只定义接口 / 只记录 / 只检查）
+  adapter_agent_bindings: 30   # v1.0：Runtime Adapter agent 绑定数（30 全覆盖）
+  adapter_mcp_bindings: 5      # v1.0：MCP 声明绑定数
+  adapter_skill_bindings: 26   # v1.0：Skill 引用绑定数
+  deployment_status: "draft"   # v1.0：DEP-0001 未安装（approval=false，runtime 不变）
+  auto_install: false          # v1.0：不自动安装（Package→Migration→Approval→Install）
+
+insights:
+  - "spring-boot 使用 3 次全成功，质量稳定（trend=stable）"
+  - "tdd 使用 2 次全成功，工作流稳定"
+  - "integration-testing 首用即失败（refund step-4 validation failed），trend=watch，需重点观察"
+  - "java-tester 声明 7 项能力实际只用 2 项（consistency=low，声明冗余）"
+  - "java-developer 声明 6 项能力实际用 3 项（consistency=partial）"
+  - "v0.6.7：PATTERN-001 evidence-based-output 两轮实证（java 链 + research 跨 Team）平均 +5，确认可复用"
+  - "v0.6.7：PATTERN-004 severity-gated 因 research 无 reviewer 类下游消费方，暂列为 watch，不自动应用"
+
+recommendations:
+  # 仅建议记录，不自动执行 / 不自动选择 Agent
+  - "v0.5.2 Recommendation 候选：integration-testing 相关任务优先补充 debugger 协同"
+  - "java-tester 声明能力可精简（browser-testing / e2e-testing 未使用）—— 仅记录，本阶段不自动修改"
+  - "观察 integration-testing 后续任务结果以确认 trend 走向"
+  - "v0.6.7：未来升级『结论/建议输出型 Agent』优先复用 PATTERN-001（evidence-based-output），该建议仅参考，不自动应用"
+  - "v0.6.8：Model Routing Recommendation Layer 已建立（model-registry + routing-policy + recommendation-schema），产出 5 条推荐，4 accepted / 1 待人工确认，success_after_use=4"
+  - "v0.6.8：高风险任务（release）推荐自动标 human_confirm=true，未经人工确认不视为有效推荐"
+  - "v0.6.9：Model Routing Feedback Loop 已建立（feedback-history + feedback-metrics + routing-feedback-analytics + proposal），沉淀『任务↔档位』适配 knowledge；findings 供人工与 proposal 审核参考"
+  - "v0.6.9：P-069-01（research 按 context 分级）经人工批准已 merge 进 routing-policy v2（change_log 可追踪）；P-069-02（content 档位上调）**rejected** → policy 保持不变（Case5 判例：单条 under-provisioned 不足以支撑全局调整）"
+  - "v0.7：新增 Runtime Integration Contract Layer（platform/runtime/runtime-contract.yaml + runtime-context.yaml 集成台账 + snapshot），统一 Router→Team→Agent→ModelRecommendation→Scheduler→Execution→Quality→Observability→Evolution 为 Runtime Context 驱动协作；台账仅记录/检查，不自动执行"
+  - "v0.8：未来接入 Execution Interface 时，必须先保证每个可执行动作有 approved Action Proposal 且满足 risk 分级（high 显式人工批准），未批准不得进入执行——本阶段仅提案/记录/检查"
+  - "v0.8：新增 Runtime Action Proposal & Approval Layer（action-policy + action-proposal-schema + records + action-ledger + snapshot），对具体动作建立提案/批准治理；execution-not-implemented，只提案只记录只检查不执行，3 条 record，high 风险 0 自动批准"
+  - "v0.9：新增 Runtime Controlled Execution Interface Layer（execution-schema + executor-registry + permission-policy + sandbox + rollback + execution-ledger），将 approved Action 转为受治理 Execution Request；3 条执行（EX-0001 completed / EX-0002 cancelled-未批准 / EX-0003 rolled_back），approved-before-execution=1.0，回滚复用 Recovery，不实现真实执行引擎"
+  - "v1.0：新增 OpenCode Runtime Adapter & Deployment Governance Layer（adapter-schema + opencode-adapter 边界 + agent(30)/mcp(5)/skill(26) binding + deployment-manifest + migration-plan + rollback-plan + sync-state），确立 MyTeam=Source of Truth / OpenCode=Runtime；部署经 Package→Migration→Approval→Install；DEP-0001 draft 未安装，drift 只报告不修复，不自动安装/不自动覆盖/不 runtime 反向改 source"
+
+sources:
+  - "analytics/metrics/capability-metrics.yaml"
+  - "analytics/metrics/agent-performance.yaml"
+  - "analytics/metrics/evolution-pattern-metrics.yaml"   # v0.6.7 新增
+  - "analytics/metrics/model-recommendation-metrics.yaml" # v0.6.8 新增
+  - "platform/model-routing/feedback/analytics/routing-feedback-analytics.yaml" # v0.6.9 新增
+  - "analytics/trends/capability-trend.yaml"
+  - "capability/capability-feedback.yaml"
+  - "observability/metrics/task-metrics.yaml"
+  - "platform/runtime/runtime-contract.yaml"                # v0.7 新增
+  - "platform/runtime-action/action-policy.yaml"            # v0.8 新增（Runtime Action Proposal & Approval）
+  - "platform/runtime-execution/execution-schema.yaml"      # v0.9 新增（Runtime Controlled Execution）
+  - "platform/runtime-execution/execution-ledger-schema.yaml" # v0.9 新增
+  - ".ai/context/runtime-execution/execution-ledger.yaml"   # v0.9 新增（执行台账）
+  - "platform/runtime-adapter/adapter-schema.yaml"          # v1.0 新增（Runtime Adapter）
+  - "platform/runtime-adapter/deployment-manifest.yaml"     # v1.0 新增（部署清单）
+  - ".ai/context/runtime-adapter/adapter-state.yaml"        # v1.0 新增（部署状态镜像）

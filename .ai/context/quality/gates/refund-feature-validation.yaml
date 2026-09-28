@@ -1,0 +1,19 @@
+version: 1
+task_id: "refund-feature"
+gate_type: "validation"
+updated_at: "2026-09-20T14:00:00"
+
+records:
+  - step: "step-2"
+    by: "java-tester"
+    status: "passed"
+    evidence: "编译通过 + 单测 12/12"
+    at: "2026-09-20T13:40:00"
+  - step: "step-4"
+    by: "java-tester"
+    status: "failed"
+    evidence: "集成测试：退款记录未落库（缺 @Transactional）"
+    errors:
+      - "RefundService.refund() 事务未提交"
+    recovery_hint: "read recovery-state → strategy=debugger"
+    at: "2026-09-20T13:55:00"

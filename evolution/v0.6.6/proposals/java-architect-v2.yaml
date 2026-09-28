@@ -1,0 +1,26 @@
+# Proposal P-066-01 — java-architect v2
+proposal_id: P-066-01
+agent: java-architect
+from_version: v1
+to_version: v2
+phase: v0.6.6
+type: additive
+status: approved
+benchmark: BM-066-01
+decision: accept
+created_at: "2026-09-21"
+
+change_summary:
+  - 证据化输出（Evidence Output）：架构结论带模块/文件级引用
+  - Scope 自检（read-only 对抗）：提交前强制盘点 touched files
+  - 决策 vs 探索分离：推荐/备选方案各自给 trade-off、风险、理由
+  - 生产意识：不因不存在的大规模场景过度设计（最小充足设计）
+
+non_changes:
+  - 不删除 v1 任何职责（纯加法）
+  - 不改变只读约束
+  - 不改 team / capabilities / quality_rules 元数据
+
+rationale:
+  - 对齐 java-developer v2 已在 v0.6.5 确立的 Evidence / Guardrail 模式，实现跨 Agent 一致性
+  - 解决 v0.6.3 审计中架构产出"结论无佐证、越界只读"的差距

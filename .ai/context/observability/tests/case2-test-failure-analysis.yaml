@@ -1,0 +1,27 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case2-test-failure-analysis"
+created_at: "2026-09-20T14:42:00"
+
+# Case2：测试失败
+# 验证：failure-analysis 记录
+
+scenario:
+  trigger: "step-4 测试失败（validation failed）"
+
+expected:
+  failure_record_created: true
+  record_fields:
+    - "type"          # compile / test / mcp_timeout / permission / quality
+    - "root_cause"
+    - "evidence_ref"
+    - "recovery_used"
+    - "recovery_result"
+  summary_updated: true
+
+actual:
+  failure_record_created: true
+  ref: "observability/failures/refund-feature-failures.yaml"
+
+result: "PASS"
+assertion: "测试失败 → failure-analysis 记录（分类 + 根因 + 恢复结果）"

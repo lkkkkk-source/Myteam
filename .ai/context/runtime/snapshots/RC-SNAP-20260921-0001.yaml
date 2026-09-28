@@ -1,0 +1,20 @@
+# Runtime Context Snapshot — v0.7
+# 只读留底：contract_version 变化时生成，用于跨模块协调追溯。
+# 字段集见 platform/runtime/snapshot/snapshot-schema.yaml。
+snapshot_id: "RC-SNAP-20260921-0001"
+created_at: "2026-09-21T15:00:00"
+contract_version: 1
+reason: "on-contract-change"
+context_ref: ".ai/context/runtime/runtime-context.yaml"
+
+modules_summary:
+  router: { state: "completed", contract_ok: true }
+  team: { state: "completed", contract_ok: true }
+  agent: { state: "active", contract_ok: true }
+  model-routing: { state: "active", contract_ok: true }
+  scheduler: { state: "active", contract_ok: true }
+  execution: { state: "active", contract_ok: true }
+  quality: { state: "pending", contract_ok: true }
+  observability: { state: "active", contract_ok: true }
+  memory: { state: "completed", contract_ok: true }
+  evolution: { state: "active", contract_ok: true }

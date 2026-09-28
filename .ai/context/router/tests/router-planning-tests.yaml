@@ -1,0 +1,57 @@
+# Router Planning Layer v0.6.1 — Test Cases
+# 测试目标：验证 Intent Analysis + Project Plan 的边界与字段约束。
+# 基线保持：Agent=30 / MCP=5 / Skill=26 / Workflow=8（本层不新增/删除任何 Agent）。
+
+version: 1
+updated_at: "2026-09-20T16:05:00"
+
+cases:
+  - id: "case1-intent-analysis"
+    name: "模糊输入 → Intent"
+    input: "我的订单系统想支持退款，但还没想清楚细节"
+    expected:
+      intent_file: "router/intent/{task_id}-intent.yaml"
+      confidence: "low | medium"     # 模糊 → 至少 medium，可 low 需 advisory
+      fields: ["goal", "success_criteria", "scope", "open_questions"]
+    result: "PASS"
+    note: "示例文件 T-20260920-101-intent.yaml 含全字段"
+
+  - id: "case2-cross-team-plan"
+    name: "跨团队 → plan 声明 teams + 依赖，不含 Agent"
+    input: "支付系统改造（Java + EngOps 发布）"
+    expected:
+      plan_has_teams: true
+      plan_has_dependencies: true
+      owner_is_lead: true            # owner 必须为 java-lead / engops-lead
+      forbidden_fields_absent: true  # 无 steps / agent_assignments
+    result: "PASS"
+    note: "T-20260920-101-project-plan.yaml phase-4 teams=[java,engops] owner=engops-lead"
+
+  - id: "case3-resume-with-plan"
+    name: "任务恢复 → memory 含 router 状态"
+    input: "继续上次退款任务"
+    expected:
+      resume_has_milestone: true     # resume_point 含 router_state（milestone + plan_version）
+      intent_confidence_restored: true
+    result: "PASS"
+    note: "task-memory.yaml resume_point 增加 router_state / plan_version"
+
+  - id: "case4-router-scheduler-boundary"
+    name: "Router 输出不含执行字段"
+    input: "检查 plan 文件字段"
+    expected:
+      router_has_no_steps: true
+      router_has_no_agent_assignments: true
+      router_has_no_parallel_groups: true
+    result: "PASS"
+    note: "plans/*.yaml 仅含 phase/milestone/teams/lead/dependencies"
+
+  - id: "case5-plan-change-history"
+    name: "计划变化 → planning-history 记录"
+    input: "用户追加：支持多币种退款"
+    expected:
+      plan_version_incremented: true   # v1 → v2
+      history_entry_added: true        # history/planning-history.yaml v2 条目
+      change_reason_recorded: true
+    result: "PASS"
+    note: "planning-history.yaml 含 v1/v2 两条，v2 reason=多币种"

@@ -1,0 +1,34 @@
+version: 1
+agent: "java-tester"
+updated_at: "2026-09-20T15:30:00"
+# 单 Agent 分析（v0.5.1）：声明能力 vs 实际能力
+
+declared:     # 来自 capability/agent-capabilities.yaml
+  - "unit-testing"
+  - "integration-testing"
+  - "validation-gate"
+  - "browser-testing"
+  - "e2e-testing"
+  - "mvn"
+  - "test-report"
+
+used:         # 来自 analytics/metrics + capability-feedback
+  - "unit-testing"
+  - "integration-testing"
+
+unused:       # 声明但未用（Case5 对比核心）
+  - "validation-gate"
+  - "browser-testing"
+  - "e2e-testing"
+  - "mvn"
+  - "test-report"
+
+consistency: "low"
+performance:
+  tasks_used: 1
+  steps_completed: 1
+  steps_failed: 1
+  first_pass_rate: 0.5
+  notable: "integration-testing 在 refund step-4 失败（validation failed），已 Recovery"
+
+note: "仅分析对比，不自动修改 Agent 声明 / 不自动选择 Agent"

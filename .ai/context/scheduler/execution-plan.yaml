@@ -1,0 +1,43 @@
+version: 1
+task_id: "refund-feature"
+evaluated_at: "2026-09-20T14:00:00"
+
+# v0.4.3 Quality Gate 推进规则
+gate_rule:
+  # 推进条件升级：step 不仅 completed，且 validation=passed 才允许进入下一 step
+  advance_condition: "step.completed AND step.validation.passed"
+  # 门控：validation failed → 不得启动 review；review rejected → 不得启动 acceptance
+  gate_sequence: ["validation", "review", "acceptance"]
+
+# v0.5 Capability 集成（只查询，不决定）
+capability_query:
+  registry: "capability/agent-capabilities.yaml"
+  required_capabilities: "current-task.yaml#required_capabilities"
+  rule: "按 required capabilities 查询候选 Agent → 由 PM + Approval 决定执行者；Registry 不自动选 / 不自动调度"
+
+suggestion:
+  result: "ready"
+  steps_to_run:
+    - step: "step-2"
+      agent: "java-developer"
+      priority: "P1"
+      reason: "依赖 step-1（architecture）已完成且 validation passed"
+      required_capabilities: ["spring-boot", "tdd"]
+    - step: "step-3a"
+      agent: "java-developer"
+      priority: "P1"
+      reason: "无依赖，可与 step-3b 并行（group A）"
+      required_capabilities: ["mybatis", "sql"]
+    - step: "step-3b"
+      agent: "java-developer"
+      priority: "P1"
+      reason: "无依赖，与 step-3a 并行（group A）；review rejected 后需返工"
+      required_capabilities: ["rest-api"]
+  parallel_groups:
+    - group: "A"
+      steps: ["step-3a", "step-3b"]
+      reason: "无相互依赖，≤ resource-policy per_team=2"
+  blocked_reason: null
+  recovery_hint: "step-4 validation failed → 读 recovery-state（debugger）"
+decision_log: "scheduler/decisions/refund-feature-decision.yaml"
+gate_state_ref: "quality/gate-state.yaml"

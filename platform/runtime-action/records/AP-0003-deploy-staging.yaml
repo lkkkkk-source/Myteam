@@ -1,0 +1,32 @@
+# Action Proposal AP-0003
+# -----------------------------------------------------------------------------
+# 动作：部署 refund 构建产物（deploy-artifact，high）。
+# 状态：draft（仅创建，未提交待批准）。
+# 注意：部署属高风险，必须显式人工批准；本提案【不】包含执行 / 结果字段。
+# -----------------------------------------------------------------------------
+
+version: 1
+proposal_id: "AP-0003"
+title: "部署 refund-feature 构建产物（staging）"
+task_id: "refund-feature"
+stage: v0.8
+layer: "runtime-action-proposal"
+owner: "engops-lead"
+created_at: "2026-09-21"
+
+action:
+  action_type: "deploy-artifact"
+  target: "refund-service:staging"
+  detail: "草案：待质量门通过后再提交提案供审批"
+
+risk:
+  level: "high"
+  approval_model: "human-approval"
+  approver: "human"
+
+status: "draft"
+
+decision:
+  approved_by: null
+  approved_at: null
+  decision_note: null

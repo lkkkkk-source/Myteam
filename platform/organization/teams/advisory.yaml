@@ -1,0 +1,34 @@
+# Team: advisory — v1.4.3
+# Agent Organization Model：Team -> Role -> Agent
+# 引用 team-registry（Runtime Registry）id="advisory"，不替代（org-4）。
+version: 1
+layer: "organization-team-instance"
+stage: "v1.4.3"
+
+team_id: "advisory"
+name: "Advisory Team"
+lead: "solution-architect"
+registry_ref: ".ai/context/team-registry.yaml#advisory"
+domain: "advisory"
+
+roles:
+  - "architect"
+  - "analyst"
+
+agents:
+  - "solution-architect" # architect (advisory lead)
+  - "requirement-agent"  # analyst
+  - "discussion-agent"   # analyst
+
+capabilities:
+  - "requirement-gathering"
+  - "architecture-review"
+
+workflows:
+  - "advisory-discussion"
+
+quality_rules:
+  - "trade-off-first"
+  - "domain-first"
+
+status: "active"

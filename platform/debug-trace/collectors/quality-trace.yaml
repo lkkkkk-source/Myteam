@@ -1,0 +1,19 @@
+# Trace Collector: quality — v1.4.1
+version: 1
+layer: "debug-trace-collector"
+collector: "quality"
+stage: "v1.4.1"
+emits:
+  - event_type: "gate_passed"
+    trace_layer: "quality"
+    reference_pattern: ".ai/context/quality/gate-state.yaml"
+  - event_type: "artifact_linked"
+    trace_layer: "artifact"
+    reference_pattern: ".ai/context/workspace/artifact-links.yaml"
+  - event_type: "memory_archived"
+    trace_layer: "memory"
+    reference_pattern: ".ai/context/memory/task-memory.yaml"
+  - event_type: "evolution_feedback"
+    trace_layer: "evolution"
+    reference_pattern: "platform/model-routing/feedback/feedback-history.yaml"
+note: "引用 quality gate / artifact link / memory / evolution 指针"

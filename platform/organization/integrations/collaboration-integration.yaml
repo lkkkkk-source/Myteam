@@ -1,0 +1,46 @@
+# Organization → Collaboration Integration — v1.4.3
+# Handoff 增加 from_team / to_team / from_role / to_role（保留 from_agent / to_agent）。
+version: 1
+layer: "organization-collaboration-integration"
+stage: "v1.4.3"
+owner: "engops-lead"
+
+# 扩展 v1.4 handoff-schema：在 agent 交接基础上增加 team / role 维度
+handoff_extension:
+  - field: "from_agent"
+    type: "string"
+    required: true            # 保留（v1.4）
+  - field: "to_agent"
+    type: "string"
+    required: true            # 保留（v1.4）
+  - field: "from_role"
+    type: "string"
+    required: false           # 新增：源 role（经 agent-role-binding 解析）
+  - field: "to_role"
+    type: "string"
+    required: false           # 新增：目标 role
+  - field: "from_team"
+    type: "string"
+    required: false           # 新增：源 team
+  - field: "to_team"
+    type: "string"
+    required: false           # 新增：目标 team
+
+example:
+  handoff_id: "HO-0001"
+  from_agent: "java-architect"
+  to_agent: "java-developer"
+  from_role: "architect"
+  to_role: "developer"
+  from_team: "software-engineering"
+  to_team: "software-engineering"
+  note: "architect role handoff -> developer role（同 team 内交接）"
+
+rules:
+  - "from_role/to_role/from_team/to_team 经 agent-role-binding 由 agent 解析（不改 handoff 语义）"
+  - "保留 from_agent/to_agent（v1.4 不破坏）"
+  - "handoff 只增记录，不自动触发下游执行（cl-1，对齐 collaboration）"
+
+boundaries:
+  - "Organization 只为 handoff 增加 team/role 维度视图，不替代 Collaboration 协议"
+  - "不自动 handoff / 不自动调 Agent（org-7）"

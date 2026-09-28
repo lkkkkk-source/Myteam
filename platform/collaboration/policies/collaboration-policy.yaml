@@ -1,0 +1,37 @@
+# =====================================================================
+# Collaboration Policy — v1.4
+# =====================================================================
+# 定义 Agent 协作允许 / 禁止的行为。
+# =====================================================================
+
+version: 1
+layer: "collaboration-policy"
+stage: "v1.4"
+owner: "engops-lead"
+
+# 允许
+allowed:
+  - "Agent 可以发送消息（message）"
+  - "Agent 可以请求其他 Agent（request，经协作层记录）"
+  - "Agent 可以提交 handoff（交接）"
+  - "Agent 可以记录 decision / 提出 conflict"
+
+# 禁止（强制）
+forbidden:
+  - "Agent 自动调用其他 Agent（必经 PM/Lead 分派或 Action→Approval）"
+  - "Agent 自动改变任务目标"
+  - "Agent 自动绕过 PM"
+  - "Agent 自动批准高风险动作"
+  - "Collaboration 直接触发 Execution（只产生 request/decision/handoff）"
+  - "自动解决冲突 / 自动委派 / 自动改 Prompt"
+
+# 与执行链的关系
+execution_flow:
+  - "Agent Discussion → Action Proposal → Approval → Execution Engine（cl-1）"
+  - "Collaboration 不能直接 Execution"
+
+# 与其他层边界
+boundaries:
+  - "Collaboration ≠ Memory：memory 只存 collaboration pointer / key decisions / unresolved questions"
+  - "Collaboration ≠ Workspace：message 引用 workspace_ref，不含完整代码"
+  - "Collaboration ≠ Execution：只产生 request/decision/handoff"

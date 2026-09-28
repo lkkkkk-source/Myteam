@@ -1,0 +1,31 @@
+# Decision Records — v1.4（只增，可追溯）
+version: 1
+layer: "collaboration-decision"
+stage: "v1.4"
+task_id: "refund-feature"
+updated_at: "2026-09-21T20:00:00"
+
+decisions:
+  # Case3: 多方案选择
+  - decision_id: "DE-0001"
+    owner: "java-architect"
+    problem: "退款数据如何建模"
+    options: [ "退款字段并入 orders 表", "退款独立表 refund_record", "事件溯源" ]
+    selected_option: "退款独立表 refund_record"
+    reason: "与订单解耦，支持部分退款与状态回查；改动面可控"
+    impact: "新增 refund_record 表；不改 orders 结构"
+    evidence: ".ai/artifacts/architecture/refund-feature-architecture.md"
+    risk: "medium"
+  - decision_id: "DE-0002"
+    owner: "java-lead"
+    problem: "step-2 失败如何处理"
+    options: [ "回退架构", "走 Recovery（debugger）" ]
+    selected_option: "走 Recovery（debugger 策略）"
+    reason: "仅缺依赖注入，属实现层问题，不需回退架构"
+    impact: "step-2 重试，架构不变"
+    evidence: ".ai/context/recovery/recovery-state.yaml"
+    risk: "low"
+
+summary:
+  total: 2
+  note: "high/critical risk decisions are NOT auto-made (escalate to PM/user)"

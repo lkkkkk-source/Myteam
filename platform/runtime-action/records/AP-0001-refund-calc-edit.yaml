@@ -1,0 +1,32 @@
+# Action Proposal AP-0001
+# -----------------------------------------------------------------------------
+# 动作：修改 (refund-feature 模块) 的 refund 计算源文件（write-file，medium）。
+# 状态：approved（PM 批准）。
+# 注意：本提案只记录"已批准"，【不】包含任何执行 / 结果字段（执行由未来 Execution Interface 处理）。
+# -----------------------------------------------------------------------------
+
+version: 1
+proposal_id: "AP-0001"
+title: "修改 refund 计算逻辑（refund-feature）"
+task_id: "refund-feature"
+stage: v0.8
+layer: "runtime-action-proposal"
+owner: "engops-lead"
+created_at: "2026-09-21"
+
+action:
+  action_type: "write-file"
+  target: "src/services/refund/calculate-refund.ts"
+  detail: "修正阶梯退费计算，补 boundary case"
+
+risk:
+  level: "medium"
+  approval_model: "agent-approval"
+  approver: "project-manager-agent"
+
+status: "approved"
+
+decision:
+  approved_by: "project-manager-agent"
+  approved_at: "2026-09-21"
+  decision_note: "范围收敛，仅改计算逻辑不触碰接口，PM 批准。执行留待 Execution Interface（本阶段不执行）。"

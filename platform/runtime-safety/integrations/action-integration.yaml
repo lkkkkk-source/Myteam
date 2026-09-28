@@ -1,0 +1,25 @@
+# Safety → Action Integration — v1.4.2
+version: 1
+layer: "runtime-safety-action-integration"
+stage: "v1.4.2"
+owner: "engops-lead"
+
+# Action Proposal 增加 safety_check_ref（v0.8 集成）
+action_field:
+  - field: "safety_check_ref"
+    type: "string"
+    required: false           # 指向 safety-state.yaml#SF-*
+
+# 流程：Action Proposal → Safety Check → Approval → Execution
+flow:
+  - "Action Proposal (AP-*)"
+  - "Safety Check (SF-*) → normal/warning/blocked/waiting-human"
+  - "Approval (v0.8，safety blocked → 不进入 approved)"
+  - "Execution (v1.2，执行前再读 safety status)"
+
+rules:
+  - "safety blocked / waiting-human 的 action 不得进入 approved（sf-2 不替代 approval，但阻断风险）"
+  - "critical action → human_required（sf-6）"
+
+boundaries:
+  - "Safety ≠ Approval（sf-4）：safety 只提供风险判定，批准仍归 Approval 层"

@@ -1,0 +1,32 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case4-capability-feedback"
+created_at: "2026-09-20T15:46:00"
+
+# Case4：任务完成
+# 验证：capability-feedback 生成
+
+scenario:
+  trigger: "任务 complete → engops-lead 依据 Observability 追加 feedback"
+
+expected:
+  feedback_record_created: true
+  record_fields:
+    - "task_id"
+    - "agent"
+    - "capability"
+    - "used"
+    - "success"
+    - "source"      # 指向 observability 数据
+    - "logged_at"
+  summary_updated: true
+
+actual:
+  feedback_record_created: true
+  ref: "capability/capability-feedback.yaml"
+  summary:
+    total: 4
+    success_rate: 0.75
+
+result: "PASS"
+assertion: "任务完成 → capability-feedback 生成（只增，供未来 Scoring 用）"

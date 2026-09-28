@@ -1,0 +1,60 @@
+# =====================================================================
+# Rollback Interface Schema — v0.9
+# =====================================================================
+# 定义：执行失败后的恢复接口。【复用已有 Recovery（v0.3.3）】，不重设计恢复系统。
+# 本阶段只定义回滚接口 + 引用 Recovery checkpoint，不实现真实回滚执行。
+# 阶段：v0.9 · Runtime Controlled Execution Interface Layer
+# =====================================================================
+
+version: 1
+layer: "runtime-execution-rollback"
+stage: "v0.9"
+owner: "engops-lead"
+schema_for: "platform/runtime-execution/rollback/*.yaml + .ai/context/runtime-execution/rollback/*.yaml"
+
+# 复用已有 Recovery（不重新设计）
+reuse_recovery:
+  strategy_registry: ".ai/context/recovery/strategy-registry.yaml"
+  recovery_state: ".ai/context/recovery/recovery-state.yaml"
+  checkpoints_dir: ".ai/context/recovery/checkpoints/"
+  note: "回滚复用 Recovery 的 checkpoint / strategy；本层只做执行层回滚接口映射"
+
+# ---------------------------------------------------------------------
+# Rollback 字段
+# ---------------------------------------------------------------------
+rollback:
+  - field: "rollback_id"
+    type: "string"
+    required: true            # 形如 RB-0001
+  - field: "execution_ref"
+    type: "string"
+    required: true            # 引用失败的 EX-*（execution_id）
+  - field: "strategy"
+    type: "string"
+    required: true            # artifact_restore / workspace_restore / state_restore
+  - field: "checkpoint_ref"
+    type: "string"
+    required: true            # 引用 .ai/context/recovery/checkpoints/*.yaml（复用 Recovery）
+  - field: "status"
+    type: "string"
+    required: true            # pending / restoring / restored / failed
+
+# ---------------------------------------------------------------------
+# 回滚策略（映射到 executor rollback_strategy）
+# ---------------------------------------------------------------------
+strategies:
+  - id: "artifact_restore"
+    desc: "恢复被修改的 artifact 到执行前版本（复用 artifact 版本历史）"
+  - id: "workspace_restore"
+    desc: "恢复工作区到执行前快照 / checkpoint"
+  - id: "state_restore"
+    desc: "恢复运行状态到 checkpoint（复用 recovery-state / checkpoint）"
+
+# ---------------------------------------------------------------------
+# 约束
+# ---------------------------------------------------------------------
+constraints:
+  - "Rollback.execution_ref 必须引用一个 status=failed 的 Execution"
+  - "checkpoint_ref 必须引用真实存在的 Recovery checkpoint（复用，不新建恢复系统）"
+  - "rollback_support=false 的 executor（release）失败时不生成自动 rollback，转人工"
+  - "本阶段只定义回滚接口，不实现真实回滚执行"

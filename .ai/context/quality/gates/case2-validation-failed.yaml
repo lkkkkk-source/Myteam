@@ -1,0 +1,28 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case2-validation-failed"
+created_at: "2026-09-20T14:22:00"
+
+# Case2：tester 验证失败
+# 验证：quality=failed，进入 Recovery
+
+scenario:
+  step: "step-4"
+  validation_by: "java-tester"
+  validation_result: "failed"
+
+expected:
+  quality: "failed"
+  enters_recovery: true
+  scheduler_action: "pause"
+  recovery_strategy: "debugger"
+
+actual:
+  quality: "failed"
+  enters_recovery: true
+  scheduler_action: "pause"
+  recovery_strategy: "debugger"
+  recovery_ref: "recovery/recovery-state.yaml"
+
+result: "PASS"
+assertion: "validation failed → Recovery（debugger 策略），Scheduler 暂停"

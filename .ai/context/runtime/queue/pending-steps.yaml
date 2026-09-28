@@ -1,0 +1,18 @@
+version: 1
+task_id: "refund-feature"
+pending:
+  - step: "step-3"
+    agent: "java-developer"
+    parallel_group: "A"
+    ready: false
+    reason: "step-3 失败，待 Lead 决定重试（Recovery 层 v0.3.3 将消费）"
+  - step: "step-4"
+    agent: "java-developer"
+    parallel_group: "A"
+    ready: false
+    reason: "等 step-3 状态明确后进入"
+  - step: "step-5"
+    agent: "java-reviewer"
+    ready: false
+    reason: "等待 step-3/4 完成"
+last_updated: "2026-09-20T12:45:00"

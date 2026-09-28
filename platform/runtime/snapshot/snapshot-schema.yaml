@@ -1,0 +1,30 @@
+# Snapshot Schema — v0.7
+# 定义 Runtime Context 快照允许出现的字段集。
+# 快照 = 某一 contract_version 下模块协作状态的只读留底，用于跨模块协调追溯。
+version: 1
+layer: "runtime-snapshot"
+stage: "v0.7"
+
+snapshot:
+  - field: "snapshot_id"
+    type: "string"
+    required: true          # 形如 RC-SNAP-{YYYYMMDD}-{n}
+  - field: "created_at"
+    type: "string"
+    required: true
+  - field: "contract_version"
+    type: "int"
+    required: true
+  - field: "reason"
+    type: "string"
+    required: true          # 触发原因（on-contract-change / on-request / periodic）
+  - field: "context_ref"
+    type: "string"
+    required: true          # 指向被快照的 runtime-context.yaml
+  - field: "modules_summary"
+    type: "map"
+    required: true          # 各模块 state + contract_ok 的只读汇总
+
+constraints:
+  - "snapshot 只读：任何模块 / Agent 不得修改既有快照"
+  - "快照不用于自动调度；仅作协调追溯依据"

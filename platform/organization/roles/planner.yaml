@@ -1,0 +1,18 @@
+# Role: planner — v1.4.3
+# 附加 role 原语，用于对齐规划职责（org-2 全覆盖）。
+version: 1
+layer: "organization-role-instance"
+stage: "v1.4.3"
+
+role_id: "planner"
+responsibility: "planning-and-decomposition"
+required_capabilities:
+  - "task-planning"
+  - "decomposition"
+  - "sequencing"
+allowed_scope:
+  - "task-breakdown"
+  - "plan-authoring"
+quality_expectation:
+  - "traceable-plan"
+bound_agents: [ "java-planner" ]

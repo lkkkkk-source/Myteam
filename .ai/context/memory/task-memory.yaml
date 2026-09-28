@@ -1,0 +1,70 @@
+version: 1
+task_id: "refund-feature"
+updated_at: "2026-09-20T13:50:00"
+
+goal:
+  summary: "给订单系统增加退款功能"
+  acceptance:
+    - "退款接口返回新状态"
+    - "订单状态机含 REFUNDING/REFUNDED"
+    - "退款记录落库"
+
+progress:
+  completed:
+    - "architecture（step-1）"
+    - "coding step-2（RefundService 骨架）"
+  current: "step-3a / step-3b 并行编码（group A）"
+  next: "step-4 集成测试（依赖 3a/3b 完成）"
+
+decisions:
+  - id: "td-001"
+    topic: "退款数据建模"
+    choice: "退款独立表（refund_record）"
+    reason: "与订单解耦，支持部分退款与状态回查"
+    decided_at: "2026-09-20T13:02:00"
+    decided_by: "java-planner"
+  - id: "td-002"
+    topic: "step-2 失败处理"
+    choice: "走 Recovery（debugger 策略），不回退架构"
+    reason: "仅缺依赖注入，属实现层问题"
+    decided_at: "2026-09-20T12:50:00"
+    decided_by: "java-lead"
+
+resume_directive: "读 progress.current → 执行 step-3a/3b；勿重议 decisions（td-001/td-002）"
+
+# v0.4.3 Quality Gate 状态块
+quality:
+  gate_state_ref: ".ai/context/quality/gate-state.yaml"
+  per_step:
+    - step: "step-1"
+      validation: "passed"
+      review: "approved"
+      acceptance: "approved"
+      result: "passed"
+    - step: "step-2"
+      validation: "passed"
+      review: "approved"
+      acceptance: "approved"
+      result: "passed"
+    - step: "step-3b"
+      validation: "passed"
+      review: "rejected"
+      acceptance: "pending"
+      result: "pending"
+    - step: "step-4"
+      validation: "failed"
+      review: "pending"
+      acceptance: "pending"
+      result: "failed"
+  task_gate: "in-progress"
+  note: "step-4 validation failed → Recovery；step-3b review rejected → developer 返工；全 Gate passed 才可 COMPLETE"
+
+archive_ref: null
+knowledge_candidates: []
+
+# v1.4 Collaboration 集成：Memory 只存指针 + 关键决策 + 未解决问题（不存完整消息历史）
+collaboration:
+  collaboration_ref: ".ai/context/collaboration/collaboration-state.yaml#CO-0001"
+  key_decisions: [ "DE-0001 退款独立表", "DE-0002 step-2 走 Recovery" ]
+  unresolved_questions: []
+  note: "只存 collaboration pointer / key decisions / unresolved questions；完整消息历史在 collaboration 层（cl-3/cl-4）"

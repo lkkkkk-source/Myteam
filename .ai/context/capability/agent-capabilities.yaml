@@ -1,0 +1,192 @@
+version: 1
+updated_at: "2026-09-20T15:00:00"
+# Agent Capability Registry（v0.5）
+# 30 Agent 能力索引。只用于查询，不决定执行。
+agents:
+  # ===== Advisory =====
+  - agent: "project-manager-agent"
+    team: "pm"
+    role: "组织"
+    capabilities: ["orchestration", "requirement-analysis", "task-decomposition", "dispatch", "acceptance-gate"]
+    skills_used: ["writing-plans", "dispatching-parallel-agents", "requesting-code-review"]
+    mcp_used: ["sequential-thinking", "memory", "context7"]
+  - agent: "requirement-agent"
+    team: "advisory"
+    role: "组织"
+    capabilities: ["requirement-gathering", "clarification", "scope-definition"]
+    skills_used: ["writing-plans"]
+    mcp_used: ["memory", "sequential-thinking"]
+  - agent: "solution-architect"
+    team: "advisory"
+    role: "组织"
+    capabilities: ["architecture-design", "tech-selection", "design-doc"]
+    skills_used: ["writing-plans"]
+    mcp_used: ["context7", "sequential-thinking"]
+  - agent: "discussion-agent"
+    team: "advisory"
+    role: "组织"
+    capabilities: ["discussion", "tradeoff-analysis", "decision-support"]
+    skills_used: []
+    mcp_used: ["memory"]
+  # ===== Java Team =====
+  - agent: "java-lead"
+    team: "java"
+    role: "Lead"
+    capabilities: ["java-orchestration", "task-decomposition", "quality-gate-supervision"]
+    skills_used: ["writing-plans"]
+    mcp_used: ["memory", "sequential-thinking"]
+  - agent: "java-planner"
+    team: "java"
+    role: "执行"
+    capabilities: ["task-planning", "step-decomposition", "dependency-analysis"]
+    skills_used: ["writing-plans", "executing-plans"]
+    mcp_used: ["sequential-thinking", "memory"]
+  - agent: "java-architect"
+    team: "java"
+    role: "执行"
+    capabilities: ["spring-boot", "architecture", "layering", "module-design"]
+    skills_used: ["writing-plans"]
+    mcp_used: ["context7", "sequential-thinking"]
+  - agent: "java-developer"
+    team: "java"
+    role: "执行"
+    capabilities: ["spring-boot", "mybatis", "java", "tdd", "sql", "rest-api"]
+    skills_used: ["test-driven-development", "subagent-driven-development", "executing-plans", "using-git-worktrees"]
+    mcp_used: ["context7", "sequential-thinking", "memory"]
+  - agent: "java-tester"
+    team: "java"
+    role: "执行"
+    capabilities: ["unit-testing", "integration-testing", "validation-gate", "browser-testing", "e2e-testing", "mvn", "test-report"]
+    skills_used: ["test-driven-development", "systematic-debugging", "verification-before-completion"]
+    mcp_used: ["sequential-thinking", "memory", "playwright"]
+  - agent: "java-debugger"
+    team: "java"
+    role: "执行"
+    capabilities: ["debugging", "root-cause-analysis", "recovery-strategy"]
+    skills_used: ["systematic-debugging"]
+    mcp_used: ["sequential-thinking", "context7"]
+  - agent: "java-reviewer"
+    team: "java"
+    role: "执行"
+    capabilities: ["code-review", "review-gate", "spring-design", "mybatis-review", "security-review", "performance-review"]
+    skills_used: ["requesting-code-review", "receiving-code-review", "scientific-critical-thinking"]
+    mcp_used: ["context7", "sequential-thinking", "memory"]
+  # ===== Research Team =====
+  - agent: "research-lead"
+    team: "research"
+    role: "Lead"
+    capabilities: ["research-orchestration", "task-decomposition"]
+    skills_used: ["writing-plans"]
+    mcp_used: ["memory"]
+  - agent: "literature-agent"
+    team: "research"
+    role: "执行"
+    capabilities: ["literature-review", "web-research", "paper-search"]
+    skills_used: []
+    mcp_used: ["fetch", "memory"]
+  - agent: "research-analyst"
+    team: "research"
+    role: "执行"
+    capabilities: ["data-analysis", "statistics", "research-synthesis"]
+    skills_used: []
+    mcp_used: ["memory", "sequential-thinking"]
+  - agent: "experiment-agent"
+    team: "research"
+    role: "执行"
+    capabilities: ["experiment-design", "experiment-run", "result-analysis"]
+    skills_used: []
+    mcp_used: ["memory"]
+  - agent: "innovation-agent"
+    team: "research"
+    role: "执行"
+    capabilities: ["idea-generation", "innovation-analysis"]
+    skills_used: []
+    mcp_used: ["memory"]
+  - agent: "paper-writer"
+    team: "research"
+    role: "执行"
+    capabilities: ["academic-writing", "paper-writing", "paper-editing"]
+    skills_used: ["writing-plans"]
+    mcp_used: ["memory"]
+  # ===== Creative Team =====
+  - agent: "creative-lead"
+    team: "creative"
+    role: "Lead"
+    capabilities: ["creative-orchestration", "task-decomposition"]
+    skills_used: ["writing-plans"]
+    mcp_used: ["memory"]
+  - agent: "writing-agent"
+    team: "creative"
+    role: "执行"
+    capabilities: ["technical-writing", "blog", "documentation"]
+    skills_used: ["writing-plans"]
+    mcp_used: ["memory"]
+  - agent: "editor-agent"
+    team: "creative"
+    role: "执行"
+    capabilities: ["editing", "proofreading", "format-review"]
+    skills_used: []
+    mcp_used: ["memory"]
+  - agent: "ppt-agent"
+    team: "creative"
+    role: "执行"
+    capabilities: ["presentation", "ppt-generation"]
+    skills_used: []
+    mcp_used: ["memory"]
+  - agent: "resume-agent"
+    team: "creative"
+    role: "执行"
+    capabilities: ["resume-writing", "cv-optimization"]
+    skills_used: []
+    mcp_used: ["memory"]
+  # ===== EngOps Team =====
+  - agent: "engops-lead"
+    team: "engops"
+    role: "Lead"
+    capabilities: ["lifecycle-orchestration", "git-management", "release-management", "observability-observation"]
+    skills_used: ["finishing-a-development-branch", "verification-before-completion"]
+    mcp_used: ["memory"]
+  - agent: "git-manager"
+    team: "engops"
+    role: "执行"
+    capabilities: ["git-commit", "git-branch", "git-workflow"]
+    skills_used: ["using-git-worktrees"]
+    mcp_used: ["memory"]
+  - agent: "changelog-agent"
+    team: "engops"
+    role: "执行"
+    capabilities: ["changelog-generation"]
+    skills_used: []
+    mcp_used: ["memory"]
+  - agent: "release-agent"
+    team: "engops"
+    role: "执行"
+    capabilities: ["release-management", "semver", "tagging"]
+    skills_used: []
+    mcp_used: ["memory"]
+  - agent: "project-health-agent"
+    team: "engops"
+    role: "执行"
+    capabilities: ["health-check", "status-reporting"]
+    skills_used: ["verification-before-completion"]
+    mcp_used: ["memory"]
+  # ===== Knowledge Team =====
+  - agent: "adr-recorder"
+    team: "knowledge"
+    role: "执行"
+    capabilities: ["architecture-decision-record"]
+    skills_used: []
+    mcp_used: ["memory"]
+  - agent: "project-knowledge-manager"
+    team: "knowledge"
+    role: "执行"
+    capabilities: ["knowledge-management", "documentation-maintenance", "gotchas-tracking"]
+    skills_used: []
+    mcp_used: ["memory"]
+  # ===== Memory / Observability =====
+  - agent: "task-memory-agent"
+    team: "memory"
+    role: "状态"
+    capabilities: ["task-memory", "working-memory", "archive", "knowledge-candidate-extraction"]
+    skills_used: []
+    mcp_used: ["memory"]

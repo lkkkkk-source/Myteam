@@ -1,0 +1,40 @@
+version: 1
+stage: "installer-plan-v0.6.2"
+mode: "manual"
+
+source_package: "build/package/opencode-agent-platform-v0.6.2"
+target_runtime: "C:\\Users\\Administrator\\.config\\opencode\\"
+
+# Steps the installer performs — executed manually, not automatically
+steps:
+  - name: "verify-baseline"
+    action: "assert agent=30, mcp=5, skill=26, workflow=8 in package manifest"
+  - name: "backup-runtime"
+    action: "snapshot target opencode.json into rollback/backups/"
+  - name: "install-prompts"
+    from: "source/prompts/"
+    to: "prompts/"
+    overwrite: "platform-owned only"
+  - name: "install-docs"
+    from: "source/docs/"
+    to: "docs/"
+    overwrite: "platform-owned only"
+  - name: "install-workflows"
+    from: "source/workflows/"
+    to: "workflows/"
+    overwrite: "platform-owned only"
+  - name: "merge-config"
+    action: "merge config/agent-fragment.json agent block into opencode.json; do not touch mcp/provider/shell"
+  - name: "record-migration"
+    action: "append entry to migration/migration-log.yaml"
+
+protected:
+  - "skills/"
+  - ".opencode/"
+  - ".omo/"
+  - "node_modules/"
+  - "opencode.json mcp/provider/shell blocks"
+
+rollback:
+  restore_from: "rollback/backups/"
+  manifest: "rollback/rollback-manifest.yaml"

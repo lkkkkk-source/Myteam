@@ -1,0 +1,63 @@
+# Workload Analysis — v1.5
+# 分析 team / role 工作负载分布（只统计，不评价个人，oi-4）。
+version: 1
+layer: "organization-intelligence-workload"
+stage: "v1.5"
+owner: "engops-lead"
+scope: "team"
+time_range: "2026-09-01..2026-09-23"
+read_only: true
+
+source_refs:
+  - "platform/organization-intelligence/metrics/team-performance.yaml"
+  - "platform/organization/agent-role-binding.yaml"
+
+by_team:
+  - team_id: "software-engineering"
+    tasks_count: 120
+    agents: 7
+    tasks_per_agent: 17.1
+    load_level: "high"
+  - team_id: "engops"
+    tasks_count: 48
+    agents: 5
+    tasks_per_agent: 9.6
+    load_level: "medium"
+  - team_id: "research"
+    tasks_count: 34
+    agents: 6
+    tasks_per_agent: 5.7
+    load_level: "medium"
+  - team_id: "creative"
+    tasks_count: 22
+    agents: 5
+    tasks_per_agent: 4.4
+    load_level: "low"
+  - team_id: "advisory"
+    tasks_count: 18
+    agents: 3
+    tasks_per_agent: 6.0
+    load_level: "medium"
+  - team_id: "pm"
+    tasks_count: 15
+    agents: 4
+    tasks_per_agent: 3.75
+    load_level: "low"
+
+by_role:
+  - role: "developer"
+    load_level: "high"
+    note: "software-engineering 编码/调试集中"
+  - role: "reviewer"
+    load_level: "medium"
+    note: "review 阶段 cycle_time 上升（见 bottleneck）"
+
+insights:
+  - finding: "software-engineering 负载显著高于其它 team（tasks_per_agent 17.1）"
+    evidence_refs: [ "team-performance#software-engineering" ]
+
+summary:
+  note: "workload distribution only; not individual evaluation (oi-4)"
+
+boundaries:
+  - "只统计负载分布；不评价个人 / 不自动重分配（oi-2/oi-4）"

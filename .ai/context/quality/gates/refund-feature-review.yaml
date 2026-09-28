@@ -1,0 +1,14 @@
+version: 1
+task_id: "refund-feature"
+gate_type: "review"
+updated_at: "2026-09-20T14:05:00"
+
+records:
+  - step: "step-3b"
+    by: "java-reviewer"
+    status: "rejected"
+    issues:
+      - "RefundService 缺少入参校验（null 订单）"
+      - "魔法数字未抽常量（REFUND_LIMIT_DAYS）"
+    rework_to: "java-developer"
+    at: "2026-09-20T14:05:00"

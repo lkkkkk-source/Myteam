@@ -1,0 +1,47 @@
+# Runtime Execution Ledger — 集成台账（v0.9）
+# 所有 Controlled Execution 通过本台账记录（只增，审计用）。
+# 本文件由 engops-lead 人工维护（非自动）；字段集见 platform/runtime-execution/execution-ledger-schema.yaml。
+version: 1
+execution_context_id: "ec-refund-feature-001"
+task_id: "refund-feature"
+updated_at: "2026-09-21T16:45:00"
+owner: "engops-lead"
+schema_version: 1
+
+executions:
+  # EX-0001: AP-0001 approved → code-workspace-executor → completed（连 Quality）
+  - execution_id: "EX-0001"
+    action_ref: "AP-0001"
+    executor: "code-workspace-executor"
+    status: "completed"
+    started_at: "2026-09-21T16:30:00"
+    finished_at: "2026-09-21T16:31:00"
+    result_ref: ".ai/artifacts/code/refund-feature/EX-0001-result.md"
+    artifact_ref: ".ai/artifacts/code/refund-feature/calculate-refund.ts"
+    quality_ref: ".ai/context/quality/gates/refund-feature-validation.yaml"
+
+  # EX-0002: AP-0002 pending（未批准）→ cancelled（拒绝进入 running）
+  - execution_id: "EX-0002"
+    action_ref: "AP-0002"
+    executor: "test-executor"
+    status: "cancelled"
+    started_at: null
+    finished_at: "2026-09-21T16:35:00"
+    result_ref: null
+    artifact_ref: null
+    quality_ref: null
+
+  # EX-0003: failed → rolled_back（复用 Recovery checkpoint）
+  - execution_id: "EX-0003"
+    action_ref: "AP-0001"
+    executor: "code-workspace-executor"
+    status: "rolled_back"
+    started_at: "2026-09-21T16:40:00"
+    finished_at: "2026-09-21T16:41:00"
+    result_ref: null
+    artifact_ref: null
+    quality_ref: null
+    rollback_ref: "RB-0001"
+
+history_refs:
+  - "history/EX-20260921-history.yaml"

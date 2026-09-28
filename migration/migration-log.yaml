@@ -1,0 +1,151 @@
+version: 1
+stage: "migration-v0.6.2"
+log: []
+
+# Migration tracks source → build → install transitions (Source/Runtime separation)
+entries:
+  - id: "m-001"
+    release: "v0.6.2"
+    title: "Source Runtime Separation (initial)"
+    date: "2026-09-21"
+    from: "source"
+    to: "build"
+    status: "built"
+    install_status: "not-installed"
+    detail: "manifest/source/build/runtime/installer/migration/rollback scaffolded"
+  - id: "m-008"
+    release: "v0.6.8"
+    title: "Model Routing Recommendation Layer"
+    date: "2026-09-21"
+    from: "platform"      # 新增横向能力层（registry + routing + schema + history）
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # 纯设计/配置，不安装到 runtime
+    detail: "model-registry + routing-policy + recommendation-schema + lifecycle-policy + 5 test scenarios；只推荐不执行，source/prompts 3 个 prompt +opencode-global 镜像同步"
+  - id: "m-009"
+    release: "v0.6.9"
+    title: "Model Routing Feedback Loop"
+    date: "2026-09-21"
+    from: "platform"      # 在 v0.6.8 之上新增反馈闭环（feedback + metrics + analytics + proposals）
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # 纯设计/配置，不安装到 runtime
+    detail: "feedback-profile-schema + feedback-history + feedback-metrics + routing-feedback-analytics + proposal-schema + P-069-01(approved)/P-069-02(rejected)；routing-policy v2(change_log 可追踪)；只记录统计不自动改策略，source/prompts 3 个 prompt +opencode-global 镜像同步"
+  - id: "m-010"
+    release: "v0.7"
+    title: "Runtime Integration Contract Layer"
+    date: "2026-09-21"
+    from: "platform"      # 在 v0.6.8/v0.6.9 之上新增统一 Runtime Context 驱动的协作层
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # 纯设计/配置，不安装到 runtime
+    detail: "runtime-contract(runtime-context-schema) + runtime-context-template + snapshot-schema + .ai/context/runtime/runtime-context.yaml + snapshots/RC-SNAP-0001；统一 Router→Team→Agent→ModelRecommendation→Scheduler→Execution→Quality→Observability→Evolution 协作；只定义只检查不执行，source/prompts 3 个 prompt +opencode-global 镜像同步"
+  - id: "m-011"
+    release: "v0.8"
+    title: "Runtime Action Proposal & Approval Layer"
+    date: "2026-09-21"
+    from: "platform"      # 在 v0.7 Runtime Contract 之上新增 Action Governance 治理层
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # 纯设计/配置，不安装到 runtime
+    detail: "action-policy(动作类型/风险分级/批准模型) + action-proposal-schema + action-template + action-ledger-schema + snapshot-schema + records/AP-0001(approved)/AP-0002(pending)/AP-0003(draft) + .ai/context/runtime-action/action-ledger.yaml + snapshots/AS-20260921-0001；只提案只记录只检查，Execution Interface 不实现，source/prompts 3 个 prompt +opencode-global 镜像同步"
+  - id: "m-012"
+    release: "v0.9"
+    title: "Runtime Controlled Execution Interface Layer"
+    date: "2026-09-21"
+    from: "platform"      # 在 v0.8 Action Approval 之上新增受治理执行接口层（Governed Agent Runtime 最后一层）
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # 纯设计/配置 + 不实现真实执行引擎，不安装到 runtime
+    detail: "execution-schema(6 不变量+状态机) + executor-registry(6 executor) + permission-policy(low/medium/high/critical) + sandbox-schema + rollback-schema(复用 Recovery) + execution-ledger-schema + records/EX-0001(completed)/EX-0002(cancelled-未批准)/EX-0003(rolled_back) + .ai/context/runtime-execution/execution-ledger.yaml + history + rollback/RB-0001 + sandbox/SB-0001,SB-0002；只执行 approved Action，不实现真实执行引擎，source/prompts 3 个 prompt +opencode-global 镜像同步"
+  - id: "m-013"
+    release: "v1.0"
+    title: "OpenCode Runtime Adapter & Deployment Governance Layer"
+    date: "2026-09-21"
+    from: "platform"      # 建立 Source→Runtime 受治理部署层（MyTeam=Source of Truth，OpenCode=Runtime）
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # 只映射/只检查/只生成计划，不自动安装
+    detail: "adapter-schema + opencode-adapter(集成边界) + agent-binding(30)/mcp-binding(5)/skill-binding(26) + deployment-manifest(DEP-0001 draft) + migration-plan(build→backup→apply→verify→commit) + rollback-plan(复用 Recovery) + sync-state(drift 只报告) + .ai/context/runtime-adapter/adapter-state.yaml；部署经 Package→Migration→Approval→Install，不自动安装/不自动覆盖/不 runtime 反向改 source，source/prompts 3 个 prompt +opencode-global 镜像同步"
+  - id: "m-014"
+    release: "v1.0.1"
+    title: "MyTeam OpenCode Plugin Wrapper"
+    date: "2026-09-21"
+    from: "platform"      # 将 MyTeam 封装为 OpenCode Plugin，宿主隔离（OpenCode=Host，MyTeam=Plugin）
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # 就地只读，不复制到宿主
+    detail: "plugin/opencode/ = manifest.yaml + index.ts(入口) + loader.ts(就地只读) + bridge.ts(OpenCode↔MyTeam) + myteam-plugin.yaml + tests/isolation-test.ps1(19/19 PASS)；宿主隔离：copy_files=false / host_config_write=false / reversible=true；不修改 OpenCode 核心/不批量复制到 ~/.config/opencode/不污染全局/不 runtime 反向改 source；engops-lead+health+PM 3 prompt +opencode-global 镜像同步"
+  - id: "m-015"
+    release: "v1.1"
+    title: "MyTeam Plugin CLI & Developer Experience Layer"
+    date: "2026-09-21"
+    from: "platform"      # 将 MyTeam 从"开发者维护的 Plugin"升级为"用户可管理的软件工具"（CLI + diagnostics + lifecycle）
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # CLI 只管理/只读，不安装、不改 OpenCode
+    detail: "tools/myteam-cli/ = package.json(bin myteam) + bin/myteam.mjs(runnable) + src/index.ts + commands(init/status/doctor/validate/upgrade/rollback) + services(plugin/registry/validation/migration) + output/formatter + tests/cli-test.ps1；plugin/opencode/plugin-state.yaml(lifecycle: installed/loaded/healthy/degraded/disabled, record-only)；CLI 只管理 状态/验证/迁移/回滚，upgrade 默认 dry-run，rollback 复用 Recovery 不删历史；不安装/不改 OpenCode/不执行任务/不选 Agent/不改 Prompt/不调 Model Routing；engops-lead(CLI release)+health(item19)+PM(CLI status) 3 prompt +opencode-global 镜像同步"
+  - id: "m-016"
+    release: "v1.2"
+    title: "MyTeam Controlled Execution Engine"
+    date: "2026-09-21"
+    from: "platform"      # 在 v0.9 Execution Interface（契约）之上实现受治理执行引擎
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # 只执行治理通过的请求，不自动执行
+    detail: "platform/execution-engine/ = engine-schema(ee-1~ee-7 + 8 状态机 + forbidden) + execution-policy(low/medium/high/critical proposal-only) + executor-registry(5) + executors(code/shell/mcp/test/browser) + permission(独立于 action approval) + sandbox-policy(代码 workspace-clone/危险 container) + queue(不自动调度) + result-schema；.ai/context/execution-engine/engine-state.yaml + execution-results.yaml(EE-0001..0006)；plugin/opencode/execution-bridge.ts(admit governed-only + refuse action-generation + host guard)；CLI execution status/trace/validate；三层分离 Context/Action/Execution；只执行 approved action + granted permission，failed 连 Recovery，critical proposal-only；不自动执行/不 Agent 直调 Executor/不自动选 executor/不自动提权/不改 sandbox policy/不改 Prompt/不改 Model Routing；engops-lead+health(item20)+PM 3 prompt +opencode-global 镜像同步"
+  - id: "m-017"
+    release: "v1.3"
+    title: "MyTeam Project Workspace & Collaboration Layer"
+    date: "2026-09-21"
+    from: "platform"      # 建立 Agent Workspace Runtime（多 Agent 协作 / 隔离 / checkpoint / merge 治理）
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # 只管理协作，不自动 merge / 不改宿主
+    detail: "platform/workspace/ = workspace-schema(ws-1~ws-7 + 7 状态机 + forbidden) + workspace-policy + workspace-manager + agents/agent-workspace-schema(reviewer changes_allowed=none) + snapshots/checkpoint-schema(连 Recovery,只增不删) + changes/change-record-schema(execution_ref→EE) + merge/merge-policy(no automatic_merge) + artifacts/artifact-link-schema；.ai/context/workspace/(workspace-state WS-0001..0003 + changes CH-0001/0002 + snapshots CP-0001/0002 + merge-requests MG-0001 rejected/MG-0002 merged + artifact-links + agent-bindings)；CLI workspace status/list/trace/validate；四层分离 Workspace≠Execution≠Memory≠Artifact；禁止 auto-merge/绕过 workspace/改他人 workspace/删 checkpoint/替代 Memory/替代 Artifact/自动改权限；engops-lead(workspace infra)+health(item21)+PM(workspace lifecycle) 3 prompt +opencode-global 镜像同步"
+  - id: "m-018"
+    release: "v1.4"
+    title: "MyTeam Agent Collaboration Protocol Layer"
+    date: "2026-09-21"
+    from: "platform"      # 建立 Agent 通信与协作协议（message / handoff / decision / conflict）
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # 只通信/交接/记录，不自动执行 / 不改宿主
+    detail: "platform/collaboration/ = collaboration-schema(cl-1~cl-7 + 状态机 + forbidden) + message-schema + handoff-schema + decision-schema + conflict-schema + policies/collaboration-policy；.ai/context/collaboration/(collaboration-state CO-0001 + messages MSG-0001..0003 + handoffs HO-0001/0002 + decisions DE-0001/0002 + conflicts CF-0001 resolved)；task-memory 集成(只存 collaboration pointer + key decisions + unresolved)；CLI collaboration status/trace/conflicts/validate；四层边界 Collaboration≠Memory≠Workspace≠Execution；只产生 request/decision/handoff（不直接 Execution）；禁止 Agent 自动调 Agent/自动解决冲突/自动改任务目标/自动改 Prompt/自动执行；engops-lead(collab protocol)+health(item22)+PM(collab status) 3 prompt +opencode-global 镜像同步"
+
+  - id: "m-019"
+    release: "v1.4.1"
+    title: "MyTeam Debug & Trace Mode Layer"
+    date: "2026-09-21"
+    from: "platform"      # 建立 Task Trace Runtime（一次任务全生命周期可追踪，12 层链路）
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # 只记录/查询/展示/审计，不执行 / 不改宿主
+    detail: "platform/debug-trace/ = trace-schema(tr-1~tr-6 + 状态机 + forbidden) + trace-event-schema + trace-policy + collectors(router/collaboration/workspace/execution/quality) + storage/trace-index + queries/reports；.ai/context/debug-trace/(trace-index TR-0001 + events TR-0001-events EV-0001..0012 覆盖 12 层)；CLI trace status/show/timeline/validate；trace 只记录 pointer(不含代码/大对象)、只查询/展示/审计；Trace≠Memory≠Observability≠Collaboration≠ExecutionLedger；禁止 trace 自动执行/修复/调度/改任务状态/改 Agent 行为；engops-lead(trace lifecycle)+health(item23)+PM(trace status) 3 prompt +opencode-global 镜像同步"
+  - id: "m-020"
+    release: "v1.4.2"
+    title: "MyTeam Runtime Safety & Production Guard Layer"
+    date: "2026-09-21"
+    from: "platform"      # 为 Runtime 增加生产安全治理（预算 / 限制 / 超时 / 循环 / 人工确认）
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # 只检测/限制/阻断/升级，不执行 / 不改宿主
+    detail: "platform/runtime-safety/ = safety-policy(sf-1~sf-7 safe-by-default + 状态机 + forbidden) + risk-schema + budget(token/cost schema + policy) + limits(execution/retry/loop/concurrency) + timeout-policy + escalation(human-escalation) + integrations(trace/execution/action)；.ai/context/runtime-safety/(safety-state SF-0001..0007 + escalations ESC-0001..0003)；trace 扩展 13 层(+safety)；CLI safety status/check/budget/violations/validate；safe-by-default，Execution Engine 执行前读 safety status(allowed/warning/blocked/human_required)，critical→human_required，超预算/retry/loop/timeout→blocked/waiting-human，失败连 Recovery；禁止自动提权/扩预算/改策略/跳过人工确认；Safety≠Approval≠ExecutionEngine；engops-lead(safety lifecycle)+health(item24)+PM(safety status) 3 prompt +opencode-global 镜像同步"
+  - id: "m-021"
+    release: "v1.4.3"
+    title: "MyTeam Team Organization Model Layer"
+    date: "2026-09-23"
+    from: "platform"      # 将 MyTeam 从 Agent Collection 升级为 Agent Organization Model（Team -> Role -> Agent）
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # 只建模/映射/查询/验证，不执行 / 不选 Agent / 不改宿主
+    detail: "platform/organization/ = organization-schema(org-1~org-7 + 三层模型 + forbidden) + team-schema + role-schema + agent-role-binding(30/30 agent->role->team) + teams/(6: software-engineering/research/creative/engops/advisory/pm) + roles/(10: architect/developer/tester/reviewer/analyst + lead/planner/writer/ops/manager) + integrations(router/capability/collaboration/trace)；.ai/context/organization/organization-state.yaml(快照 6 teams/10 roles/30 agents + router 候选 + handoff role-ref + trace team->role->agent)；team-registry.yaml 增 organization_ref(保持 Runtime Registry 不替代,org-4)；handoff 增 from_team/to_team/from_role/to_role(保留 from_agent/to_agent)；trace event 经 metadata 携带 team_ref/role_ref(不改 trace schema)；Router 输出 team_candidate/role_candidate/agent_candidates(候选,非最终选择)；CLI organization status/trace AGENT_ID/validate；30/30 覆盖；禁止自动新增 Team/Role、自动替换/选择 Agent、自动改 Prompt、自动调整组织结构；最终 Agent 决策归 PM+Approval；只建模不增删 Agent(基线 30/5/26/8 不变)；engops-lead(organization registry lifecycle)+health(item25)+PM(organization model 读取) 3 prompt 修改"
+  - id: "m-022"
+    release: "v1.5"
+    title: "MyTeam Organization Intelligence Layer"
+    date: "2026-09-23"
+    from: "platform"      # 将 MyTeam 从 Agent Organization Model 升级为 Self-Observing Agent Organization
+    to: "design"
+    status: "built"
+    install_status: "not-installed"   # 只分析/只报告/只建议，只读来源，不修改 / 不自动应用 / 不改宿主
+    detail: "platform/organization-intelligence/ = intelligence-schema(oi-1~oi-7 + scope[team/role/agent/workflow/collaboration] + source_refs + forbidden[auto_apply/auto_modify/auto_execute]) + metrics(team/role/agent/collaboration/workflow performance) + analysis(bottleneck/failure-patterns/success-patterns/workload) + recommendations(recommendation-schema + records RECO-0001..0004 全 draft) + reports/organization-intelligence-report(OI-0001)；.ai/context/organization-intelligence/intelligence-state.yaml(read_only=true, mutates_sources=false)；只读来源(organization/trace/collaboration/workspace/execution/safety/analytics)，不修改任何来源数据；读历史→分析→洞察→建议；每条 insight/recommendation 带 evidence_refs(TR-0001/HO-0001/SF-0003/gate-state 等)；recommendation 状态机 draft->review->approved/rejected，全部 draft，0 auto-applied，禁止直接进 source；面向流程不评价个人，禁止 Agent 排名(无 best_agent/worst_agent)；CLI intelligence status/report/bottlenecks/recommendations/validate；禁止自动修改 Agent/新增 Team/删除 Role/调整 Workflow/改 Prompt/改 Router Rules/改 Model Routing/执行 Recommendation；Human Approval + Governance First + No Auto Modification；基线 30/5/26/8 不变；engops-lead(intelligence lifecycle)+health(item26)+PM(intelligence report 读取) 3 prompt 修改"

@@ -1,0 +1,35 @@
+# Case4: 默认档位 → general (v0.6.8)
+# -----------------------------------------------------------------------------
+# Model Recommendation flow demo: 无特殊匹配 → general 档位（MR-6 默认）
+# 结果：PASS（推荐正确，兜底）
+# -----------------------------------------------------------------------------
+
+case: 4
+title: "默认档位 → general"
+
+input:
+  task_id: "T-068-004"
+  task_type: "content"
+  team: "creative"
+  agent: "writing-agent"
+  agent_role: "execution"
+  complexity: "medium"
+  risk_level: "normal"
+  context_size: "medium"
+  required_capabilities: ["technical-writing", "general-purpose"]
+  historical_performance:
+    first_pass_rate: 0.9
+    quality_pass_rate: 0.95
+
+expected:
+  model_class: "general"
+  fallback: "general"
+  human_confirm: false
+
+output:
+  model_class: "general"
+  fallback: "general"
+  human_confirm: false
+  reasoning: "无特殊匹配 → general 默认档位（MR-6）"
+
+result: PASS

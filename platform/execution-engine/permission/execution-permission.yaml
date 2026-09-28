@@ -1,0 +1,53 @@
+# =====================================================================
+# Execution Permission — v1.2
+# =====================================================================
+# 执行权限层。permission ≠ action approval：两个独立状态，都满足才可 running。
+# 授权不自动提升；到期失效。
+# =====================================================================
+
+version: 1
+layer: "execution-engine-permission"
+stage: "v1.2"
+owner: "engops-lead"
+
+# permission 记录字段
+permission_entry_schema:
+  - field: "execution_id"
+    type: "string"
+    required: true
+  - field: "requested_permission"
+    type: "string"
+    required: true            # workspace_write / process_run / mcp_invoke / browser_control / human_approval
+  - field: "approved_by"
+    type: "string"
+    required: true            # 授权方（system/PM/human）
+  - field: "scope"
+    type: "string"
+    required: true            # 作用域（文件路径 / 命令范围 / mcp 名等）
+  - field: "expires_at"
+    type: "string"
+    required: true            # 到期时间（过期即失效，需重新授权）
+
+# 当前授权（示例，对齐测试用例）
+permissions:
+  - execution_id: "EE-0001"
+    requested_permission: "workspace_write"
+    approved_by: "project-manager-agent"
+    scope: "docs/generated/"
+    expires_at: "2026-09-22T00:00:00"
+  - execution_id: "EE-0002"
+    requested_permission: "workspace_write"
+    approved_by: "project-manager-agent"
+    scope: "src/services/refund/"
+    expires_at: "2026-09-22T00:00:00"
+  - execution_id: "EE-0004"
+    requested_permission: "process_run"
+    approved_by: null                  # 未授权 → Case4 permission denied
+    scope: "npm test"
+    expires_at: null
+
+rules:
+  - "permission 与 action approval 独立：ee-2 要求两者都满足才 running"
+  - "禁止自动提升权限（不得把 workspace_write 自动升为 process_run / human_approval）"
+  - "permission 过期（expires_at 已过）即失效，需重新授权"
+  - "approved_by=null → permission denied，执行被 blocked"

@@ -1,0 +1,36 @@
+# Case1: 高复杂度架构设计 (v0.6.8)
+# -----------------------------------------------------------------------------
+# Model Recommendation flow demo: 输入输入 → 推荐输出。
+# Case：high complexity + architecture-design → high-reasoning 档位
+# 结果：PASS（推荐正确）
+# -----------------------------------------------------------------------------
+
+case: 1
+title: "高复杂度架构设计 → high-reasoning"
+
+input:
+  task_id: "T-068-001"
+  task_type: "architecture-design"
+  team: "java"
+  agent: "java-architect"
+  agent_role: "execution"
+  complexity: "high"
+  risk_level: "normal"
+  context_size: "large"
+  required_capabilities: ["architecture", "layering", "module-design"]
+  historical_performance:
+    first_pass_rate: 1.0
+    quality_pass_rate: 1.0
+
+expected:
+  model_class: "high-reasoning"
+  fallback: "long-context"
+  human_confirm: false
+
+output:
+  model_class: "high-reasoning"
+  fallback: "long-context"
+  human_confirm: false
+  reasoning: "architecture-design + high complexity + large context → high-reasoning 档位（MR-2）"
+
+result: PASS

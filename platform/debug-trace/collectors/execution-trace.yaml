@@ -1,0 +1,20 @@
+# Trace Collector: execution — v1.4.1
+version: 1
+layer: "debug-trace-collector"
+collector: "execution"
+stage: "v1.4.1"
+emits:
+  - event_type: "action_proposed"
+    trace_layer: "action"
+    reference_pattern: "platform/runtime-action/records/AP-*.yaml"
+  - event_type: "action_approved"
+    trace_layer: "approval"
+    reference_pattern: ".ai/context/runtime-action/action-ledger.yaml#AP-*"
+  - event_type: "execution_completed"
+    trace_layer: "execution"
+    reference_pattern: ".ai/context/execution-engine/engine-state.yaml#EE-*"
+integration:
+  action_trace_ref: true        # v1.2 action 增加 trace_ref
+  approval_trace_ref: true
+  execution_trace_ref: true     # execution ledger 增加 trace_ref
+note: "chain action -> approval -> execution，只引用 AP/EE 的 id"

@@ -1,0 +1,43 @@
+version: 1
+task_id: "refund-feature"
+updated_at: "2026-09-20T12:48:00"
+
+recovery:
+  status: "recovered"          # none / recovering / recovered / aborted
+  last_error: "errors/refund-feature-step-3.log"
+  strategy: "debugger"
+  checkpoint: "recovery/checkpoints/refund-feature-checkpoint.yaml"
+
+step_recovery:
+  # Case 1: 编译失败 → debugger → 已恢复
+  - step: "step-3"
+    error_class: "compile"
+    strategy: "debugger"
+    action: "java-debugger 定位 → 补 RefundRecordEntity → 重试 step-3"
+    status: "recovered"
+
+  # Case 2: MCP 超时 → retry → 已记录
+  - step: "step-3"
+    error_class: "mcp_timeout"
+    strategy: "retry"
+    action: "重试 3 次，指数退避（2s/4s/8s）"
+    status: "retrying"
+    retry:
+      attempts: 2
+      backoff: [2, 4, 8]
+
+  # Case 3: 权限不足 → waiting_user → 已验证
+  - step: "step-3"
+    error_class: "permission"
+    strategy: "waiting_user"
+    action: "上报 PM → 用户授权后继续"
+    status: "waiting_user"
+    escalated_to: "project-manager-agent"
+
+  # Case 4: 对话中断 → resume_point → 已验证
+  - step: "step-4"
+    error_class: "interruption"
+    strategy: "resume_point"
+    action: "从 current-task.yaml resume_point.step 重入"
+    status: "resumed"
+    resume_from: "current-task.yaml#resume_point.step=step-4"

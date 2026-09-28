@@ -1,0 +1,27 @@
+# Execution Request EX-0002
+# -----------------------------------------------------------------------------
+# 来源：AP-0002（run-command, high, pending）→ 未批准，执行被拒绝。
+# 状态：cancelled（未获批准，不得进入 running）。
+# 说明：Case3 未批准执行 → Execution 拒绝（ex-1 不变量）。
+# -----------------------------------------------------------------------------
+
+version: 1
+execution_id: "EX-0002"
+action_proposal_ref: "platform/runtime-action/records/AP-0002-run-regression.yaml"
+runtime_context_ref: ".ai/context/runtime/runtime-context.yaml"
+executor_id: "test-executor"
+target: "npm test -- --regression refund"
+input: {}
+permission_context:
+  risk_level: "high"
+  granted_permission: "human_approval"
+  approved_by: null                      # AP-0002 status=pending，尚未人工批准
+sandbox_context:
+  sandbox_id: "SB-0002"
+  workspace: ".ai/context/runtime-execution/sandbox/SB-0002.yaml"
+  isolation: "temp-env"
+rollback_strategy: "workspace_restore"
+status: "cancelled"                       # 拒绝：ex-1 要求 action approved 才能 running
+created_at: "2026-09-21T16:35:00"
+completed_at: "2026-09-21T16:35:00"
+reject_reason: "action_proposal AP-0002 status=pending（未批准），Execution 拒绝进入 running（ex-1）"

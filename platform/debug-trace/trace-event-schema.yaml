@@ -1,0 +1,44 @@
+# =====================================================================
+# Trace Event Schema — v1.4.1
+# =====================================================================
+# 单个 trace 事件。只保存 pointer，不复制大对象。
+# =====================================================================
+
+version: 1
+layer: "debug-trace-event"
+stage: "v1.4.1"
+owner: "engops-lead"
+schema_for: ".ai/context/debug-trace/events/*.yaml"
+
+event:
+  - field: "event_id"
+    type: "string"
+    required: true            # EV-NNNN
+  - field: "trace_id"
+    type: "string"
+    required: true
+  - field: "timestamp"
+    type: "string"
+    required: true
+  - field: "layer"
+    type: "enum"
+    values: [ "router", "team", "agent", "collaboration", "workspace", "action", "approval", "execution", "quality", "artifact", "memory", "evolution", "safety" ]
+    required: true
+  - field: "source"
+    type: "string"
+    required: true            # 产生事件的 agent / 模块
+  - field: "event_type"
+    type: "string"
+    required: true            # 如 classification_completed / handoff_created / change_created / execution_completed / gate_passed
+  - field: "reference"
+    type: "string"
+    required: true            # 指向真实来源（pointer，非内容）
+  - field: "metadata"
+    type: "map"
+    required: false           # 轻量元数据（不含大对象 / 代码）
+
+rules:
+  - "reference 必须指向真实存在的来源文件 / 记录（tr-4）"
+  - "layer 必须是合法枚举（tr-5）"
+  - "metadata 只存轻量信息，不复制大对象 / 代码内容（tr-1）"
+  - "event 只增记录（审计）"

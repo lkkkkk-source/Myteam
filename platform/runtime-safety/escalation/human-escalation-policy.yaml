@@ -1,0 +1,46 @@
+# Human Escalation Policy — v1.4.2
+version: 1
+layer: "runtime-safety-escalation"
+stage: "v1.4.2"
+owner: "engops-lead"
+
+# 必须人工确认的场景（critical）
+require_human_confirmation:
+  - "production deployment"
+  - "database schema change"
+  - "security sensitive operation"
+  - "budget exceeded (token / cost)"
+  - "repeated failure (retry limit reached)"
+  - "loop blocked"
+
+# 升级流程
+flow:
+  - "Safety Check → human_required"
+  - "Human Confirmation（显式人工批准）"
+  - "Action Approval（v0.8）"
+  - "Execution Engine（v1.2）"
+
+escalation_record:
+  - field: "escalation_id"
+    type: "string"
+    required: true            # ESC-NNNN
+  - field: "task_id"
+    type: "string"
+    required: true
+  - field: "trigger"
+    type: "string"
+    required: true            # critical action / budget / repeated failure / loop
+  - field: "status"
+    type: "string"
+    required: true            # pending / confirmed / rejected
+  - field: "confirmed_by"
+    type: "string"
+    required: false
+
+rules:
+  - "critical / budget-exceeded / repeated-failure / loop → 必须人工确认（sf-6）"
+  - "禁止自动跳过人工确认（auto-skip-human-confirmation forbidden）"
+  - "human confirmation 不替代 Action Approval：两者独立，都需通过"
+
+boundaries:
+  - "escalation 只升级 + 等待人工；不自动放行 / 不自动提权"

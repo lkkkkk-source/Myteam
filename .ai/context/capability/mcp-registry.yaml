@@ -1,0 +1,25 @@
+version: 1
+updated_at: "2026-09-20T15:00:00"
+# MCP Registry（v0.5）
+# 5 MCP 能力索引。只用于查询，不决定执行。
+mcps:
+  - mcp: "context7"
+    provides: ["docs-query", "code-examples", "framework-documentation"]
+    agents_using: ["project-manager-agent", "solution-architect", "java-architect", "java-developer", "java-debugger", "java-reviewer"]
+    capabilities: ["docs-query", "code-examples"]
+  - mcp: "fetch"
+    provides: ["url-fetch", "web-retrieval"]
+    agents_using: ["literature-agent"]
+    capabilities: ["url-fetch"]
+  - mcp: "memory"
+    provides: ["knowledge-persistence", "cross-task-memory"]
+    agents_using: ["project-manager-agent", "requirement-agent", "discussion-agent", "java-lead", "java-planner", "java-architect", "java-developer", "java-tester", "java-debugger", "java-reviewer", "research-lead", "literature-agent", "research-analyst", "experiment-agent", "innovation-agent", "paper-writer", "creative-lead", "writing-agent", "editor-agent", "ppt-agent", "resume-agent", "engops-lead", "git-manager", "changelog-agent", "release-agent", "project-health-agent", "adr-recorder", "project-knowledge-manager", "task-memory-agent"]
+    capabilities: ["memory-persistence"]
+  - mcp: "playwright"
+    provides: ["browser-testing", "e2e-testing", "ui-automation"]
+    agents_using: ["java-tester"]
+    capabilities: ["browser-testing", "e2e-testing"]
+  - mcp: "sequential-thinking"
+    provides: ["multi-step-reasoning", "problem-decomposition"]
+    agents_using: ["project-manager-agent", "requirement-agent", "solution-architect", "java-lead", "java-planner", "java-architect", "java-developer", "java-tester", "java-debugger", "java-reviewer", "research-analyst"]
+    capabilities: ["multi-step-reasoning"]

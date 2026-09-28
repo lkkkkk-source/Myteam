@@ -1,0 +1,36 @@
+version: 1
+case_id: "MR-STM-004"
+created_at: "2026-09-21"
+layer: model-routing-recommendation
+stage: v0.6.8
+
+# STM-004：Historical Performance 集成（Phase 7 / Case2）
+# 验证：读历史表现作为推荐依据（只读，不据此自动优化）
+
+scenario:
+  input:
+    task_id: "T-068-004"
+    task_type: "content"
+    team: "creative"
+    agent: "writing-agent"
+    agent_role: "execution"
+    complexity: "medium"
+    risk_level: "normal"
+    context_size: "medium"
+    required_capabilities: ["technical-writing", "general-purpose"]
+    historical_performance:
+      first_pass_rate: 0.9
+      quality_pass_rate: 0.95
+  expected:
+    model_class: "general"
+    fallback: "general"
+    human_confirm: false
+  actual:
+    model_class: "general"
+    fallback: "general"
+    human_confirm: false
+    reasoning: "无特殊匹配 → general 默认档位（MR-6），历史表现良好不改变档位"
+
+result: "PASS"
+assertion: "历史表现集成→辅助上下文，不触发自动优化（只记录）"
+ref: "platform/model-routing/history/T-068-004-general-case.yaml"

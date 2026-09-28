@@ -1,0 +1,31 @@
+# Action Snapshot Schema — v0.8
+# 定义 Action Ledger 快照（.ai/context/runtime-action/snapshots/AS-*.yaml）字段集。
+# 快照 = 只读留底：Action Proposal / Approval 状态变化时触发，保证治理可追溯、可回滚。
+version: 1
+layer: "runtime-action-snapshot"
+stage: "v0.8"
+schema_for: ".ai/context/runtime-action/snapshots/AS-*.yaml"
+
+root:
+  - field: "version"
+    type: "int"
+    required: true            # 与 action-ledger.version 对齐（变化时留底）
+  - field: "snapshot_id"
+    type: "string"
+    required: true            # 形如 AS-20260921-0001
+  - field: "captured_at"
+    type: "string"
+    required: true
+  - field: "owner"
+    type: "string"
+    required: true            # engops-lead
+  - field: "proposals_summary"
+    type: "list"
+    required: true            # 每项：proposal_id / status / risk_level / approval_model（只读汇总，不含执行的字段）
+  - field: "ledger_ref"
+    type: "string"
+    required: true            # 指向被留底的 ledger 文件
+
+constraints:
+  read_only: true             # 快照只读：不得修改 / 回填 / 用于自动执行
+  no_exec_fields: true        # 快照不得含 auto_exec / auto_approve / auto_bypass / executed / result

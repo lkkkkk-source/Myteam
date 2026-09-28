@@ -1,0 +1,138 @@
+version: 1.1
+task_id: "refund-feature"
+title: "给订单系统增加退款功能"
+status: in-progress
+created_at: "2026-09-20T11:50:00"
+updated_at: "2026-09-20T12:48:00"
+
+requirements:
+  goal: "支持用户发起退款，订单状态机扩展退款状态，生成退款记录"
+  scope_in: ["退款接口", "订单状态机扩展", "退款记录表"]
+  scope_out: ["财务对账系统", "第三方支付回调"]
+  acceptance: ["退款接口返回新状态", "订单状态机含 REFUNDING/REFUNDED", "退款记录落库"]
+  open_questions: ["退款是否需要审批流？"]
+
+assignment:
+  department: "java"
+  lead: "java-lead"
+  workflow: "feature-development"
+  parallel_tracks: []
+
+# v1.1 Team Context & Knowledge 指针
+team_context: ".ai/context/teams/java/team-context.md"
+knowledge_summary: ".ai/context/shared/knowledge/knowledge-summary.md"
+task_context: ".ai/context/tasks/refund-feature/context.yaml"
+
+# v0.3.4 Lifecycle 指针
+task_lifecycle: ".ai/context/runtime/task-phase.yaml"
+artifact_meta: ".ai/artifacts/{category}/{task_id}/*.meta.yaml"
+
+# v0.4 Scheduler 指针
+scheduler_state: ".ai/context/scheduler/scheduler-state.yaml"
+dependency_resolver: ".ai/context/scheduler/dependency-resolver.yaml"
+execution_plan: ".ai/context/scheduler/execution-plan.yaml"
+
+# v0.4.1 Scheduler Runtime 指针
+scheduler_runtime_state: ".ai/context/scheduler/runtime-state.yaml"
+scheduler_approval_queue: ".ai/context/scheduler/approval-queue.yaml"
+scheduler_decision_log: ".ai/context/scheduler/decision-log/"
+scheduler_feedback: ".ai/context/scheduler/feedback/"
+
+# v0.4.2 Task Working Memory 指针
+task_memory: ".ai/context/memory/task-memory.yaml"
+memory_archive: ".ai/context/memory/archive/"
+
+# v0.4.3 Quality Gate 指针
+quality_gate_state: ".ai/context/quality/gate-state.yaml"
+quality_gates: ".ai/context/quality/gates/"
+
+# v0.4.4 Observability 指针
+observability_history: ".ai/context/observability/history/"
+observability_failures: ".ai/context/observability/failures/"
+observability_metrics: ".ai/context/observability/metrics/"
+observability_health_report: ".ai/context/observability/health-report/"
+
+# v0.5 Capability Registry 指针
+capability_agent: ".ai/context/capability/agent-capabilities.yaml"
+capability_skill: ".ai/context/capability/skill-registry.yaml"
+capability_mcp: ".ai/context/capability/mcp-registry.yaml"
+capability_feedback: ".ai/context/capability/capability-feedback.yaml"
+
+# v0.5.1 Capability Analytics 指针
+analytics_capability_metrics: ".ai/context/analytics/metrics/capability-metrics.yaml"
+analytics_agent_performance: ".ai/context/analytics/metrics/agent-performance.yaml"
+analytics_trend: ".ai/context/analytics/trends/capability-trend.yaml"
+analytics_report: ".ai/context/analytics/reports/analytics-report.yaml"
+
+# v0.5 任务 required capabilities（由 Scheduler 拆解产物）
+required_capabilities:
+  - "spring-boot"
+  - "mybatis"
+  - "rest-api"
+  - "tdd"
+  - "unit-testing"
+  - "code-review"
+  - "architecture-design"
+# 注意：仅声明所需能力；由 PM + Approval 决定执行 Agent（Registry 不自动选）
+
+checkpoint: ".ai/context/recovery/checkpoints/refund-feature-checkpoint.yaml"
+
+task_plan: ".ai/tasks/refund-feature/task-plan.yaml"
+
+artifacts:
+  architecture: ".ai/artifacts/architecture/refund-feature-architecture.md"
+  code: ".ai/artifacts/code/refund-feature/"
+  review: ".ai/artifacts/review/refund-feature-review.md"
+
+handoff_log:
+  - time: "2026-09-20T11:50:00"
+    from: "project-manager-agent"
+    to: "java-lead"
+    note: "PM 创建任务上下文，分派 Java Team"
+    status: "done"
+  - time: "2026-09-20T11:55:00"
+    from: "java-lead"
+    to: "java-architect"
+    note: "step-1 架构分析启动，输入 requirements"
+    status: "done"
+  - time: "2026-09-20T11:58:00"
+    from: "java-architect"
+    to: "java-planner"
+    note: "step-1 完成，架构产物：artifacts/architecture/refund-feature-architecture.md，交 planner 细化"
+    status: "done"
+  - time: "2026-09-20T12:10:00"
+    from: "project-manager-agent"
+    to: "java-lead"
+    note: "v1.1 升级：生成 knowledge-summary.md + teams/java/team-context.md，登记指针"
+    status: "done"
+  - time: "2026-09-20T12:48:00"
+    from: "java-lead"
+    to: "java-debugger"
+    note: "v0.3.3 Recovery：step-3 编译失败（case1），recovery-state 记录 + checkpoint，策略 debugger"
+    status: "done"
+  - time: "2026-09-20T13:20:00"
+    from: "scheduler"
+    to: "java-lead"
+    note: "v0.4.1 Case1：decision d-001（step-2 coding）→ approved → 执行完成 → feedback completed，runtime-state 已更新"
+    status: "done"
+  - time: "2026-09-20T13:36:00"
+    from: "java-lead"
+    to: "scheduler"
+    note: "v0.4.1 Case2：step-2 执行失败，feedback 置 scheduler_action=pause，Scheduler 暂停，读 recovery-state 恢复"
+    status: "done"
+  - time: "2026-09-20T13:34:00"
+    from: "scheduler"
+    to: "java-lead"
+    note: "v0.4.1 Case3：step-3a/3b 无依赖，生成 parallel decision（d-002），Lead 并行执行"
+    status: "done"
+  - time: "2026-09-20T13:40:00"
+    from: "scheduler"
+    to: "engops-lead"
+    note: "v0.4.1 Case4：step-5 release 高风险 decision（d-004）→ approval-queue pending，未批准不得执行"
+    status: "pending"
+
+resume_point:
+  step: "step-2"
+  instruction: "step-1 已完成，java-planner 读架构产物，细化 step-3/4 并行边界"
+
+parallel: []

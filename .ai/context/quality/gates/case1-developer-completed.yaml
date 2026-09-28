@@ -1,0 +1,31 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case1-developer-completed"
+created_at: "2026-09-20T14:20:00"
+
+# Case1：developer 完成代码
+# 验证：step status=completed，但任务不能结束（三 Gate 未全通过）
+
+scenario:
+  step: "step-2"
+  developer_status: "completed"   # 代码写完
+
+expected:
+  task_can_end: false            # 关键断言：不能结束任务
+  gate_state:
+    validation: "passed"
+    review: "approved"
+    acceptance: "approved"
+  task_gate: "in-progress"       # 非 complete
+  reason: "developer completed 只是 step 做完；须三 Gate 全通过才 COMPLETE"
+
+actual:
+  task_can_end: false
+  gate_state:
+    validation: "passed"
+    review: "approved"
+    acceptance: "approved"
+  task_gate: "in-progress"
+
+result: "PASS"
+assertion: "status=completed ≠ 任务完成"

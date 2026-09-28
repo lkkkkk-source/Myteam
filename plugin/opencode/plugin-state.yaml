@@ -1,0 +1,48 @@
+# =====================================================================
+# MyTeam Plugin Lifecycle State — plugin-state.yaml — v1.1
+# =====================================================================
+# 记录 MyTeam Plugin 的生命周期状态。只记录，不执行自动决策。
+# 由 engops-lead 人工维护；CLI / health / PM 只读。
+# =====================================================================
+
+version: 1
+plugin: "myteam"
+plugin_version: "1.1.0"
+platform_version: "v1.1"
+updated_at: "2026-09-21"
+owner: "engops-lead"
+
+# ---------------------------------------------------------------------
+# lifecycle_state：当前生命周期状态
+#   installed  — 已安装（引用就位）
+#   loaded     — 已加载（OpenCode 读取到插件入口）
+#   healthy    — 健康（doctor 全绿）
+#   degraded   — 降级（doctor 有 warning/error，但仍可用）
+#   disabled   — 已禁用（引用被移除）
+# ---------------------------------------------------------------------
+lifecycle_state: "loaded"
+
+states:
+  - installed
+  - loaded
+  - healthy
+  - degraded
+  - disabled
+
+# 状态历史（只增，审计）
+history:
+  - { at: "2026-09-21", state: "installed", note: "plugin/opencode scaffold created (v1.0.1)" }
+  - { at: "2026-09-21", state: "loaded", note: "CLI layer added (v1.1); read-only, isolated" }
+
+# 隔离契约（与 manifest 对齐）
+isolation:
+  modify_opencode: false
+  copy_runtime_files: false
+  host_config_write: false
+  reversible: true
+
+# 边界：只记录，不自动决策
+constraints:
+  - "本文件只记录 lifecycle 状态，不触发任何自动安装 / 卸载 / 升级"
+  - "状态迁移由 engops-lead 人工维护；CLI / health / PM 只读"
+  - "history 只增不改（审计）"

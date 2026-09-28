@@ -1,0 +1,34 @@
+# Improvement Proposal P-069-01
+# -----------------------------------------------------------------------------
+# 基于反馈：research 类任务长上下文档位偏强（over-provisioned）。
+# 状态：approved → merged（经 engops-lead 人工审核批准后落地）。
+# -----------------------------------------------------------------------------
+
+proposal_id: "P-069-01"
+title: "调整 research 任务默认档位：long-context → 按 context_size 分级"
+stage: v0.6.9
+layer: model-routing-feedback
+owner: engops-lead
+created_at: "2026-09-21"
+
+triggered_by_feedback:
+  - "FH-069-003"
+evidence_findings:
+  - "F-069-03"
+
+proposed_change:
+  target: "routing-policy"
+  affected_rule: "MR-3"
+  change_detail: >
+    research 类任务不再无条件建议 long-context；
+    改为按 context_size 分流：context_size=midium/small → fast-coding 或 general；
+    context_size=large/very-large 且需要深度推理 → 保留 high-reasoning/long-context。
+  impact_analysis: "仅影响 research 类默认档位分级；不改变 MR-2（architecture）与 MR-5（feature+low）已确认规则"
+  risk: "low"
+
+status: "approved"
+decided_by: "engops-lead"
+decision_note: >
+  人工审核通过。T-068-002 证明 medium context 的研究任务用 long-context 成本偏高，
+  同意按 context_size 分级，避免 over-provisioned。变更已并入 routing-policy v2。
+  merged_at: "2026-09-21"

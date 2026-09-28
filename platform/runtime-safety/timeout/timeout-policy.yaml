@@ -1,0 +1,21 @@
+# Timeout Policy — v1.4.2
+version: 1
+layer: "runtime-safety-timeout"
+stage: "v1.4.2"
+owner: "engops-lead"
+
+timeouts:
+  execution_default: "30m"
+  action_approval_wait: "24h"     # 待批准超时 → 提醒（不自动批准）
+  human_confirmation_wait: "72h"  # 待人工确认超时 → 提醒（不自动放行）
+
+rules:
+  - "execution 超时 → 进入 Recovery（复用 v0.3.3 checkpoint 回滚）"
+  - "approval / human 等待超时 → 只提醒，不自动放行（sf-3/sf-6）"
+
+flow:
+  - "execution start → timer(30m)"
+  - "timeout → blocked → Recovery"
+
+boundaries:
+  - "timeout 只中止 + 转 Recovery；不自动重启 / 不自动批准"

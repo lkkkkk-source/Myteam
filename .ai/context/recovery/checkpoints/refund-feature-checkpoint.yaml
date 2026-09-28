@@ -1,0 +1,17 @@
+version: 1
+task_id: "refund-feature"
+created_at: "2026-09-20T12:45:00"
+
+snapshot:
+  step: "step-3"
+  state: "failed"
+  completed_before: ["step-1", "step-2"]
+  artifacts_done: [".ai/artifacts/architecture/refund-feature-architecture.md"]
+  error_ref: "errors/refund-feature-step-3.log"
+
+resume:
+  entry: "step-3"
+  strategy: "debugger"
+  instruction: "java-debugger 定位编译错误（缺 RefundRecordEntity）→ 补实体 → 重跑 step-3"
+  on_success: "step-3=completed，queue 解锁 step-4（parallel_group A）"
+  on_failure: "再次失败 → escalate 上报 PM"

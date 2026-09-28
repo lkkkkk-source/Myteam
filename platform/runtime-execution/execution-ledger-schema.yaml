@@ -1,0 +1,75 @@
+# Execution Ledger Schema — v0.9
+# 定义运行时执行集成台账（.ai/context/runtime-execution/execution-ledger.yaml）字段集。
+# project-health-agent 用本 schema 校验 Ledger 是否非法写入字段 / 是否合规。
+version: 1
+layer: "runtime-execution-ledger"
+stage: "v0.9"
+schema_for: ".ai/context/runtime-execution/execution-ledger.yaml"
+
+allowed_fields: "*(schema:runtime-execution-ledger.v1)"
+
+root:
+  - field: "version"
+    type: "int"
+    required: true
+  - field: "execution_context_id"
+    type: "string"
+    required: true
+  - field: "task_id"
+    type: "string"
+    required: true            # 必须与 runtime-context / action-ledger 对齐
+  - field: "updated_at"
+    type: "string"
+    required: true
+  - field: "owner"
+    type: "string"
+    required: true
+  - field: "schema_version"
+    type: "int"
+    required: true            # 对应 execution-schema.yaml version
+  - field: "executions"
+    type: "list"
+    required: true            # 见 execution_ref 条目
+  - field: "history_refs"
+    type: "list"
+    required: false
+
+# 只增记录：execution_id / action_ref / executor / status / started_at / finished_at / result_ref / artifact_ref / quality_ref
+execution_ref:
+  - field: "execution_id"
+    type: "string"
+    required: true            # 必须存在于 platform/runtime-execution/records/*.yaml
+  - field: "action_ref"
+    type: "string"
+    required: true            # 引用 AP-*（必须 approved 才能 running/completed）
+  - field: "executor"
+    type: "string"
+    required: true            # 存在于 executor-registry
+  - field: "status"
+    type: "string"
+    required: true            # prepared / approved / running / completed / failed / rolled_back / cancelled
+  - field: "started_at"
+    type: "string"
+    required: false
+  - field: "finished_at"
+    type: "string"
+    required: false
+  - field: "result_ref"
+    type: "string"
+    required: false           # 执行结果指针（连接 Quality）
+  - field: "artifact_ref"
+    type: "string"
+    required: false           # 产物指针
+  - field: "quality_ref"
+    type: "string"
+    required: false           # Quality Gate 指针
+  - field: "rollback_ref"
+    type: "string"
+    required: false           # 失败时指向 rollback/RB-*
+
+forbidden_fields:
+  - "auto_exec"
+  - "auto_advance"
+  - "bypass_approval"
+  - "auto_generated_action"
+  note: "Ledger 不得出现自动执行 / 自动推进 / 绕过批准 / 自动生成动作字段；出现即 Execution Contract 违规（Critical）"

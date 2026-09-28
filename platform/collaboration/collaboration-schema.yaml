@@ -1,0 +1,91 @@
+# =====================================================================
+# Collaboration Schema — v1.4
+# =====================================================================
+# 目标：建立 Agent Team 通信与协作层：Agent → Message → Handoff → Decision → Resolution → Execution
+#
+# 四层边界（强制，不合并）：
+#   Collaboration = 管理 Agent 间交流（本层）
+#   Workspace     = 管理文件和修改（v1.3）
+#   Memory        = 管理任务认知（.ai/context/memory）
+#   Execution     = 管理实际执行（v1.2）
+#
+# 禁止：Collaboration 替代 Memory / 替代 Workspace / 自动执行任务 / 自动改 Agent Prompt。
+#
+# 阶段：v1.4 · MyTeam Agent Collaboration Protocol Layer
+# 基线：Agent=30 · MCP=5 · Skill=26 · Workflow=8（不新增 / 不删除 / 不改核心行为）
+# =====================================================================
+
+version: 1
+layer: "collaboration"
+stage: "v1.4"
+status: "governed"
+schema_for: "platform/collaboration/**/*.yaml + .ai/context/collaboration/**/*.yaml"
+
+depends_on:
+  - "v1.3-workspace-collaboration"   # message/change 可互相引用
+  - "v1.2-controlled-execution-engine"  # collaboration → action proposal → execution
+  - "v0.4.2-task-memory"             # memory 只存 collaboration pointer
+
+# ---------------------------------------------------------------------
+# 一、验收不变量（Collaboration 铁律）
+# ---------------------------------------------------------------------
+invariants:
+  - "cl-1: Collaboration 只产生 request / decision / handoff；不能直接 Execution"
+  - "cl-2: Agent 可发消息 / 请求 / 提交 handoff；禁止 Agent 自动调用其他 Agent"
+  - "cl-3: 消息只保存结论 + evidence_ref，不保存完整聊天 / 完整代码"
+  - "cl-4: Collaboration ≠ Memory ≠ Workspace ≠ Execution（四层分离）"
+  - "cl-5: 冲突不自动解决（resolver 人工 / 治理裁决）；高风险决定不自动替用户做"
+  - "cl-6: Agent 不自动改变任务目标 / 不自动绕过 PM / 不自动批准高风险动作"
+  - "cl-7: 不自动修改 Agent Prompt / 不自动 delegate"
+
+# ---------------------------------------------------------------------
+# 二、Collaboration 字段
+# ---------------------------------------------------------------------
+collaboration:
+  - field: "collaboration_id"
+    type: "string"
+    required: true            # CO-NNNN
+  - field: "task_id"
+    type: "string"
+    required: true
+  - field: "participants"
+    type: "list"
+    required: true            # agent 列表
+  - field: "team"
+    type: "string"
+    required: true
+  - field: "status"
+    type: "string"
+    required: true            # 见 states
+  - field: "created_at"
+    type: "string"
+    required: true
+
+# ---------------------------------------------------------------------
+# 三、状态机
+# ---------------------------------------------------------------------
+states:
+  - "created"
+  - "active"
+  - "waiting"
+  - "resolved"
+  - "archived"
+
+# ---------------------------------------------------------------------
+# 四、禁止字段（出现即 Collaboration 违规 Critical）
+# ---------------------------------------------------------------------
+forbidden_fields:
+  - "auto_resolve"
+  - "auto_execute"
+  - "auto_delegate"
+  - "auto_call_agent"
+  note: "collaboration / message / handoff / decision / conflict 不得出现自动解决 / 自动执行 / 自动委派 / 自动调 Agent 字段"
+
+not_implemented:
+  - "agent-auto-call-agent"
+  - "auto-conflict-resolve"
+  - "auto-change-task-goal"
+  - "auto-prompt-mutation"
+  - "collaboration-direct-execution"
+  - "collaboration-as-memory"
+  - "collaboration-as-workspace"

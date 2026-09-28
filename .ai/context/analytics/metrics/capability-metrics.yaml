@@ -1,0 +1,29 @@
+version: 1
+updated_at: "2026-09-20T15:30:00"
+# Capability Metrics（v0.5.1）
+# 由 engops-lead 依据 capability-feedback + observability 数据汇总。只分析，不决策。
+capabilities:
+  - capability: "spring-boot"
+    usage_count: 2               # Case1：使用次数（来自 feedback records + history）
+    failure_count: 0             # Case2：失败次数（来自 failures）
+    success_rate: 1.0
+    quality_pass_rate: 1.0       # Case3：关联 Gate 通过率（来自 gate-state）
+    source: ["capability-feedback.yaml", "observability/metrics/task-metrics.yaml"]
+  - capability: "tdd"
+    usage_count: 2
+    failure_count: 0
+    success_rate: 1.0
+    quality_pass_rate: 1.0
+    source: ["capability-feedback.yaml", "observability/history/"]
+  - capability: "unit-testing"
+    usage_count: 1
+    failure_count: 0
+    success_rate: 1.0
+    quality_pass_rate: 1.0
+    source: ["capability-feedback.yaml"]
+  - capability: "integration-testing"
+    usage_count: 1
+    failure_count: 1
+    success_rate: 0.0
+    quality_pass_rate: 0.75
+    source: ["capability-feedback.yaml", "observability/failures/refund-feature-failures.yaml"]

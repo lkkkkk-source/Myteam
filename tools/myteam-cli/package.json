@@ -1,0 +1,33 @@
+{
+  "name": "@myteam/cli",
+  "version": "1.1.0",
+  "description": "MyTeam Plugin CLI & Developer Experience Layer — manage / diagnose / validate / upgrade / rollback the MyTeam OpenCode plugin (read-only governance, never modifies OpenCode host).",
+  "type": "module",
+  "bin": {
+    "myteam": "bin/myteam.mjs"
+  },
+  "main": "bin/myteam.mjs",
+  "exports": {
+    ".": "./bin/myteam.mjs"
+  },
+  "scripts": {
+    "myteam": "node bin/myteam.mjs",
+    "test": "powershell -NoProfile -ExecutionPolicy Bypass -File tests/cli-test.ps1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "myteam": {
+    "platform_version": "v1.1",
+    "plugin": "plugin/opencode/manifest.yaml",
+    "workspace": "D:/data/code/Agent/MyTeam",
+    "commands": ["init", "status", "doctor", "validate", "upgrade", "rollback"],
+    "isolation": {
+      "modify_opencode": false,
+      "copy_runtime_files": false,
+      "auto_install": false
+    }
+  },
+  "files": ["bin/", "src/", "README.md"],
+  "license": "MIT"
+}

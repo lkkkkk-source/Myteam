@@ -1,0 +1,366 @@
+version: 1
+platform: "opencode-agent-platform"
+name: "myteam-agent-platform"
+schema: "opencode.agent.platform.v1"
+
+# v0.6.2 Source Runtime Separation
+release:
+  id: "v0.6.2"
+  label: "Source Runtime Separation"
+  target_runtime: "opencode"
+  status: "source-prepared"
+
+# Baseline invariants — must remain constant
+baseline:
+  agent: 30
+  mcp: 5
+  skill: 26
+  workflow: 8
+
+# Source layer: what we develop in MyTeam (source of truth)
+source:
+  root: "source/"
+  prompts: "source/prompts/"
+  docs: "source/docs/"
+  workflows: "source/workflows/"
+  config: "source/opencode_source.json"
+  context: "source/context/"
+
+# Build layer: packaging source → installable artifact
+build:
+  root: "build/"
+  scripts: "build/scripts/"
+  output: "build/package/"
+  package_name: "opencode-agent-platform-v0.6.2"
+
+# Runtime layer: OpenCode install target (never modified during development)
+runtime:
+  root: "C:\\Users\\Administrator\\.config\\opencode\\"
+  config: "opencode.json"
+  prompts: "prompts/"
+  docs: "docs/"
+  workflows: "workflows/"
+
+# Installer: build → runtime (planned, not auto-executed)
+installer:
+  root: "installer/"
+  scripts: "installer/scripts/"
+  plan_output: "installer/install-plan.yaml"
+
+# Migration & Rollback
+migration:
+  root: "migration/"
+  log: "migration/migration-log.yaml"
+rollback:
+  root: "rollback/"
+  backup_dir: "rollback/backups/"
+  manifest: "rollback/rollback-manifest.yaml"
+
+# Assets the build must package
+assets:
+  - kind: "prompt"
+    path: "source/prompts/"
+    count: 30
+  - kind: "doc"
+    path: "source/docs/"
+    count: 22
+  - kind: "workflow"
+    path: "source/workflows/"
+    count: 8
+  - kind: "config"
+    path: "source/opencode_source.json"
+
+# Dependencies on external (non-source) runtime pieces
+dependencies:
+  mcp: ["context7", "fetch", "memory", "playwright", "sequential-thinking"]
+  skills_managed_by: "cc-switch"
+  skills_count: 26
+
+# Model Routing Recommendation Layer (v0.6.8) + Feedback Loop (v0.6.9) — 横向能力层
+model_routing:
+  root: "platform/"
+  registry: "platform/registry/models/model-registry.yaml"
+  profile_schema: "platform/registry/models/model-profile-schema.yaml"
+  lifecycle_policy: "platform/registry/models/policies/model-registry-lifecycle-policy.yaml"
+  routing_policy: "platform/model-routing/routing-policy.yaml"
+  recommendation_schema: "platform/model-routing/recommendation-schema.yaml"
+  history: "platform/model-routing/history/model-routing-history.yaml"
+  tests: "platform/model-routing/tests/"
+  stage: "v0.6.9"
+  recommendation_only: true     # 只推荐、不执行（不切换模型/Provider、不自动选 Agent）
+  model_classes: ["high-reasoning", "fast-coding", "long-context", "general"]
+  # --- Model Routing Feedback Loop (v0.6.9) ---
+  feedback:
+    root: "platform/model-routing/feedback/"
+    profile_schema: "platform/model-routing/feedback/feedback-profile-schema.yaml"
+    history: "platform/model-routing/feedback/feedback-history.yaml"
+    metrics: "platform/model-routing/feedback/metrics/feedback-metrics.yaml"
+    analytics: "platform/model-routing/feedback/analytics/routing-feedback-analytics.yaml"
+    proposal_schema: "platform/model-routing/feedback/proposals/proposal-schema.yaml"
+    proposals: "platform/model-routing/feedback/proposals/"
+    spec: "source/docs/model-routing-feedback-spec.md"
+    auto_adjust: false           # feedback/metrics 只记录统计，不自动改策略（走 proposal 人工审核）
+
+# Stage history (v0.6.2 -> v0.6.9)
+release_history:
+  - { id: "v0.6.2", label: "Source Runtime Separation" }
+  - { id: "v0.6.3", label: "External Agent Prompt Benchmark" }
+  - { id: "v0.6.4", label: "Team Abstraction Layer" }
+  - { id: "v0.6.5", label: "Agent Prompt Evolution" }
+  - { id: "v0.6.6", label: "Multi-Agent Evolution" }
+  - { id: "v0.6.7", label: "Evolution Knowledge Layer" }
+  - { id: "v0.6.8", label: "Model Routing Recommendation Layer" }
+  - { id: "v0.6.9", label: "Model Routing Feedback Loop" }
+  - { id: "v0.7", label: "Runtime Integration Contract Layer" }
+  - { id: "v0.8", label: "Runtime Action Proposal & Approval Layer" }
+  - { id: "v0.9", label: "Runtime Controlled Execution Interface Layer" }
+  - { id: "v1.0", label: "OpenCode Runtime Adapter & Deployment Governance Layer" }
+  - { id: "v1.0.1", label: "MyTeam OpenCode Plugin Wrapper" }
+  - { id: "v1.1", label: "MyTeam Plugin CLI & Developer Experience Layer" }
+  - { id: "v1.2", label: "MyTeam Controlled Execution Engine" }
+  - { id: "v1.3", label: "MyTeam Project Workspace & Collaboration Layer" }
+  - { id: "v1.4", label: "MyTeam Agent Collaboration Protocol Layer" }
+  - { id: "v1.4.1", label: "MyTeam Debug & Trace Mode Layer" }
+  - { id: "v1.4.2", label: "MyTeam Runtime Safety & Production Guard Layer" }
+  - { id: "v1.4.2.1", label: "Manifest Consistency Patch (debug_trace.layers +safety = 13 layers)" }
+  - { id: "v1.4.3", label: "MyTeam Team Organization Model Layer" }
+  - { id: "v1.5", label: "MyTeam Organization Intelligence Layer" }
+
+# MyTeam Organization Intelligence (v1.5)
+organization_intelligence:
+  root: "platform/organization-intelligence/"
+  schema: "platform/organization-intelligence/intelligence-schema.yaml"
+  metrics: ["team-performance", "role-performance", "agent-performance", "collaboration-metrics", "workflow-metrics"]
+  analysis: ["bottleneck-analysis", "failure-patterns", "success-patterns", "workload-analysis"]
+  recommendation_schema: "platform/organization-intelligence/recommendations/recommendation-schema.yaml"
+  report: "platform/organization-intelligence/reports/organization-intelligence-report.yaml"
+  state: ".ai/context/organization-intelligence/intelligence-state.yaml"
+  scope: ["team", "role", "agent", "workflow", "collaboration"]
+  cli: ["intelligence status", "intelligence report", "intelligence bottlenecks", "intelligence recommendations", "intelligence validate"]
+  recommendation_states: ["draft", "review", "approved", "rejected"]
+  read_only: true
+  boundary: "analyze/report/recommend only; read-only sources; no auto-modify/auto-apply/auto-execute; no agent ranking; recommendations require human approval"
+
+# MyTeam Team Organization Model (v1.4.3)
+organization:
+  root: "platform/organization/"
+  schema: "platform/organization/organization-schema.yaml"
+  team_schema: "platform/organization/team-schema.yaml"
+  role_schema: "platform/organization/role-schema.yaml"
+  agent_role_binding: "platform/organization/agent-role-binding.yaml"
+  teams: ["software-engineering", "research", "creative", "engops", "advisory", "pm"]
+  roles: ["architect", "developer", "tester", "reviewer", "analyst", "lead", "planner", "writer", "ops", "manager"]
+  integrations: ["router", "capability", "collaboration", "trace"]
+  state: ".ai/context/organization/organization-state.yaml"
+  registry_ref: ".ai/context/team-registry.yaml"    # Team Runtime Registry (not replaced, org-4)
+  cli: ["organization status", "organization trace", "organization validate"]
+  model: "Team -> Role -> Agent"
+  coverage: "30/30 agents bound"
+  boundary: "model/map/query/validate only; never execute/select-agent/modify-prompt; final agent decision by PM + Approval"
+
+# MyTeam Runtime Safety & Production Guard (v1.4.2)
+runtime_safety:
+  root: "platform/runtime-safety/"
+  policy: "platform/runtime-safety/safety-policy.yaml"
+  risk_schema: "platform/runtime-safety/risk-schema.yaml"
+  budget: ["token-budget-schema", "cost-budget-schema", "budget-policy"]
+  limits: ["execution-limit", "retry-limit", "loop-detection", "concurrency-limit"]
+  timeout: "platform/runtime-safety/timeout/timeout-policy.yaml"
+  escalation: "platform/runtime-safety/escalation/human-escalation-policy.yaml"
+  integrations: ["trace", "execution", "action"]
+  state: ".ai/context/runtime-safety/safety-state.yaml"
+  cli: ["safety status", "safety check", "safety budget", "safety violations", "safety validate"]
+  principle: "safe-by-default"
+  states: ["normal", "warning", "blocked", "waiting-human"]
+  boundary: "detect/limit/block/escalate only; never execute/approve; not replace Approval/ExecutionEngine"
+
+# MyTeam Debug & Trace Mode (v1.4.1)
+debug_trace:
+  root: "platform/debug-trace/"
+  schema: "platform/debug-trace/trace-schema.yaml"
+  event_schema: "platform/debug-trace/trace-event-schema.yaml"
+  policy: "platform/debug-trace/trace-policy.yaml"
+  collectors: ["router", "collaboration", "workspace", "execution", "quality"]
+  storage: ".ai/context/debug-trace/trace-index.yaml"
+  cli: ["trace status", "trace show", "trace timeline", "trace validate"]
+  layers: ["router","team","agent","collaboration","workspace","action","approval","execution","quality","artifact","memory","evolution","safety"]  # v1.4.2.1: +safety (13 layers, sync with v1.4.2 trace impl)
+  observe_only: true
+  boundary: "record/query/show/audit only; never execute/repair/schedule; not replace Memory/Observability/Collaboration/ExecutionLedger"
+
+# MyTeam Agent Collaboration Protocol (v1.4)
+collaboration:
+  root: "platform/collaboration/"
+  schema: "platform/collaboration/collaboration-schema.yaml"
+  message_schema: "platform/collaboration/message-schema.yaml"
+  handoff_schema: "platform/collaboration/handoff-schema.yaml"
+  decision_schema: "platform/collaboration/decision-schema.yaml"
+  conflict_schema: "platform/collaboration/conflict-schema.yaml"
+  policy: "platform/collaboration/policies/collaboration-policy.yaml"
+  state: ".ai/context/collaboration/collaboration-state.yaml"
+  cli: ["collaboration status", "collaboration trace", "collaboration conflicts", "collaboration validate"]
+  four_layer: "Collaboration(comm) | Workspace(files) | Memory(cognition) | Execution(run)"
+  chain: "Agent -> Message -> Handoff -> Decision -> Resolution -> Execution"
+  direct_execution: false
+
+# MyTeam Project Workspace & Collaboration (v1.3)
+workspace:
+  root: "platform/workspace/"
+  schema: "platform/workspace/workspace-schema.yaml"
+  policy: "platform/workspace/workspace-policy.yaml"
+  manager: "platform/workspace/workspace-manager.yaml"
+  agent_workspace: "platform/workspace/agents/agent-workspace-schema.yaml"
+  checkpoint: "platform/workspace/snapshots/checkpoint-schema.yaml"
+  change_record: "platform/workspace/changes/change-record-schema.yaml"
+  merge_policy: "platform/workspace/merge/merge-policy.yaml"
+  artifact_link: "platform/workspace/artifacts/artifact-link-schema.yaml"
+  state: ".ai/context/workspace/workspace-state.yaml"
+  cli: ["workspace status", "workspace list", "workspace trace", "workspace validate"]
+  four_layer: "Workspace(env) | Execution(process) | Memory(meta) | Artifact(product)"
+  automatic_merge: false
+  chain: "Agent -> Workspace -> Change -> Review -> Quality -> Merge -> Artifact"
+
+# MyTeam Controlled Execution Engine (v1.2)
+execution_engine:
+  root: "platform/execution-engine/"
+  schema: "platform/execution-engine/engine-schema.yaml"
+  policy: "platform/execution-engine/execution-policy.yaml"
+  executor_registry: "platform/execution-engine/executor-registry.yaml"
+  executors: ["code-executor", "shell-executor", "mcp-executor", "test-executor", "browser-executor"]
+  permission: "platform/execution-engine/permission/execution-permission.yaml"
+  sandbox: "platform/execution-engine/sandbox/sandbox-policy.yaml"
+  queue: "platform/execution-engine/queue/execution-queue.yaml"
+  result: "platform/execution-engine/result/execution-result-schema.yaml"
+  state: ".ai/context/execution-engine/engine-state.yaml"
+  bridge: "plugin/opencode/execution-bridge.ts"
+  cli: ["execution status", "execution trace", "execution validate"]
+  three_layer: "Context(state) | Action(intent) | Execution(record)"
+  auto_execute: false
+  engine_scope: "execute governed-approved requests only (approved action + granted permission)"
+
+# MyTeam Plugin CLI & Developer Experience (v1.1)
+myteam_cli:
+  root: "tools/myteam-cli/"
+  package: "tools/myteam-cli/package.json"
+  entry: "tools/myteam-cli/bin/myteam.mjs"
+  src: "tools/myteam-cli/src/"
+  tests: "tools/myteam-cli/tests/cli-test.ps1"
+  version: "1.1.0"
+  commands: ["init", "status", "doctor", "validate", "upgrade", "rollback"]
+  lifecycle_state: "plugin/opencode/plugin-state.yaml"
+  isolation:
+    modify_opencode: false
+    copy_runtime_files: false
+    auto_install: false
+  cli_scope: "manage / status / validate / migration / rollback (read-only governance)"
+
+# MyTeam OpenCode Plugin Wrapper (v1.0.1)
+plugin:
+  root: "plugin/opencode/"
+  manifest: "plugin/opencode/manifest.yaml"
+  entry: "plugin/opencode/index.ts"
+  loader: "plugin/opencode/loader.ts"
+  bridge: "plugin/opencode/bridge.ts"
+  config: "plugin/opencode/myteam-plugin.yaml"
+  isolation_test: "plugin/opencode/tests/isolation-test.ps1"
+  host_runtime: "OpenCode"
+  role: "Independent Plugin (read-in-place, no host pollution)"
+  copy_files: false
+  host_config_write: false
+  reversible: true
+
+# Runtime Adapter & Deployment Governance (v1.0)
+runtime_adapter:
+  root: "platform/runtime-adapter/"
+  adapter_schema: "platform/runtime-adapter/adapter-schema.yaml"
+  opencode_adapter: "platform/runtime-adapter/opencode-adapter.yaml"
+  agent_binding: "platform/runtime-adapter/agent-binding.yaml"
+  mcp_binding: "platform/runtime-adapter/mcp-binding.yaml"
+  skill_binding: "platform/runtime-adapter/skill-binding.yaml"
+  deployment_manifest: "platform/runtime-adapter/deployment-manifest.yaml"
+  migration_plan: "platform/runtime-adapter/migration-plan.yaml"
+  rollback_plan: "platform/runtime-adapter/rollback-plan.yaml"
+  sync_state: "platform/runtime-adapter/sync-state.yaml"
+  source_of_truth: "MyTeam"
+  runtime_target: "C:/Users/Administrator/.config/opencode/"
+  deploy_flow: "Package -> Migration -> Approval -> Install"
+  auto_install: false
+
+# Explicitly out of scope this stage
+not_implemented:
+  - "auto-install"
+  - "auto-upgrade"
+  - "capability-selection"
+  - "agent-auto-replace"
+  # Model Routing Recommendation Layer (v0.6.8) — 本层只推荐、不执行：
+  - "auto-model-switching"
+  - "auto-model-selection"
+  - "auto-execution"
+  - "concrete-model-binding"
+  # Model Routing Feedback Loop (v0.6.9) — 反馈只记录/统计，不自动调整策略：
+  - "auto-routing-policy-adjustment"
+  - "feedback-driven-auto-tuning"
+  # Runtime Integration Contract (v0.7) — 只定义 / 只记录 / 只检查，不执行：
+  - "auto-contract-mutation"
+  - "auto-runtime-schedule"
+  # Runtime Action Proposal & Approval (v0.8) — 只提案 / 只记录 / 只检查，不执行：
+  - "auto-action-execution"
+  - "auto-approval"
+  - "auto-approval-bypass"
+  - "auto-action-mutation"
+  # Runtime Controlled Execution Interface (v0.9) — 只定义接口 / 只记录 / 只检查，不执行：
+  - "real-execution-engine"
+  - "auto-task-advance"
+  - "auto-action-generation"
+  - "scheduler-decision-mutation"
+  # OpenCode Runtime Adapter & Deployment Governance (v1.0) — 只映射 / 只检查 / 只生成计划，不自动部署：
+  - "auto-install"
+  - "auto-upgrade"
+  - "auto-overwrite"
+  - "auto-delete-old-version"
+  - "runtime-reverse-mutation"
+  - "auto-drift-repair"
+  # MyTeam OpenCode Plugin Wrapper (v1.0.1) — 就地只读，宿主隔离：
+  - "modify-opencode-core"
+  - "bulk-copy-to-config"
+  - "pollute-global-env"
+  - "host-config-write"
+  # MyTeam Plugin CLI (v1.1) — 只管理 状态/验证/迁移/回滚，不安装不执行：
+  - "cli-auto-install"
+  - "cli-auto-execute-task"
+  - "cli-auto-upgrade-production"
+  - "cli-modify-opencode"
+  # MyTeam Controlled Execution Engine (v1.2) — 只执行治理通过的请求：
+  - "auto-execute-unapproved-action"
+  - "agent-direct-executor-call"
+  - "auto-executor-selection"
+  - "auto-permission-escalation"
+  - "auto-sandbox-policy-mutation"
+  # MyTeam Project Workspace & Collaboration (v1.3) — 隔离/变化/checkpoint/合并治理：
+  - "automatic-merge"
+  - "agent-bypass-workspace"
+  - "agent-modify-other-workspace"
+  - "auto-delete-checkpoint"
+  - "workspace-as-memory"
+  - "workspace-as-artifact"
+  - "auto-permission-change"
+  # MyTeam Agent Collaboration Protocol (v1.4) — 只通信/交接/记录，不自动执行：
+  - "agent-auto-call-agent"
+  - "auto-conflict-resolve"
+  - "auto-change-task-goal"
+  - "collaboration-direct-execution"
+  - "collaboration-as-memory"
+  - "collaboration-as-workspace"
+  # MyTeam Debug & Trace Mode (v1.4.1) — 只记录/查询/展示/审计，不执行：
+  - "trace-auto-execute"
+  - "trace-auto-repair"
+  - "trace-auto-schedule"
+  - "trace-modify-task-state"
+  - "trace-as-memory"
+  - "trace-as-observability"
+  # MyTeam Runtime Safety & Production Guard (v1.4.2) — 只检测/限制/阻断/升级，不执行：
+  - "auto-raise-permission"
+  - "auto-expand-budget"
+  - "auto-modify-safety-policy"
+  - "auto-skip-human-confirmation"
+  - "safety-as-approval"
+  - "safety-as-execution-engine"

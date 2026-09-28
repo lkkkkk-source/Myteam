@@ -1,0 +1,10 @@
+# Rollback Instance RB-0001 — v0.9
+# 执行失败回滚记录（复用 Recovery checkpoint，不重设计恢复系统）。
+# 字段集见 platform/runtime-execution/rollback/rollback-schema.yaml。
+version: 1
+rollback_id: "RB-0001"
+execution_ref: "EX-0003"                  # 失败的 Execution
+strategy: "workspace_restore"
+checkpoint_ref: ".ai/context/recovery/checkpoints/refund-feature-checkpoint.yaml"  # 复用 Recovery
+status: "restored"
+note: "EX-0003 failed → workspace_restore 复用 Recovery checkpoint 回滚 → restored（本阶段仅登记，不实现真实回滚）"

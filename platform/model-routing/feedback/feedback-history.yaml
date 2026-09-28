@@ -1,0 +1,112 @@
+# Routing Feedback History (v0.6.9)
+# -----------------------------------------------------------------------------
+# Model Routing Feedback Loop：实际反馈记录（只记录 / 只汇总，不自动改策略）。
+#
+# 产生方式：
+#   - 每次「模型推荐」被人工执行并产出结果后，记录实际结果 + 质量反馈。
+#   - 来源：任务执行输出 / Observability / Capability Analytics / 人工复核。
+#
+# 本文件只记录；策略调整走 improvement proposal（proposals/），不在此直接改。
+# -----------------------------------------------------------------------------
+
+feedback_history_version: 1
+layer: model-routing-feedback
+stage: v0.6.9
+owner: engops-lead
+updated_at: "2026-09-21"
+
+records:
+
+  - feedback_id: "FH-069-001"
+    task_id: "T-068-001"
+    recommended_class: "high-reasoning"
+    actual_used_class: "high-reasoning"
+    outcome: "success"
+    quality_feedback:
+      outcome_quality: "high"
+      match_verdict: "good-fit"
+      issue_description: ""
+    needed_capability: []
+    human_confirm: false
+    recorded_by: "engops-lead"
+    recorded_at: "2026-09-21"
+    reference: "platform/model-routing/history/T-068-001-architecture-case.yaml"
+
+  - feedback_id: "FH-069-002"
+    task_id: "T-068-003"
+    recommended_class: "fast-coding"
+    actual_used_class: "fast-coding"
+    outcome: "success"
+    quality_feedback:
+      outcome_quality: "high"
+      match_verdict: "good-fit"
+      issue_description: ""
+    needed_capability: []
+    human_confirm: false
+    recorded_by: "engops-lead"
+    recorded_at: "2026-09-21"
+    reference: "platform/model-routing/history/T-068-003-fast-coding-case.yaml"
+
+  - feedback_id: "FH-069-003"
+    task_id: "T-068-002"
+    recommended_class: "long-context"
+    actual_used_class: "long-context"
+    outcome: "success"
+    quality_feedback:
+      outcome_quality: "medium"
+      match_verdict: "over-provisioned"     # 长上下文档位对本任务偏强
+      issue_description: "研究任务实际只需 medium context，档位成本偏高；可考虑降档"
+    needed_capability: []
+    human_confirm: false
+    recorded_by: "engops-lead"
+    recorded_at: "2026-09-21"
+    reference: "platform/model-routing/history/T-068-002-research-case.yaml"
+
+  - feedback_id: "FH-069-004"
+    task_id: "T-068-004"
+    recommended_class: "general"
+    actual_used_class: "general"
+    outcome: "failure"                        # 通用档位难以满足多模态内容生成
+    quality_feedback:
+      outcome_quality: "low"
+      match_verdict: "under-provisioned"
+      issue_description: "content 类任务实际需要更强生成能力（high-reasoning 或专用档位），general 档位不足"
+    needed_capability: ["generation", "long-context"]
+    human_confirm: false
+    recorded_by: "engops-lead"
+    recorded_at: "2026-09-21"
+    reference: "platform/model-routing/history/T-068-004-general-case.yaml"
+
+  - feedback_id: "FH-069-005"
+    task_id: "T-068-005"
+    recommended_class: "high-reasoning"
+    actual_used_class: "high-reasoning"
+    outcome: "pending-human-confirmation"     # 高风险：确认前不视为有效反馈
+    quality_feedback:
+      outcome_quality: ""
+      match_verdict: ""
+      issue_description: "高风险 release，等待人工确认后才能判定有效"
+    needed_capability: []
+    human_confirm: true
+    recorded_by: "engops-lead"
+    recorded_at: "2026-09-21"
+    reference: "platform/model-routing/history/T-068-005-high-risk-case.yaml"
+
+# ===================== 汇总（只记录，不自动调策略）=====================
+summary:
+  total_feedback: 5
+  valid_feedback: 4            # 排除 1 条 pending-human-confirmation
+  outcome_counts:
+    success: 3
+    partial: 0
+    failure: 1
+    blocked: 0
+    pending-human-confirmation: 1
+  match_verdict_counts:
+    good-fit: 2
+    over-provisioned: 1
+    under-provisioned: 1
+    mismatch: 0
+    unassessed: 1              # FH-069-005 高风险未判定
+  flags_for_proposal: 2        # FH-069-003 over-provisioned + FH-069-004 under-provisioned
+  auto_adjust: false           # 本层绝不自动调整策略

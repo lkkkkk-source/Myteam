@@ -1,0 +1,43 @@
+# Team: research — v1.4.3
+# Agent Organization Model：Team -> Role -> Agent
+# 引用 team-registry（Runtime Registry）id="research"，不替代（org-4）。
+version: 1
+layer: "organization-team-instance"
+stage: "v1.4.3"
+
+team_id: "research"
+name: "Research Team"
+lead: "research-lead"
+registry_ref: ".ai/context/team-registry.yaml#research"
+domain: "research"
+
+roles:
+  - "lead"
+  - "analyst"
+  - "writer"
+
+agents:
+  - "research-lead"     # lead
+  - "research-analyst"  # analyst
+  - "literature-agent"  # analyst
+  - "experiment-agent"  # analyst
+  - "innovation-agent"  # analyst
+  - "paper-writer"      # writer
+
+capabilities:
+  - "literature-search"
+  - "statistical-analysis"
+  - "experiment-design"
+  - "academic-writing"
+
+workflows:
+  - "research-paper"
+  - "literature-review"
+  - "experiment-run"
+
+quality_rules:
+  - "evidence-based"
+  - "reproducibility"
+  - "statistical-significance"
+
+status: "active"

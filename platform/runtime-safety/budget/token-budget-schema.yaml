@@ -1,0 +1,30 @@
+# Token Budget Schema — v1.4.2
+version: 1
+layer: "runtime-safety-token-budget"
+stage: "v1.4.2"
+owner: "engops-lead"
+
+token_budget:
+  - field: "task_id"
+    type: "string"
+    required: true
+  - field: "model_class"
+    type: "string"
+    required: true            # 对齐 model-registry（high-reasoning/fast-coding/...）
+  - field: "token_limit"
+    type: "int"
+    required: true
+  - field: "used"
+    type: "int"
+    required: true
+  - field: "remaining"
+    type: "int"
+    required: true
+  - field: "status"
+    type: "string"
+    required: true            # normal / warning / waiting-human
+
+rules:
+  - "used > token_limit → status=waiting-human（sf-1）"
+  - "禁止自动增加 token_limit（sf-3）"
+  - "只记录 + 阻断，不执行"

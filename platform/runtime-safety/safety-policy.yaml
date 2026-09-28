@@ -1,0 +1,72 @@
+# =====================================================================
+# Runtime Safety Policy — v1.4.2
+# =====================================================================
+# 目标：为 MyTeam Runtime 增加生产安全治理：资源限制 / 成本控制 / 超时 /
+#       无限循环保护 / 高风险人工确认。
+#
+# Safety Layer 只【限制风险】：不改 Router / Agent Selection / Model Routing /
+#   Execution Policy / Quality Gate；不替代 Approval / Execution Engine。
+#
+# 阶段：v1.4.2 · MyTeam Runtime Safety & Production Guard Layer
+# 基线：Agent=30 · MCP=5 · Skill=26 · Workflow=8（不新增 / 不删除 / 不改核心行为）
+# =====================================================================
+
+version: 1
+layer: "runtime-safety"
+stage: "v1.4.2"
+principle: "safe-by-default"
+status: "guarding"
+schema_for: "platform/runtime-safety/**/*.yaml + .ai/context/runtime-safety/*.yaml"
+
+depends_on:
+  - "v1.2-execution-engine"      # execution 前读 safety status
+  - "v0.8-action-proposal"       # action 增 safety_check_ref
+  - "v1.4.1-debug-trace"         # safety decision 进 trace
+  - "v0.3.3-recovery"            # timeout/失败连 Recovery
+
+# ---------------------------------------------------------------------
+# 一、验收不变量（Safety 铁律）
+# ---------------------------------------------------------------------
+invariants:
+  - "sf-1: safe-by-default；未知 / 超限一律趋于保守（warning/blocked/waiting-human）"
+  - "sf-2: Safety 只检测 / 限制 / 阻断 / 升级人工确认；不执行 / 不批准"
+  - "sf-3: 不自动提高权限 / 不自动扩大预算 / 不自动修改安全策略 / 不自动跳过人工确认"
+  - "sf-4: Safety ≠ Approval ≠ Execution Engine（不替代）；不修改 Agent 行为"
+  - "sf-5: Execution Engine 执行前必须读取 safety status（allowed/warning/blocked/human_required）"
+  - "sf-6: critical action 必须 human confirmation（不自动放行）"
+  - "sf-7: 每次 safety decision 生成 trace event（layer=safety）"
+
+# ---------------------------------------------------------------------
+# 二、安全状态机
+# ---------------------------------------------------------------------
+states:
+  - "normal"
+  - "warning"
+  - "blocked"
+  - "waiting-human"
+
+# safety status（供 Execution Engine 读取）
+execution_gate_status:
+  - "allowed"        # normal → 允许（仍需 Approval）
+  - "warning"        # 警告，记录但可继续（视 policy）
+  - "blocked"        # 阻断（超限 / loop / timeout）
+  - "human_required" # 必须人工确认（critical / budget exceeded / repeated failure）
+
+# ---------------------------------------------------------------------
+# 三、禁止字段（出现即 Safety 违规 Critical）
+# ---------------------------------------------------------------------
+forbidden_fields:
+  - "auto_override"
+  - "auto_retry_forever"
+  - "auto_escalate_permission"
+  - "auto_expand_budget"
+  note: "safety / budget / limit 记录不得出现自动覆盖 / 无限重试 / 自动提权 / 自动扩预算字段"
+
+not_implemented:
+  - "auto-raise-permission"
+  - "auto-expand-budget"
+  - "auto-modify-safety-policy"
+  - "auto-skip-human-confirmation"
+  - "safety-as-approval"
+  - "safety-as-execution-engine"
+  - "safety-modify-agent-behavior"

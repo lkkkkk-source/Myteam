@@ -1,0 +1,32 @@
+# === Dependencies ===
+node_modules/
+
+# === Build output ===
+dist/
+build/
+
+# === Runtime scratch / team workspace ===
+.team/
+
+# === Logs ===
+*.log
+
+# === Local environment / secrets ===
+.env
+.env.*
+opencode_config.json
+opencode-global/opencode.json
+source/opencode_source.json
+opencode-global/backup/
+
+# === Editor / IDE ===
+.vscode/
+.idea/
+
+# === Host config ===
+.config/opencode/
+
+# === Third-party read-only reference clone (not a submodule) ===
+external/agency-agents/
+
+# === Keep (do NOT ignore): plugin/opencode/, runtime/, evolution/, tests/ ===

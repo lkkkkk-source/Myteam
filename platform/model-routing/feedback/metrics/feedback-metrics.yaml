@@ -1,0 +1,60 @@
+# Routing Feedback Metrics (v0.6.9)
+# -----------------------------------------------------------------------------
+# Model Routing Feedback Loop：反馈聚合指标。
+#
+# 由 feedback-history.yaml 汇总而来；供 analytics 分析 + proposal 生成依据。
+# 只做指标统计，不据此自动改进策略（改进走 improvement proposal，人工审核）。
+# -----------------------------------------------------------------------------
+
+feedback_metrics_version: 1
+layer: model-routing-feedback
+stage: v0.6.9
+owner: engops-lead
+updated_at: "2026-09-21"
+source: "platform/model-routing/feedback/feedback-history.yaml"
+
+# ===================== 核心指标 =====================
+metrics:
+  total_feedback: 5
+  valid_feedback: 4                       # 剔除 pending-human-confirmation
+  success_rate: 0.75                       # 3/4 有效反馈成功
+  quality_pass_rate: 0.75                  # 3/4 有效反馈 outcome_quality in (high, medium)
+  over_provision_rate: 0.25                # 1/4 有效反馈档位偏强（成本浪费）
+  under_provision_rate: 0.25               # 1/4 有效反馈档位不足（能力缺口）
+  good_fit_rate: 0.50                      # 2/4 有效反馈档位匹配良好
+  proposal_triggered: 2                    # over/under-provisioned 各 1 条 → 触发提案
+
+# ===================== 按档位命中情况 =====================
+by_class:
+  - model_class: "high-reasoning"
+    used: 1
+    success: 1
+    over_provisioned: 0
+    under_provisioned: 0
+  - model_class: "fast-coding"
+    used: 1
+    success: 1
+    over_provisioned: 0
+    under_provisioned: 0
+  - model_class: "long-context"
+    used: 1
+    success: 1
+    over_provisioned: 1      # FH-069-003
+    under_provisioned: 0
+  - model_class: "general"
+    used: 1
+    success: 0
+    over_provisioned: 0
+    under_provisioned: 1     # FH-069-004
+
+# ===================== 分析提示（只建议，不自动执行）=====================
+insights:
+  - "long-context 档位在 T-068-002 偏强（over-provisioned）→ 建议评估 research 类任务默认降档"
+  - "general 档位在 T-068-004（content 类）不足（under-provisioned）→ 建议 content 类任务改用更强档位"
+  - "high-reasoning / fast-coding 命中良好，无调整建议"
+  - "以上仅为数据分析提示；是否调整以 improvement proposal 人工审核为准"
+
+# ===================== 边界 =====================
+constraints:
+  - "metrics 只做统计，不自动改变 routing-policy / model-registry"
+  - "insights 为候选方向，落地必须走 proposal + engops-lead 审核"

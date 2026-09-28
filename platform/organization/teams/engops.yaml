@@ -1,0 +1,41 @@
+# Team: engops — v1.4.3
+# Agent Organization Model：Team -> Role -> Agent
+# 引用 team-registry（Runtime Registry）id="engops"，不替代（org-4）。
+version: 1
+layer: "organization-team-instance"
+stage: "v1.4.3"
+
+team_id: "engops"
+name: "EngOps Team"
+lead: "engops-lead"
+registry_ref: ".ai/context/team-registry.yaml#engops"
+domain: "ops"
+
+roles:
+  - "lead"
+  - "reviewer"
+  - "ops"
+
+agents:
+  - "engops-lead"          # lead
+  - "project-health-agent" # reviewer
+  - "git-manager"          # ops
+  - "release-agent"        # ops
+  - "changelog-agent"      # ops
+
+capabilities:
+  - "git-workflow"
+  - "build-packaging"
+  - "migration"
+
+workflows:
+  - "quick-fix"
+  - "release-build"
+  - "migration"
+
+quality_rules:
+  - "source-runtime-consistency"
+  - "rollback-ready"
+  - "observability"
+
+status: "active"

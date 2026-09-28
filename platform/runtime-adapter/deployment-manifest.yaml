@@ -1,0 +1,73 @@
+# =====================================================================
+# Deployment Manifest — v1.0
+# =====================================================================
+# 记录一次部署的完整内容（哪些资产 / 什么版本 / 批准状态）。
+# 只登记 + 审批载体，不自动安装。
+# 阶段：v1.0 · OpenCode Runtime Adapter & Deployment Governance Layer
+# =====================================================================
+
+version: 1
+layer: "runtime-adapter-deployment-manifest"
+stage: "v1.0"
+owner: "engops-lead"
+
+# ---------------------------------------------------------------------
+# 部署记录字段
+# ---------------------------------------------------------------------
+deployment_entry_schema:
+  - field: "deployment_id"
+    type: "string"
+    required: true            # 形如 DEP-0001
+  - field: "source_version"
+    type: "string"
+    required: true            # MyTeam source 版本（对齐 release_history）
+  - field: "target_runtime"
+    type: "string"
+    required: true
+  - field: "assets"
+    type: "list"
+    required: true            # agent-binding / mcp-binding / skill-binding / workflow / docs / config 引用
+  - field: "approval"
+    type: "map"
+    required: true            # approver / approved / approved_at
+  - field: "timestamp"
+    type: "string"
+    required: true
+  - field: "status"
+    type: "enum"
+    values: [ "draft", "reviewing", "approved", "installed", "failed", "rolled_back" ]
+    required: true
+
+# ---------------------------------------------------------------------
+# 当前部署记录
+# ---------------------------------------------------------------------
+deployments:
+  # DEP-0001: v1.0 全量部署草案（未安装，待审批 → Case4 演示 approval=false runtime 不变）
+  - deployment_id: "DEP-0001"
+    source_version: "v1.0"
+    target_runtime: "C:/Users/Administrator/.config/opencode/"
+    assets:
+      - { kind: "agent", ref: "platform/runtime-adapter/agent-binding.yaml", count: 30 }
+      - { kind: "mcp", ref: "platform/runtime-adapter/mcp-binding.yaml", count: 5 }
+      - { kind: "skill", ref: "platform/runtime-adapter/skill-binding.yaml", count: 26 }
+      - { kind: "workflow", ref: "source/workflows/", count: 8 }
+      - { kind: "docs", ref: "source/docs/", count: 24 }
+      - { kind: "config", ref: "source/opencode_source.json#agent", count: 1 }
+    approval:
+      approver: null
+      approved: false           # 未批准 → runtime 不得变更（Case4 不变量）
+      approved_at: null
+    timestamp: "2026-09-21T17:00:00"
+    status: "draft"             # 仅草案，未安装
+
+baseline_check:
+  agent: 30
+  mcp: 5
+  skill: 26
+  workflow: 8
+  note: "部署前必须校验基线；不达标不得进入 approved"
+
+constraints:
+  - "status=approved 才允许（人工）进入 install；draft/reviewing 不得改 runtime"
+  - "approval.approved=false → runtime 保持不变（Case4）"
+  - "assets 引用的 binding 文件必须存在且计数与基线一致"

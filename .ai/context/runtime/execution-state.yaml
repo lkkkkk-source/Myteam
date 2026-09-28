@@ -1,0 +1,58 @@
+version: 1
+task_id: "refund-feature"
+team: "java"
+updated_at: "2026-09-20T12:45:00"
+owner: "java-lead"
+
+steps:
+  - id: step-1
+    agent: "java-architect"
+    status: "completed"
+    started_at: "2026-09-20T11:55:00"
+    finished_at: "2026-09-20T11:58:00"
+    output: ".ai/artifacts/architecture/refund-feature-architecture.md"
+
+  - id: step-2
+    agent: "java-planner"
+    status: "completed"
+    started_at: "2026-09-20T12:00:00"
+    finished_at: "2026-09-20T12:05:00"
+    output: ".ai/tasks/refund-feature/task-plan.yaml#step-3..6"
+
+  - id: step-3
+    agent: "java-developer"
+    status: "failed"
+    started_at: "2026-09-20T12:30:00"
+    finished_at: "2026-09-20T12:45:00"
+    output: null
+    error: "errors/refund-feature-step-3.log"
+
+  - id: step-4
+    agent: "java-developer"
+    status: "pending"
+    parallel_group: "A"
+
+  - id: step-5
+    agent: "java-reviewer"
+    status: "pending"
+    depends_on: ["step-3", "step-4"]
+
+  - id: step-6
+    agent: "java-tester"
+    status: "pending"
+    depends_on: ["step-5"]
+
+agent_status:
+  - agent: "java-architect"
+    status: "completed"
+  - agent: "java-developer"
+    status: "failed"
+    since: "2026-09-20T12:45:00"
+
+progress:
+  total: 6
+  completed: 2
+  running: 0
+  failed: 1
+  pending: 3
+  next_step: "step-3（重试）"

@@ -1,0 +1,35 @@
+# Case3: 简单代码修改 → fast-coding (v0.6.8)
+# -----------------------------------------------------------------------------
+# Model Recommendation flow demo: low complexity 常规实现 → fast-coding 档位
+# 结果：PASS（推荐正确）
+# -----------------------------------------------------------------------------
+
+case: 3
+title: "简单代码修改 → fast-coding"
+
+input:
+  task_id: "T-068-003"
+  task_type: "feature"
+  team: "java"
+  agent: "java-developer"
+  agent_role: "execution"
+  complexity: "low"
+  risk_level: "normal"
+  context_size: "medium"
+  required_capabilities: ["routine-coding", "test-writing"]
+  historical_performance:
+    first_pass_rate: 0.8
+    quality_pass_rate: 0.9
+
+expected:
+  model_class: "fast-coding"
+  fallback: "general"
+  human_confirm: false
+
+output:
+  model_class: "fast-coding"
+  fallback: "general"
+  human_confirm: false
+  reasoning: "feature + low complexity + execution → fast-coding 档位（MR-5）"
+
+result: PASS

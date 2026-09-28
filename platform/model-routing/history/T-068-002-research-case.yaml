@@ -1,0 +1,35 @@
+# Case2: 研究论文分析 (v0.6.8)
+# -----------------------------------------------------------------------------
+# Model Recommendation flow demo: 研究 / 大上下文 → long-context 档位
+# 结果：PASS（推荐正确）
+# -----------------------------------------------------------------------------
+
+case: 2
+title: "研究论文分析 → long-context"
+
+input:
+  task_id: "T-068-002"
+  task_type: "research"
+  team: "research"
+  agent: "research-analyst"
+  agent_role: "execution"
+  complexity: "medium"
+  risk_level: "normal"
+  context_size: "large"
+  required_capabilities: ["research-analysis", "literature-review", "synthesis"]
+  historical_performance:
+    first_pass_rate: 0.9
+    quality_pass_rate: 0.9
+
+expected:
+  model_class: "long-context"
+  fallback: "high-reasoning"
+  human_confirm: false
+
+output:
+  model_class: "long-context"
+  fallback: "high-reasoning"
+  human_confirm: false
+  reasoning: "research + large context + research-analysis → long-context 档位（MR-3 / MR-4）"
+
+result: PASS

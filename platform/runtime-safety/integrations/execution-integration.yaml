@@ -1,0 +1,20 @@
+# Safety → Execution Engine Integration — v1.4.2
+version: 1
+layer: "runtime-safety-execution-integration"
+stage: "v1.4.2"
+owner: "engops-lead"
+
+# Execution Engine 执行前必须读取 safety status（sf-5）
+gate:
+  read_before_execution: true
+  status_values: [ "allowed", "warning", "blocked", "human_required" ]
+  rules:
+    - "allowed → 允许进入执行（仍需 action approved + permission granted，v1.2 ee-1/ee-2）"
+    - "warning → 记录，视 policy 继续（不自动放宽）"
+    - "blocked → Execution Engine 拒绝执行"
+    - "human_required → 必须人工确认后才可（不自动放行）"
+
+boundaries:
+  - "Safety 不执行 / 不批准（sf-2）：只提供 gate status 供 Execution Engine 读取"
+  - "Safety ≠ Execution Engine（sf-4）"
+  - "Execution Engine 仍独立校验 ee-1（approved action）+ ee-2（permission）"

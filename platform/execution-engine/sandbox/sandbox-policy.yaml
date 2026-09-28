@@ -1,0 +1,43 @@
+# =====================================================================
+# Sandbox Policy — v1.2
+# =====================================================================
+# 定义执行隔离级别。代码修改默认 workspace-clone；危险操作 container / human confirmation。
+# 本阶段定义策略 + 记录；隔离实体的真实创建在未来阶段。
+# =====================================================================
+
+version: 1
+layer: "execution-engine-sandbox"
+stage: "v1.2"
+owner: "engops-lead"
+
+# 隔离级别
+levels:
+  - id: "none"
+    desc: "无隔离（仅只读 / 探查类，低风险）"
+  - id: "workspace-clone"
+    desc: "克隆工作区后执行（代码修改默认）"
+  - id: "temp-env"
+    desc: "临时环境（测试 / MCP 调用）"
+  - id: "container"
+    desc: "容器隔离（危险操作：shell / browser）"
+
+# action → 默认 sandbox
+defaults:
+  - action_class: "code_change"        # create/modify/refactor
+    sandbox: "workspace-clone"
+  - action_class: "test_run"
+    sandbox: "temp-env"
+  - action_class: "mcp_call"
+    sandbox: "temp-env"
+  - action_class: "shell_command"
+    sandbox: "container"
+    requires_human_confirmation: true
+  - action_class: "browser_action"
+    sandbox: "container"
+    requires_human_confirmation: true
+
+rules:
+  - "代码修改默认 workspace-clone"
+  - "危险操作（shell / browser）走 container + human confirmation"
+  - "Engine 不自动修改 sandbox policy（ee not_implemented: auto-sandbox-policy-mutation）"
+  - "sandbox 白名单 allowed_operations 由具体 sandbox 实例声明"

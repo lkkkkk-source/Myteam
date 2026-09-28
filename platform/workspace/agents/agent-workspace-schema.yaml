@@ -1,0 +1,60 @@
+# =====================================================================
+# Agent Workspace Schema — v1.3
+# =====================================================================
+# 定义每个 Agent 在 workspace 中的权限与作用域。
+# reviewer 禁止改代码；developer 可改源码/测试。
+# =====================================================================
+
+version: 1
+layer: "workspace-agent"
+stage: "v1.3"
+owner: "engops-lead"
+
+# 记录字段
+agent_workspace:
+  - field: "agent"
+    type: "string"
+    required: true
+  - field: "workspace_id"
+    type: "string"
+    required: true
+  - field: "permissions"
+    type: "list"
+    required: true            # read / source_modify / test_create / review / merge_request ...
+  - field: "scope"
+    type: "string"
+    required: true            # 作用域路径（限定可操作范围）
+  - field: "changes_allowed"
+    type: "list"
+    required: true            # 允许的 operation（create/modify/refactor/none）
+
+# ---------------------------------------------------------------------
+# 角色权限矩阵（对齐 30 Agent 角色）
+# ---------------------------------------------------------------------
+roles:
+  - agent: "java-developer"
+    permissions: [ "source_modify", "test_create", "read" ]
+    scope: "src/**"
+    changes_allowed: [ "create_file", "modify_file", "refactor_code" ]
+  - agent: "java-tester"
+    permissions: [ "test_create", "run_test", "read" ]
+    scope: "src/test/**"
+    changes_allowed: [ "create_file", "run_test" ]
+  - agent: "java-reviewer"
+    permissions: [ "read", "review" ]   # reviewer 只读 + 评审
+    scope: "src/**"
+    changes_allowed: [ "none" ]         # 禁止改代码
+  - agent: "java-architect"
+    permissions: [ "read", "review" ]
+    scope: "**"
+    changes_allowed: [ "none" ]
+  - agent: "writing-agent"
+    permissions: [ "source_modify", "read" ]
+    scope: "docs/**"
+    changes_allowed: [ "create_file", "modify_file" ]
+
+rules:
+  - "reviewer / architect 只读 + review，changes_allowed=none（禁止改代码）"
+  - "developer / tester 可在其 scope 内改；不得越 scope"
+  - "权限人工维护，不自动提权 / 不自动改权限（ws-7）"
+  - "Agent 不得操作其他 Agent workspace（ws-2）"

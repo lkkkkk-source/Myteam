@@ -1,0 +1,51 @@
+# Risk Schema — v1.4.2
+# 定义 safety 风险等级与判定输入。
+version: 1
+layer: "runtime-safety-risk"
+stage: "v1.4.2"
+owner: "engops-lead"
+
+risk_levels:
+  - level: "low"
+    action: "normal（allowed）"
+  - level: "medium"
+    action: "warning（记录，视 policy 继续）"
+  - level: "high"
+    action: "blocked 或 human_required（依 escalation-policy）"
+  - level: "critical"
+    action: "human_required（必须人工确认，不自动放行）"
+
+# 风险判定输入
+risk_inputs:
+  - "budget（token / cost 超限）"
+  - "execution limit（timeout / retry / parallel 超限）"
+  - "loop detection（重复失败 / 重复 handoff）"
+  - "action type（production deploy / db schema change / security-sensitive）"
+
+# 安全检查记录字段
+safety_record:
+  - field: "safety_id"
+    type: "string"
+    required: true            # SF-NNNN
+  - field: "task_id"
+    type: "string"
+    required: true
+  - field: "check_type"
+    type: "string"
+    required: true            # budget / limit / loop / timeout / escalation
+  - field: "risk_level"
+    type: "string"
+    required: true
+  - field: "status"
+    type: "string"
+    required: true            # normal / warning / blocked / waiting-human
+  - field: "reference"
+    type: "string"
+    required: false
+  - field: "trace_ref"
+    type: "string"
+    required: false
+
+rules:
+  - "critical → human_required（sf-6）"
+  - "safety record 只登记判定，不执行动作（sf-2）"

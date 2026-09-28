@@ -1,0 +1,16 @@
+# Trace Collector: router — v1.4.1
+version: 1
+layer: "debug-trace-collector"
+collector: "router"
+stage: "v1.4.1"
+emits:
+  - event_type: "classification_completed"
+    trace_layer: "router"
+    reference_pattern: ".ai/context/router/classification/{task}.yaml"
+  - event_type: "routing_completed"
+    trace_layer: "team"
+    reference_pattern: ".ai/context/router/routes/{task}-route.yaml"
+  - event_type: "planning_completed"
+    trace_layer: "team"
+    reference_pattern: ".ai/context/router/plans/{task}-project-plan.yaml"
+note: "只登记 pointer；classification / route / plan 内容留在各自文件"

@@ -1,0 +1,36 @@
+# =====================================================================
+# Execution Policy — v1.2
+# =====================================================================
+# 定义按 risk 的执行治理：谁能授权一次执行进入 running。
+# 禁止自动提升权限。
+# =====================================================================
+
+version: 1
+layer: "execution-engine-policy"
+stage: "v1.2"
+owner: "engops-lead"
+
+# risk → 执行授权要求（与 action-policy / permission-policy 对齐）
+policy:
+  - risk: "low"
+    rule: "允许 approved execution（action approved + permission granted 即可 running）"
+    authorizer: "system (record)"
+  - risk: "medium"
+    rule: "需要 PM approval（project-manager-agent 批准执行）"
+    authorizer: "project-manager-agent"
+  - risk: "high"
+    rule: "需要 human approval（显式人工批准执行）"
+    authorizer: "human"
+  - risk: "critical"
+    rule: "禁止自动执行；只生成 proposal（不进入 Execution Engine）"
+    authorizer: "human (proposal-only)"
+    execute: false
+
+# ---------------------------------------------------------------------
+# 约束
+# ---------------------------------------------------------------------
+constraints:
+  - "禁止自动提升权限（low 不得自动升为可执行 high/critical 动作）"
+  - "critical 动作不进入执行引擎，只生成 proposal"
+  - "permission 授权与 action approval 独立；两者都满足才 running（ee-2）"
+  - "Engine 依 policy 判定授权，不自动选择 executor（ee-4）"

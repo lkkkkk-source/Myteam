@@ -1,0 +1,30 @@
+# Action Proposal Template — v0.8
+# 用于创建新的 Action Proposal 记录（engops-lead / PM 人工创建，非自动）。
+# 复制本文件到 platform/runtime-action/records/{proposal_id}.yaml 后填写。
+# 字段集见 action-proposal-schema.yaml；风险 / 批准模型见 action-policy.yaml。
+
+version: 1
+proposal_id: "AP-0000"                 # 形如 AP-0001
+title: "<简要动作标题>"
+task_id: "<task_id，须与 runtime-context.yaml 对齐>"
+stage: v0.8
+layer: "runtime-action-proposal"
+owner: "engops-lead"
+created_at: "YYYY-MM-DD"
+
+action:
+  action_type: "<run-command | trigger-workflow | write-file | deploy-artifact | release-publish | config-change>"
+  target: "<动作对象>"
+  detail: "<可选说明>"
+
+risk:
+  level: "<low | medium | high，由 action_type default-risk 决定，可人工降/升档>"
+  approval_model: "<由 risk 派生：auto-approve / agent-approval / human-approval>"
+  approver: "<medium=project-manager-agent；high=human；low=null>"
+
+status: "pending"                      # draft / pending / approved / rejected / cancelled
+
+decision:                              # 批准后填写
+  approved_by: null
+  approved_at: null
+  decision_note: null

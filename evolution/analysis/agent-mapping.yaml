@@ -1,0 +1,105 @@
+# Agent Mapping — external agency-agents → internal MyTeam agents
+
+> 只做映射与研究，不合并、不替换、不新增 Agent。内部基线保持 Agent=30。
+
+## Mapping Rationale
+- 外部 agent 按**能力域**映射到内部已有 Agent，而非一一对应（外部 264，内部 30）。
+- 映射类型：
+  - `matched` — 能力高度重合，内部已有等价 Agent，可参考外部提升专业度
+  - `partial` — 部分能力重合，内部 Agent 可借鉴其中某维度
+  - `no-internal` — 内部无对应，仅记录参考（不新增 Agent）
+
+## Java / Engineering Team
+| External (division/file) | Internal Agent | Type | Notes |
+|--------------------------|----------------|------|-------|
+| engineering/engineering-software-architect | java/java-architect | matched | 架构评审、ADR、trade-off，方向一致 |
+| engineering/engineering-backend-architect | java/java-architect | partial | 后端架构偏 REST/服务设计，可参考 |
+| engineering/engineering-senior-developer | java/java-developer | matched | 资深开发能力，含质量与模式实践 |
+| engineering/engineering-code-reviewer | java/java-reviewer | matched | 代码评审能力高度重合 |
+| engineering/engineering-rapid-prototyper | java/java-developer | partial | 原型/快速实现可参考流程 |
+| engineering/engineering-codebase-onboarding-engineer | java/java-debugger | partial | 代码库理解/定位，可借鉴 onboarding 手法 |
+| testing/testing-api-tester | java/java-tester | matched | API 测试，含断言/边界/契约 |
+| testing/testing-test-automation-engineer | java/java-tester | matched | 自动化测试，可借鉴工具链组织 |
+| testing/testing-performance-benchmarker | java/java-tester | partial | 性能基准，参考测试扩展 |
+| testing/testing-reality-checker | java/java-tester | partial | 结果真实性核验，可参考验收标准 |
+| testing/testing-evidence-collector | java/java-tester | partial | 证据收集，参考输出规范性 |
+| testing/testing-test-results-analyzer | java/java-tester | partial | 结果分析，参考报告结构 |
+| engineering/engineering-database-optimizer | java/java-architect | partial | DB 优化属架构知识域，参考 |
+| engineering/engineering-api-platform-engineer | java/java-architect | partial | API 平台设计，参考 |
+| engineering/engineering-devops-automator | engops/git-manager + engops/release-agent | partial | DevOps 自动化，参考 release 流程 |
+
+## Planning / Architecture Team
+| External | Internal | Type | Notes |
+|----------|----------|------|-------|
+| project-management/project-manager-senior | pm/project-manager-agent | matched | 资深 PM，含决策与排期，可借鉴收口动作 |
+| project-management/project-management-project-shepherd | pm/project-manager-agent | partial | 项目守护/风险，参考风险清单 |
+| project-management/project-management-experiment-tracker | research/experiment-agent | partial | 实验跟踪，参考记录结构 |
+| project-management/project-management-jira-workflow-steward | pm/project-manager-agent | partial | 流程管家，参考工作流收口 |
+| project-management/project-management-meeting-notes-specialist | advisory/discussion-agent | partial | 会议记录/决议，参考讨论收口 |
+| product/product-manager | pm/project-manager-agent | partial | 产品需求定义，参考需求捕获 |
+| product/product-sprint-prioritizer | pm/project-manager-agent | partial | 排期优先级，参考路由/分派 |
+| advisory/solution-architect | advisory/solution-architect | matched | 方案架构，能力重合 |
+| specialized/specialized-workflow-architect | pm/project-manager-agent | partial | 工作流架构，参考 Workflow 设计 |
+| specialized/specialized-chief-of-staff | pm/project-manager-agent | partial | 参谋协调，参考跨团队协调 |
+
+## Research / Academic Team
+| External | Internal | Type | Notes |
+|----------|----------|------|-------|
+| academic/academic-statistician | research/research-analyst | matched | 统计方法/实验设计，高度相关 |
+| academic/academic-psychologist | research/research-analyst | partial | 行为研究，参考实验方法 |
+| academic/academic-narratologist | research/research-analyst | partial | 叙事结构，参考论文行文 |
+| engineering/engineering-prompt-engineer | research/innovation-agent | partial | 提示工程，参考创新手法 |
+| engineering/engineering-rag-pipeline-engineer | research/literature-agent | partial | RAG 检索，参考文献检索结构 |
+| engineering/engineering-technical-writer | creative/writing-agent + research/paper-writer | partial | 技术写作，参考结构 |
+| engineering/engineering-search-relevance-engineer | research/literature-agent | partial | 检索相关性，参考文献评分 |
+
+## Creative / Writing Team
+| External | Internal | Type | Notes |
+|----------|----------|------|-------|
+| design/design-visual-storyteller | creative/writing-agent | partial | 视觉叙事，参考内容结构 |
+| design/design-ux-architect | creative/ppt-agent | partial | UX/页面结构，参考 PPT 规划 |
+| design/design-ui-designer | creative/ppt-agent | partial | UI 设计，参考视觉规划 |
+| specialized/resume-tailor | creative/resume-agent | matched | 简历定制，能力重合 |
+| specialized/specialized-document-generator | creative/writing-agent | partial | 文档生成，参考输出规范 |
+| support/support-executive-summary-generator | creative/writing-agent | partial | 摘要生成，参考精简表达 |
+| marketing/… | (无) | no-internal | 营销域，MyTeam 基线不覆盖，仅记录 |
+| paid-media/… | (无) | no-internal | 投流域，不覆盖 |
+| game-development/… | (无) | no-internal | 游戏域，不覆盖 |
+| gis/… | (无) | no-internal | 地理信息，不覆盖 |
+| healthcare/… | (无) | no-internal | 医疗域，不覆盖 |
+| sales/… | (无) | no-internal | 销售域，不覆盖 |
+| finance/… | (无) | no-internal | 财务域，不覆盖 |
+| spatial-computing/… | (无) | no-internal | 空间计算，不覆盖 |
+
+## Security / Operations Team
+| External | Internal | Type | Notes |
+|----------|----------|------|-------|
+| security/security-architect | java/java-architect | partial | 安全架构，参考评审维度 |
+| security/security-appsec-engineer | java/java-reviewer | partial | 应用安全评审，参考安全评审清单 |
+| security/security-compliance-auditor | engops/project-health-agent | partial | 合规审计，参考健康检查清单 |
+| security/security-threat-detection-engineer | engops/project-health-agent | partial | 威胁检测，参考报告格式 |
+| engineering/engineering-git-workflow-master | engops/git-manager | matched | Git 工作流，能力重合 |
+| engineering/engineering-multi-agent-systems-architect | pm/project-manager-agent | partial | 多 Agent 系统架构，参考编排 |
+| engineering/engineering-autonomous-optimization-architect | engops/engops-lead | partial | 自主优化，参考观测闭环 |
+
+## Memory / Knowledge / Quality
+| External | Internal | Type | Notes |
+|----------|----------|------|-------|
+| engineering/engineering-minimal-change-engineer | java/java-developer | partial | 最小改动，参考质量门禁 |
+| engineering/engineering-codebase-archaeologist | knowledge/project-knowledge-manager | partial | 代码考古，参考知识库重建 |
+| project-management/project-management-experiment-tracker | memory/task-memory-agent | partial | 实验记录，参考内存协议 |
+| support/support-infrastructure-maintainer | engops/release-agent | partial | 基础设施维护，参考发布协议 |
+| testing/testing-workflow-optimizer | engops/engops-lead | partial | 工作流优化，参考流程收口 |
+
+## 统计
+| Type | Count |
+|------|-------|
+| matched | 9 |
+| partial | 30+ |
+| no-internal | 8 divisions (仅记录，不新增) |
+| 外部研究总量 | 264 agents |
+
+## 结论
+- 内部 30 Agent 已覆盖外部核心能力域（Java/架构/测试/研究/创作/运维/知识）。
+- 外部仓库价值在于**专业化程度与输出规范**（critical rules、ADR 模板、验收清单、输出证据化）。
+- 演进方向 = 把外部的高质量**能力协议**（专业能力 + Context 协议 + Memory 协议 + Quality 协议）作为参考，提升内部 Agent Prompt 质量，而非增加数量。

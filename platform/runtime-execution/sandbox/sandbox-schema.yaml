@@ -1,0 +1,51 @@
+# =====================================================================
+# Sandbox Contract Schema — v0.9
+# =====================================================================
+# 定义：执行隔离接口。未来支持 container / workspace clone / temporary environment。
+# 本阶段【只定义接口】，不创建真实隔离环境。
+# 阶段：v0.9 · Runtime Controlled Execution Interface Layer
+# =====================================================================
+
+version: 1
+layer: "runtime-execution-sandbox"
+stage: "v0.9"
+owner: "engops-lead"
+schema_for: "platform/runtime-execution/sandbox/*.yaml + .ai/context/runtime-execution/sandbox/*.yaml"
+
+# ---------------------------------------------------------------------
+# Sandbox 字段
+# ---------------------------------------------------------------------
+sandbox:
+  - field: "sandbox_id"
+    type: "string"
+    required: true            # 形如 SB-0001
+  - field: "workspace"
+    type: "string"
+    required: true            # 工作区路径（隔离目标）
+  - field: "allowed_operations"
+    type: "list"
+    required: true            # read / write / process / network（白名单）
+  - field: "resource_limit"
+    type: "map"
+    required: false           # cpu / mem / timeout（未来生效，本阶段声明）
+  - field: "cleanup_policy"
+    type: "string"
+    required: true            # on-complete / on-success / manual / keep
+
+# ---------------------------------------------------------------------
+# 隔离类型（未来实现，本阶段仅登记）
+# ---------------------------------------------------------------------
+isolation_types:
+  - "none"              # 直接在工作区（低风险）
+  - "workspace-clone"   # 克隆工作区后执行
+  - "temp-env"          # 临时环境
+  - "container"         # 容器隔离（未来）
+
+# ---------------------------------------------------------------------
+# 约束
+# ---------------------------------------------------------------------
+constraints:
+  - "Execution Request.sandbox_context.sandbox_id 必须引用一个已登记 sandbox"
+  - "allowed_operations 为白名单：执行不得超出声明的操作范围"
+  - "本阶段只定义隔离接口，不创建真实 container / clone / temp-env"
+  - "cleanup_policy 决定执行后工作区清理，本阶段仅登记"

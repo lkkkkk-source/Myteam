@@ -1,0 +1,37 @@
+version: 1
+updated_at: "2026-09-20T15:30:00"
+# Agent Performance（v0.5.1）
+# 每 Agent 汇总实际运行效果。只分析，不决策。
+agents:
+  - agent: "java-developer"
+    team: "java"
+    tasks_used: 1
+    steps_completed: 3
+    recovery_used: 1
+    rework_count: 1
+    first_pass_rate: 0.75
+    capabilities_used: ["spring-boot", "tdd", "mybatis"]
+    capabilities_declared: ["spring-boot", "mybatis", "java", "tdd", "sql", "rest-api"]
+    unused_capabilities: ["java", "sql", "rest-api"]     # Case5：声明但未用
+    consistency: "partial"
+  - agent: "java-tester"
+    team: "java"
+    tasks_used: 1
+    steps_completed: 1
+    steps_failed: 1
+    recovery_used: 1
+    rework_count: 0
+    first_pass_rate: 0.5
+    capabilities_used: ["unit-testing", "integration-testing"]
+    capabilities_declared: ["unit-testing", "integration-testing", "validation-gate", "browser-testing", "e2e-testing", "mvn", "test-report"]
+    unused_capabilities: ["validation-gate", "browser-testing", "e2e-testing", "mvn", "test-report"]
+    consistency: "low"
+  - agent: "java-architect"
+    team: "java"
+    tasks_used: 1
+    steps_completed: 1
+    first_pass_rate: 1.0
+    capabilities_used: ["architecture", "spring-boot", "layering"]
+    capabilities_declared: ["spring-boot", "architecture", "layering", "module-design"]
+    unused_capabilities: ["module-design"]
+    consistency: "partial"

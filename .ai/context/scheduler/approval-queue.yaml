@@ -1,0 +1,15 @@
+version: 1
+task_id: "refund-feature"
+updated_at: "2026-09-20T13:40:00"
+
+queue:
+  - approval_id: "ap-20260920-001"
+    decision_ref: "d-20260920-004"
+    step: "step-5"
+    agent: "engops-release-manager"
+    risk_level: "high"
+    reason: "release 操作，高风险（Case4 验证：必须 approval）"
+    status: "pending"
+    approver: null
+    approved_at: null
+    decision_note: null

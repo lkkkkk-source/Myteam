@@ -1,0 +1,56 @@
+# Role Performance Metrics — v1.5
+# 面向【流程瓶颈】分析 role 级指标；不是评价个人（oi-4）。
+version: 1
+layer: "organization-intelligence-role-performance"
+stage: "v1.5"
+owner: "engops-lead"
+scope: "role"
+time_range: "2026-09-01..2026-09-23"
+read_only: true
+
+source_refs:
+  - ".ai/context/collaboration/handoffs/handoff-history.yaml"
+  - ".ai/context/quality/gate-state.yaml"
+  - ".ai/context/debug-trace/events/TR-0001-events.yaml"
+
+# role: handoff_quality / rework_rate / quality_pass_rate / cycle_time
+roles:
+  - role: "architect"
+    handoff_quality: 0.93
+    rework_rate: 0.07
+    quality_pass_rate: 0.95
+    cycle_time: "1.2h"
+    evidence_refs: [ "HO-0001" ]
+  - role: "developer"
+    handoff_quality: 0.88
+    rework_rate: 0.15
+    quality_pass_rate: 0.86
+    cycle_time: "2.0h"
+    evidence_refs: [ "HO-0001", "HO-0002", "CH-0001" ]
+  - role: "tester"
+    handoff_quality: 0.90
+    rework_rate: 0.12
+    quality_pass_rate: 0.83
+    cycle_time: "1.6h"
+    evidence_refs: [ "HO-0002", "gate-state#validation" ]
+  - role: "reviewer"
+    handoff_quality: 0.91
+    rework_rate: 0.18          # review 阶段 rework 偏高 → 瓶颈信号（见 bottleneck-analysis）
+    quality_pass_rate: 0.94
+    cycle_time: "2.4h"         # cycle_time 上升
+    evidence_refs: [ "TR-0001#EV-0009" ]
+  - role: "analyst"
+    handoff_quality: 0.89
+    rework_rate: 0.10
+    quality_pass_rate: 0.92
+    cycle_time: "1.1h"
+    evidence_refs: [ "analytics-report#analyst" ]
+
+purpose: "发现流程瓶颈（process bottleneck discovery）"
+summary:
+  roles_analyzed: 5
+  note: "role-level process metrics; not individual evaluation (oi-4)"
+
+boundaries:
+  - "面向流程，不评价个人（oi-4）"
+  - "只读来源，不修改（oi-1）"

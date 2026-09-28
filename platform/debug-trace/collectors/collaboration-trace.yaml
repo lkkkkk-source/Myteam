@@ -1,0 +1,20 @@
+# Trace Collector: collaboration — v1.4.1
+version: 1
+layer: "debug-trace-collector"
+collector: "collaboration"
+stage: "v1.4.1"
+emits:
+  - event_type: "message_created"
+    trace_layer: "collaboration"
+    reference_pattern: ".ai/context/collaboration/messages/message-history.yaml#MSG-*"
+  - event_type: "handoff_created"
+    trace_layer: "collaboration"
+    reference_pattern: ".ai/context/collaboration/handoffs/handoff-history.yaml#HO-*"
+  - event_type: "decision_recorded"
+    trace_layer: "collaboration"
+    reference_pattern: ".ai/context/collaboration/decisions/decision-records.yaml#DE-*"
+integration:
+  message_trace_ref: true       # v1.4 message 增加 trace_ref
+  handoff_trace_ref: true
+  decision_trace_ref: true
+note: "引用 MSG/HO/DE 的 id；不复制内容"

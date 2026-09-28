@@ -1,0 +1,32 @@
+# Merge Requests — v1.3
+# workspace 合并治理记录。禁止 automatic_merge。
+version: 1
+layer: "workspace-merge"
+stage: "v1.3"
+task_id: "refund-feature"
+updated_at: "2026-09-21T19:00:00"
+automatic_merge: false
+
+merges:
+  # Case5: review rejected → merge blocked
+  - merge_id: "MG-0001"
+    workspace_id: "WS-0001"
+    review_ref: ".ai/context/quality/gates/refund-feature-review.yaml"
+    quality_ref: ".ai/context/quality/gate-state.yaml"
+    approved_by: null
+    status: "rejected"           # review rejected → blocked（Case5）
+    note: "review rejected（step-3b）→ merge blocked，developer 返工"
+  # Case6: quality 通过 → approved merge
+  - merge_id: "MG-0002"
+    workspace_id: "WS-0002"
+    review_ref: ".ai/context/quality/gates/case4-all-passed.yaml"
+    quality_ref: ".ai/context/quality/gate-state.yaml"
+    approved_by: "project-manager-agent"
+    status: "merged"             # review + quality + approval 通过（Case6）
+    note: "tester workspace review+quality passed → PM approved → merged"
+
+summary:
+  total: 2
+  rejected: 1
+  merged: 1
+  pending: 0

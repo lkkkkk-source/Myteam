@@ -1,0 +1,109 @@
+# =====================================================================
+# Workspace Schema — v1.3
+# =====================================================================
+# 目标：建立 Agent Workspace Runtime，为多 Agent 协作提供隔离工作区。
+#       Agent → Workspace → Change Tracking → Review → Quality Gate → Merge → Artifact
+#
+# 四层分离（强制，不合并）：
+#   Workspace = 管理工作环境（隔离 / 分支 / checkpoint）
+#   Execution = 管理执行过程（v1.2 execution-engine）
+#   Memory    = 管理跨会话元信息（.ai/context/memory）
+#   Artifact  = 管理正式产物（.ai/artifacts）
+#   Workspace ≠ Execution ≠ Memory ≠ Artifact
+#
+# 阶段：v1.3 · MyTeam Project Workspace & Collaboration Layer
+# 基线：Agent=30 · MCP=5 · Skill=26 · Workflow=8（不新增 / 不删除 / 不改核心行为）
+# =====================================================================
+
+version: 1
+layer: "workspace"
+stage: "v1.3"
+status: "governed"
+schema_for: "platform/workspace/**/*.yaml + .ai/context/workspace/*.yaml"
+
+depends_on:
+  - "v1.2-controlled-execution-engine"    # execution request 必含 workspace_ref
+  - "v0.3.3-recovery"                     # checkpoint 连接 Recovery
+  - "v0.4.3-quality-gate"                 # merge 前必过 quality gate
+
+# ---------------------------------------------------------------------
+# 一、验收不变量（Workspace 铁律）
+# ---------------------------------------------------------------------
+invariants:
+  - "ws-1: Agent 默认 workspace-local；禁止直接修改主分支 / shared workspace"
+  - "ws-2: Agent 不得修改其他 Agent 的 workspace（隔离）"
+  - "ws-3: merge 必须经 Review → Quality Gate → Approval；禁止 automatic_merge"
+  - "ws-4: checkpoint 只增不删（禁止自动删除历史 checkpoint），失败复用 Recovery 回滚"
+  - "ws-5: Workspace ≠ Execution ≠ Memory ≠ Artifact（四层分离，不合并）"
+  - "ws-6: Execution Request 必含 workspace_ref；executor 只能操作指定 workspace，禁止访问未知路径"
+  - "ws-7: 不自动修改权限 / 不自动覆盖其他 Agent 修改"
+
+# ---------------------------------------------------------------------
+# 二、Workspace 字段
+# ---------------------------------------------------------------------
+workspace:
+  - field: "workspace_id"
+    type: "string"
+    required: true            # WS-NNNN
+  - field: "task_id"
+    type: "string"
+    required: true            # 对齐 runtime-context / current-task
+  - field: "agent"
+    type: "string"
+    required: true            # 所属 Agent（agent-workspace）
+  - field: "team"
+    type: "string"
+    required: true
+  - field: "branch"
+    type: "string"
+    required: true            # workspace-local 分支名
+  - field: "created_at"
+    type: "string"
+    required: true
+  - field: "status"
+    type: "string"
+    required: true            # 见 states
+  - field: "snapshot_ref"
+    type: "string"
+    required: false           # 指向最新 checkpoint
+
+# ---------------------------------------------------------------------
+# 三、状态机
+# ---------------------------------------------------------------------
+states:
+  - "created"
+  - "initialized"
+  - "active"
+  - "checkpointed"
+  - "reviewing"
+  - "merged"
+  - "archived"
+
+state_transitions:
+  - "created -> initialized -> active"
+  - "active -> checkpointed (on execution checkpoint)"
+  - "active -> reviewing (submit for merge)"
+  - "reviewing -> merged (review + quality gate + approval)"
+  - "merged -> archived"
+
+# ---------------------------------------------------------------------
+# 四、禁止字段（出现即 Workspace 违规 Critical）
+# ---------------------------------------------------------------------
+forbidden_fields:
+  - "auto_merge"
+  - "auto_delete_checkpoint"
+  - "auto_overwrite"
+  - "auto_permission_change"
+  note: "workspace / change / merge 记录不得出现自动合并 / 自动删 checkpoint / 自动覆盖 / 自动改权限字段"
+
+# ---------------------------------------------------------------------
+# 五、硬性边界（不实现自动化）
+# ---------------------------------------------------------------------
+not_implemented:
+  - "automatic-merge"
+  - "agent-bypass-workspace"
+  - "agent-modify-other-workspace"
+  - "auto-delete-checkpoint"
+  - "workspace-as-memory"
+  - "workspace-as-artifact"
+  - "auto-permission-change"

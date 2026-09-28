@@ -1,0 +1,26 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case3-quality-pass-rate"
+created_at: "2026-09-20T15:54:00"
+
+# Case3：Quality Gate 结果反馈
+# 验证：quality_pass_rate 更新
+
+scenario:
+  trigger: "refund 各 Gate 结果汇总（validation / review / acceptance）"
+  source: "quality/gate-state.yaml + observability/quality/"
+
+expected:
+  capability: "integration-testing"
+  quality_pass_rate_before: 1.0
+  quality_pass_rate_after: 0.75   # 因 validation 失败而下降
+  capability_metrics_updated: true
+
+actual:
+  capability: "integration-testing"
+  quality_pass_rate_before: 1.0
+  quality_pass_rate_after: 0.75
+  ref: "analytics/metrics/capability-metrics.yaml"
+
+result: "PASS"
+assertion: "Quality Gate 失败反馈 → quality_pass_rate 更新（1.0→0.75）"

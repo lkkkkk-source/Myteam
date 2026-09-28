@@ -1,0 +1,77 @@
+{
+  "name": "@myteam/opencode-plugin",
+  "version": "1.6.1",
+  "description": "MyTeam OpenCode Plugin — single entry 'MyTeam' that delegates to the existing project-manager-agent (PM = sole user entry + Router). Read-only, isolated: never modifies the OpenCode host, never copies MyTeam runtime/prompts, never exposes the 30 internal agents. v1.6.0 adds Workspace Binding; v1.6.1 adds Agent Runtime Adapter (AgentDefinition loader + runtime/agent-instance projection + instance persistence under <project>/.team/runtime/agent-instance/).",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "main": "index.ts",
+  "files": [
+    "index.ts",
+    "pm-adapter.ts",
+    "bridge.ts",
+    "execution-bridge.ts",
+    "loader.ts",
+    "workspace-resolver.ts",
+    "agent-loader.ts",
+    "agent-instance.ts",
+    "manifest.yaml",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "myteam",
+    "agent-platform"
+  ],
+  "myteam": {
+    "platform_version": "v1.6.1",
+    "entry": "MyTeam",
+    "routes_to": "project-manager-agent",
+    "chain": "MyTeam -> project-manager-agent -> Router -> Team -> Role -> Agent",
+    "baseline": { "agent": 30, "mcp": 5, "skill": 26, "workflow": 8 },
+    "isolation": {
+      "modify_opencode_core": false,
+      "copy_runtime_files": false,
+      "host_config_write": false,
+      "expose_agents": false,
+      "source_of_truth": true,
+      "reversible": true
+    },
+    "workspace_binding": {
+      "myteam_home": "from myteam-plugin.yaml workspace:",
+      "project_root": "OpenCode ctx.directory",
+      "team_root": "<project_root>/.team (lazy init; never agents/)"
+    },
+    "agent_runtime_adapter": {
+      "definition_source": "source/prompts/**/*.md (read-only, parsed to AgentDefinition)",
+      "instance_path": "<project_root>/.team/runtime/agent-instance/<execution_id>/<agent>.yaml",
+      "lifecycle": "created -> initialized -> bound (no execution this phase)",
+      "memory_namespace": "<team_root>/memory/agents/<execution_id>/<agent>/"
+    },
+    "packaged_surface_only": [
+      "index.ts",
+      "pm-adapter.ts",
+      "bridge.ts",
+      "execution-bridge.ts",
+      "loader.ts",
+      "workspace-resolver.ts",
+      "agent-loader.ts",
+      "agent-instance.ts",
+      "manifest.yaml",
+      "README.md"
+    ],
+    "never_packaged": [
+      "source/",
+      "platform/",
+      "prompts/",
+      "agents/",
+      "runtime/"
+    ]
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,32 @@
+# Runtime Action Ledger — 集成台账（v0.8）
+# 所有 Action Proposal / Approval 通过本台账实现 Runtime Governance 协作。
+# 本文件由 engops-lead 人工维护（非自动）；字段集见 platform/runtime-action/action-ledger-schema.yaml。
+version: 1
+action_context_id: "ac-refund-feature-001"
+task_id: "refund-feature"
+updated_at: "2026-09-21T16:00:00"
+owner: "engops-lead"
+policy_version: 1
+
+proposals:
+  - proposal_id: "AP-0001"
+    action_type: "write-file"
+    risk_level: "medium"
+    approval_model: "agent-approval"
+    status: "approved"
+    contract_ok: true
+  - proposal_id: "AP-0002"
+    action_type: "run-command"
+    risk_level: "high"
+    approval_model: "human-approval"
+    status: "pending"
+    contract_ok: true
+  - proposal_id: "AP-0003"
+    action_type: "deploy-artifact"
+    risk_level: "high"
+    approval_model: "human-approval"
+    status: "draft"
+    contract_ok: true
+
+snapshot_refs:
+  - "snapshots/AS-20260921-0001.yaml"

@@ -1,0 +1,42 @@
+# Organization → Trace Integration — v1.4.3
+# Trace event 携带 team_ref / role_ref（经 metadata，不改 trace-event-schema）。
+# 链路：Team -> Role -> Agent -> Trace。
+version: 1
+layer: "organization-trace-integration"
+stage: "v1.4.3"
+owner: "engops-lead"
+
+# trace event 的 source（agent）经 agent-role-binding 解析出 team_ref / role_ref
+# 复用 v1.4.1 trace-event-schema 已有的 metadata:map 字段（不修改 trace schema）
+trace_reference:
+  - field: "team_ref"
+    type: "string"
+    carried_in: "trace event metadata"
+    resolved_by: "agent-role-binding (event.source -> team)"
+  - field: "role_ref"
+    type: "string"
+    carried_in: "trace event metadata"
+    resolved_by: "agent-role-binding (event.source -> role)"
+
+# 链路：Team → Role → Agent → Trace
+chain: "Team -> Role -> Agent -> Trace"
+
+resolution:
+  - "trace event.source = agent_id（v1.4.1 已有）"
+  - "agent_id → role_id + team_id（agent-role-binding）"
+  - "即可展示 Team → Role → Agent → Trace（org CLI: organization trace AGENT_ID）"
+
+example:
+  trace_event: "EV-0003"
+  source_agent: "java-lead"
+  role_ref: "lead"
+  team_ref: "software-engineering"
+  chain: "software-engineering -> lead -> java-lead -> TR-0001/EV-0003"
+
+rules:
+  - "team_ref/role_ref 经 metadata 携带，不修改 v1.4.1 trace-event-schema 必填字段"
+  - "trace 仍只记录 pointer（tr-1），Organization 只提供 team/role 解析视图"
+
+boundaries:
+  - "Organization ≠ Trace：只解析 event.source → team/role，不改 trace 实现"
+  - "不改 trace 采集 / 不改 trace schema 必填结构（复用 metadata）"

@@ -1,0 +1,37 @@
+# Intent Analysis — T-20260920-101（示例：退款功能）
+task_id: "T-20260920-101"
+source: "user"
+raw_input: "给订单系统增加退款功能"
+analyzed_at: "2026-09-20T15:50:00"
+analyzed_by: "discussion-agent (via PM/Router)"
+
+intent:
+  goal: "支持用户对已支付订单发起退款，订单状态机扩展退款状态，生成退款记录"
+  success_criteria:
+    - "退款接口可提交退款申请并返回新状态"
+    - "订单状态机包含 REFUNDING / REFUNDED 状态"
+    - "退款记录写入数据库"
+  scope:
+    in:
+      - "退款接口"
+      - "订单状态机扩展"
+      - "退款记录表"
+    out:
+      - "财务对账系统"
+      - "第三方支付回调"
+  constraints:
+    - "不影响现有支付流程"
+    - "兼容现有订单状态机"
+  open_questions:
+    - "退款是否需要审批流？ (assumed=false)"
+
+assumptions:
+  - text: "退款不接第三方支付回调，仅内部状态流转"
+    risk: medium
+    source: "discussion-agent"
+  - text: "退款金额默认为订单实付金额"
+    risk: low
+    source: "discussion-agent"
+
+confidence: high
+advisory_needed: false

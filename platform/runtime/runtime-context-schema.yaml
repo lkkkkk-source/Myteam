@@ -1,0 +1,65 @@
+# Runtime Context Schema — v0.7
+# 定义运行时集成台账（runtime-context.yaml）允许出现的字段集。
+# project-health-agent 用本 schema 校验台账"是否非法写入字段 / 是否合规"。
+version: 1
+layer: "runtime-context"
+stage: "v0.7"
+schema_for: ".ai/context/runtime/runtime-context.yaml"
+
+allowed_fields: "*(schema:runtime-context.v1)"
+
+root:
+  - field: "version"
+    type: "int"
+    required: true
+  - field: "context_id"
+    type: "string"
+    required: true
+  - field: "task_id"
+    type: "string"
+    required: true
+  - field: "contract_version"
+    type: "int"
+    required: true          # 变化时触发 snapshot
+  - field: "updated_at"
+    type: "string"
+    required: true
+  - field: "owner"
+    type: "string"
+    required: true
+  - field: "modules"
+    type: "list"
+    required: true          # 见 modules 条目
+  - field: "snapshot_refs"
+    type: "list"
+    required: false         # 已生成的快照引用
+
+module_entry:
+  - field: "id"
+    type: "string"
+    required: true          # 必须存在于 runtime-contract.yaml 的 modules[].id
+  - field: "name"
+    type: "string"
+    required: false
+  - field: "provides"
+    type: "string"
+    required: true          # 必须指向真实存在的上下文文件/目录
+  - field: "state"
+    type: "string"
+    required: true          # pending / active / completed / blocked / error
+  - field: "owner_agent"
+    type: "string"
+    required: true          # 必须匹配 contract 的 owner_agent（防止越权写入）
+  - field: "contract_ok"
+    type: "bool"
+    required: true          # 一致性检查结果
+  - field: "last_write_at"
+    type: "string"
+    required: false
+
+forbidden_fields:
+  - "auto_exec"
+  - "auto_schedule"
+  - "auto_model_switch"
+  - "auto_agent_select"
+  note: "台账不得出现任何'自动执行/自动调度/自动切换/自动选择'字段；出现即 Contract 违规（Critical）"

@@ -1,0 +1,64 @@
+# Multi-Agent Benchmark Result BM-066-01 (v0.6.6)
+
+benchmark_id: BM-066-01
+phase: v0.6.6 / Agent Evolution Scale
+type: multi-agent（同一 scenario 跨 4 Agent）
+compared: v1（source 基线 / v0.6.3 审计参考）vs v2（evolution/v0.6.6/applied）
+evaluated_at: "2026-09-21"
+method: 结构化人工评估 + 协议字段比对（不调用外部 LLM，与 BM-065-01 一致）
+aggregate: true
+proposals: [P-066-01, P-066-02, P-066-03]
+decision: accept
+
+> 扩展说明：v0.6.5 是单 Agent benchmark（BM-065-01），本次 BM-066-01 把
+> **同一重构场景**同时施加到 4 个 Java Agent（java-developer 复核 + java-architect、
+> java-reviewer、java-tester 新升级），统一衡量 v1 → v2 提升，验证跨 Agent 一致演进。
+
+## Shared Scenario（4 Agent 共用：订单服务模块重构）
+- 上下文：将 ProcessOrderService 从"上帝类"拆分为职责清晰的多 Service，追加库存扣减失败回滚。
+- 因 Agent 职责不同，各 Agent 只评估其职责维度的产出，但场景需求一致。
+
+## 一、java-developer（v2 released in v0.6.5，本批复核）
+| 维度 | v1 | v2 | 依据 |
+|------|----|----|------|
+| 任务理解 | 4 | 5 | 逐字解读任务动词 + 模糊先问（P-065-01）|
+| 代码质量 | 3 | 5 | Critical Rules 7 条 + 逐行自证 + 不防御不可能 |
+| 测试覆盖 | 4 | 5 | TDD + 测试证据 |
+| 总分 | 17/20 | 20/20 | delta +3 |
+
+## 二、java-architect（v2, P-066-01）
+| 维度 | v1 | v2 | 依据 |
+|------|----|----|------|
+| 影响面定位 | 4 | 5 | 结论带模块/文件/行 引用（Evidence Output）|
+| 架构方案 | 4 | 5 | 推荐/备选各自 trade-off/风险/理由 |
+| read-only 纪律 | 4 | 5 | Scope Self-Check 提交前盘点 touched files |
+| 最小充足设计 | 3 | 5 | 不为不存在的大规模场景过度设计 |
+| 总分 | 15/20 | 20/20 | delta +5 |
+
+## 三、java-reviewer（v2, P-066-02）
+| 维度 | v1 | v2 | 依据 |
+|------|----|----|------|
+| 维度覆盖 | 4 | 5 | 反遗漏 bias，维度 1-9 全走，不跳过 |
+| 论断依据 | 4 | 5 | 证据优先，每条 Issue 带 file:line + 置信度 |
+| 放行优先级 | 4 | 5 | severity-gated：Blocker/Major 必修，Minor 可放行 |
+| 误报控制 | 4 | 5 | 低置信度标"建议核实"，不臆造 |
+| 总分 | 16/20 | 20/20 | delta +4 |
+
+## 四、java-tester（v2, P-066-03）
+| 维度 | v1 | v2 | 依据 |
+|------|----|----|------|
+| 证据收集 | 3 | 5 | 附真实命令输出/异常栈/覆盖率 |
+| 根因归属 | 4 | 5 | 证据链区分测试写错 vs 实现 bug |
+| 反幻想 | 3 | 5 | 无证据的"该能过"不采信，default-to-failed |
+| 边界覆盖 | 4 | 5 | 覆盖率/边界分支观察 |
+| 总分 | 14/20 | 20/20 | delta +6 |
+
+## 评分汇总
+- v1 合计：62 / 80
+- v2 合计：80 / 80
+- delta：+18（证据化 + 反遗漏/反幻想 + 最小充足 + severity 门控）
+
+## decision detail
+- accept reason：4 Agent 全部 v2 ≥ v1，且均为纯加法（保留全部系统层协议，无 MCP/Skill/Runtime/Agent 数量变化）
+- risk check：Agent=30 MCP=5 Skill=26 Workflow=8 不变 → 通过
+- 结论：**accept**，批次 B-066-01（java-architect + java-reviewer + java-tester）允许 source 端升级到 v2

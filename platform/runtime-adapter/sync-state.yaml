@@ -1,0 +1,55 @@
+# =====================================================================
+# Sync State — v1.0
+# =====================================================================
+# 记录 source 版本 vs runtime 版本，检测 drift（source != runtime）。
+# 只报告，不自动修复。
+# 阶段：v1.0 · OpenCode Runtime Adapter & Deployment Governance Layer
+# =====================================================================
+
+version: 1
+layer: "runtime-adapter-sync-state"
+stage: "v1.0"
+owner: "engops-lead"
+updated_at: "2026-09-21T17:00:00"
+
+# ---------------------------------------------------------------------
+# 同步状态
+# ---------------------------------------------------------------------
+source_version: "v1.0"
+runtime_version: "not-installed"     # 本阶段未安装到 runtime
+sync_status: "not-synced"            # synced / not-synced / drifted
+drift_detected: false                # source != runtime 时置 true（只报告）
+
+# ---------------------------------------------------------------------
+# 各资产类别同步概览
+# ---------------------------------------------------------------------
+asset_sync:
+  - asset_type: "agent"
+    source_count: 30
+    runtime_count: 0
+    status: "not-synced"
+  - asset_type: "mcp"
+    source_count: 5
+    runtime_count: 0
+    status: "not-synced"
+  - asset_type: "skill"
+    source_count: 26
+    runtime_count: 0
+    status: "not-synced"
+  - asset_type: "workflow"
+    source_count: 8
+    runtime_count: 0
+    status: "not-synced"
+
+# ---------------------------------------------------------------------
+# Drift 检测规则（只报告，不修复）
+# ---------------------------------------------------------------------
+drift_detection:
+  method: "checksum compare (source agent-binding.checksum vs runtime file hash)"
+  on_drift: "report only (never auto-repair)"
+  reported_drifts: []          # 检测到的漂移记录（source!=runtime）；当前为空
+
+constraints:
+  - "drift 只报告，不自动修复（ra-5）"
+  - "runtime 手动被改导致 mismatch → 标记 drifted，交人工经 migration 重新对齐"
+  - "本文件只记录同步状态，不触发同步动作"

@@ -1,0 +1,30 @@
+version: 1
+task_id: "refund-feature"
+decision_id: "d-20260920-002"
+created_at: "2026-09-20T13:34:00"
+
+suggestion:
+  result: "parallel"
+  steps_to_run:
+    - step: "step-3a"
+      agent: "java-developer"
+      priority: "P1"
+      reason: "无依赖（group A）"
+    - step: "step-3b"
+      agent: "java-developer"
+      priority: "P1"
+      reason: "无依赖（group A，与 3a 并行）"
+  parallel_groups:
+    - group: "A"
+      steps: ["step-3a", "step-3b"]
+      reason: "无相互依赖，≤ resource-policy per_team=2"
+
+risk:
+  level: "normal"
+  high_risk: false
+  approval_required: false
+
+approval_ref: null
+runtime_ref: "scheduler/runtime-state.yaml"
+feedback_ref: null
+# Case3：并行建议 → 两个 decision 已生成（本 + d-002 拆分），Lead 并行执行 3a/3b

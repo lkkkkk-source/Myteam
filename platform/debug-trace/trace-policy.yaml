@@ -1,0 +1,27 @@
+# =====================================================================
+# Trace Policy — v1.4.1
+# =====================================================================
+# 定义 trace 采集与边界规则。
+# =====================================================================
+
+version: 1
+layer: "debug-trace-policy"
+stage: "v1.4.1"
+owner: "engops-lead"
+
+# 采集规则
+collection:
+  - "各层在关键节点产生 trace event（只 pointer）"
+  - "event 只增，不改写历史"
+  - "trace 覆盖 12 层（router..evolution）"
+
+# 边界（强制）
+boundaries:
+  - "Trace 只记录 / 查询 / 展示 / 审计；不执行任何动作（tr-2）"
+  - "Trace ≠ Memory：Memory 只存 trace pointer + 关键 decision（tr-6）"
+  - "Trace ≠ Observability：Observability 分析 metrics，Trace 记录生命周期链路"
+  - "Trace ≠ Collaboration / Execution Ledger：只引用，不替代"
+  - "Trace 不保存代码内容 / 大对象（tr-1）"
+
+forbidden:
+  - "trace 自动执行 / 自动修复 / 自动调度 / 修改任务状态 / 修改 Agent 行为"

@@ -1,0 +1,36 @@
+# Bottleneck Analysis — v1.5
+# 发现流程瓶颈；每条 finding 必须含 evidence_refs。禁止直接修改 workflow（oi-2）。
+version: 1
+layer: "organization-intelligence-bottleneck"
+stage: "v1.5"
+owner: "engops-lead"
+scope: "workflow"
+time_range: "2026-09-01..2026-09-23"
+read_only: true
+
+source_refs:
+  - "platform/organization-intelligence/metrics/workflow-metrics.yaml"
+  - "platform/organization-intelligence/metrics/role-performance.yaml"
+  - ".ai/context/debug-trace/events/TR-0001-events.yaml"
+
+findings:
+  - finding: "review_delay"
+    description: "review stage duration increasing (quality/review 15m, reviewer cycle_time 2.4h, rework_rate 0.18)"
+    severity: "medium"
+    evidence_refs: [ "TR-0001#EV-0009", "workflow-metrics#quality/review", "role-performance#reviewer" ]
+  - finding: "integration_test_failure_point"
+    description: "integration-testing validation first-use failure at refund step-4"
+    severity: "medium"
+    evidence_refs: [ "gate-state#validation", "analytics-report#integration-testing" ]
+  - finding: "dev_test_handoff_friction"
+    description: "developer→tester handoff success_rate (0.90) 低于上游 architect→developer (0.95)"
+    severity: "low"
+    evidence_refs: [ "HO-0002", "collaboration-metrics#developer-tester" ]
+
+summary:
+  total_findings: 3
+  note: "findings are observations with evidence only; workflow NOT modified (oi-2)"
+
+boundaries:
+  - "只发现瓶颈 + 提供 evidence；禁止直接修改 workflow（oi-2）"
+  - "每条 finding 必须带 evidence_refs（oi-5）"

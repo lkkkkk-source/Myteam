@@ -1,0 +1,21 @@
+# Trace Query Schema — v1.4.1
+version: 1
+layer: "debug-trace-query"
+stage: "v1.4.1"
+owner: "engops-lead"
+
+query:
+  - field: "query_type"
+    type: "enum"
+    values: [ "status", "show", "timeline", "validate" ]
+    required: true
+  - field: "task_id"
+    type: "string"
+    required: false           # show / timeline 需要
+  - field: "layer_filter"
+    type: "string"
+    required: false
+
+rules:
+  - "query 只读；不修改 trace / 任务状态"
+  - "show = 完整链路；timeline = 时间线；validate = schema/reference/layer 检查"

@@ -1,0 +1,47 @@
+# =====================================================================
+# Decision Schema — v1.4
+# =====================================================================
+# 记录 Agent 决策：问题 / 选项 / 所选 / 理由 / 影响 / 证据。
+# 高风险决定不自动替用户做。
+# =====================================================================
+
+version: 1
+layer: "collaboration-decision"
+stage: "v1.4"
+owner: "engops-lead"
+schema_for: ".ai/context/collaboration/decisions/*.yaml"
+
+decision:
+  - field: "decision_id"
+    type: "string"
+    required: true            # DE-NNNN
+  - field: "owner"
+    type: "string"
+    required: true            # 决策 Agent
+  - field: "problem"
+    type: "string"
+    required: true
+  - field: "options"
+    type: "list"
+    required: true
+  - field: "selected_option"
+    type: "string"
+    required: true
+  - field: "reason"
+    type: "string"
+    required: true            # 为什么这样决定
+  - field: "impact"
+    type: "string"
+    required: true
+  - field: "evidence"
+    type: "string"
+    required: false
+  - field: "risk"
+    type: "enum"
+    values: [ "low", "medium", "high", "critical" ]
+    required: false           # high/critical → 需人工确认，不自动做
+
+rules:
+  - "必须记录 reason（为什么这样决定）"
+  - "high/critical 风险决定不自动替用户做（cl-5）→ 转 PM / 用户"
+  - "decision 只增记录（可追溯）"

@@ -1,0 +1,63 @@
+# Action Ledger Schema — v0.8
+# 定义运行时 Action 集成台账（.ai/context/runtime-action/action-ledger.yaml）字段集。
+# project-health-agent 用本 schema 校验 Ledger 是否非法写入字段 / 是否合规。
+version: 1
+layer: "runtime-action-ledger"
+stage: "v0.8"
+schema_for: ".ai/context/runtime-action/action-ledger.yaml"
+
+allowed_fields: "*(schema:runtime-action-ledger.v1)"
+
+root:
+  - field: "version"
+    type: "int"
+    required: true            # 变化时触发 snapshot
+  - field: "action_context_id"
+    type: "string"
+    required: true
+  - field: "task_id"
+    type: "string"
+    required: true            # 必须与 runtime-context yaml 对齐
+  - field: "updated_at"
+    type: "string"
+    required: true
+  - field: "owner"
+    type: "string"
+    required: true
+  - field: "policy_version"
+    type: "int"
+    required: true            # 对应 action-policy.yaml version
+  - field: "proposals"
+    type: "list"
+    required: true            # 见 proposal_ref 条目
+  - field: "snapshot_refs"
+    type: "list"
+    required: false
+
+proposal_ref:
+  - field: "proposal_id"
+    type: "string"
+    required: true            # 必须存在于 platform/runtime-action/records/*.yaml
+  - field: "action_type"
+    type: "string"
+    required: true
+  - field: "risk_level"
+    type: "string"
+    required: true
+  - field: "approval_model"
+    type: "string"
+    required: true
+  - field: "status"
+    type: "string"
+    required: true            # draft / pending / approved / rejected / cancelled
+  - field: "contract_ok"
+    type: "bool"
+    required: true            # 一致性检查结果
+
+forbidden_fields:
+  - "auto_exec"
+  - "auto_approve"
+  - "auto_bypass"
+  - "executed"
+  - "result"
+  note: "Ledger 不得出现任何'自动执行 / 自动批准 / 自动绕过 / 已执行 / 执行结果'字段；出现即 Action Contract 违规（Critical）"

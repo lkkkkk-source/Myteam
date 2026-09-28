@@ -1,0 +1,30 @@
+version: 1
+task_id: "java-tester"
+case_id: "case5-declared-vs-used"
+created_at: "2026-09-20T15:58:00"
+
+# Case5：声明能力 vs 实际能力
+# 验证：registry 和 analytics 可对比
+
+scenario:
+  declared_source: "capability/agent-capabilities.yaml"
+  used_source: "analytics/metrics/agent-performance.yaml + capability/capability-feedback.yaml"
+
+expected:
+  agent: "java-tester"
+  declared: ["unit-testing", "integration-testing", "validation-gate", "browser-testing", "e2e-testing", "mvn", "test-report"]
+  used: ["unit-testing", "integration-testing"]
+  unused: ["validation-gate", "browser-testing", "e2e-testing", "mvn", "test-report"]
+  comparable: true        # 声明集与实际集可对比
+  consistency: "low"
+
+actual:
+  agent: "java-tester"
+  declared_count: 7
+  used_count: 2
+  unused_count: 5
+  comparable: true
+  ref: "analytics/agents/java-tester-analytics.yaml"
+
+result: "PASS"
+assertion: "声明 7 项能力实际只用 2 项 → registry 与 analytics 可对比（提供 v0.5.2 Recommendation 输入基础）"

@@ -1,0 +1,44 @@
+# Cross-Team Benchmark Result BM-067-01 (v0.6.7)
+# -----------------------------------------------------------------------------
+# 首例跨 Team 复用 benchmark：把 java 链实证的 evidence-based-output（PATTERN-001）
+# 复用到 research 链 research-analyst，验证「升级经验跨 Team 可复用」。
+
+benchmark_id: BM-067-01
+phase: v0.6.7 / Cross-Team Evolution & Evolution Knowledge
+type: cross-team-reuse（java → research）
+compared: research-analyst v1（source 基线 / v0.6.3 审计参考）vs v2（v0.6.7/applied）
+evaluated_at: "2026-09-21"
+method: 结构化人工评估 + 协议字段比对（不调用外部 LLM，与 BM-065/066 一致）
+aggregate: false
+proposals: [P-067-01]
+pattern_reused: PATTERN-001
+decision: accept
+
+## Scenario（research 域：跨模型多 Agent 调研路线）
+> 上下文：调研"多智能体系统（MAS）协作机制"领域的前沿与空白，给出研究方向建议。
+> 模拟 research-analyst 输出：趋势判断 + 空白清单 + 方向优先级。
+
+## 一���research-analyst（v1 vs v2）
+| 维度 | v1 | v2 | 依据 |
+|------|----|----|------|
+| 结论可追溯 | 3 | 5 | v2 每趋势/空白附文献/数据来源引用，v1 多为笼统描述 |
+| 反幻想 / 防过度乐观 | 3 | 5 | v2 无证据的"值得做"默认低置信，v1 倾向乐观定调 |
+| 优先级的可用性 | 4 | 5 | v2 按 Strong/Candidate/Speculative 分级，v1 无分级 |
+| 多源覆盖（反遗漏） | 4 | 5 | v2 明确覆盖反对/反例视角，v1 只给支持面 |
+| 总分 | 14/20 | 20/20 | delta +6 |
+
+## 评分汇总
+- v1：14 / 20
+- v2：20 / 20
+- delta：+6
+
+## 复用有效性
+- evidence-based-output（origin=java）在 research-analyst 上增量 +6，
+  证明同源质量模式可**跨 Team 复用**，且与 java 链实证（+4/+5/+6）一致。
+- 复用成本低：从 pattern-registry.yaml 选已验证 PATTERN-001，转写为域内协议，
+  无需重新研究 / 重新探索模式空间。
+
+## decision detail
+- accept reason：v2 ≥ v1 且纯加法；证据化模式跨 Team 成立；基线不变
+- risk check：Agent=30 MCP=5 Skill=26 Workflow=8 不变 → 通过
+- 结论：**accept**，research-analyst 允许 source 端升级到 v2

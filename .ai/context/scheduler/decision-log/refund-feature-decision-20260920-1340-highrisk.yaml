@@ -1,0 +1,22 @@
+version: 1
+task_id: "refund-feature"
+decision_id: "d-20260920-004"
+created_at: "2026-09-20T13:40:00"
+
+suggestion:
+  result: "ready"
+  steps_to_run:
+    - step: "step-5"
+      agent: "engops-release-manager"
+      priority: "P0"
+      reason: "release 操作（交付关键路径）"
+
+risk:
+  level: "high"
+  high_risk: true
+  approval_required: true     # Case4：高风险必须走 approval
+
+approval_ref: "scheduler/approval-queue.yaml#ap-20260920-001"
+runtime_ref: "scheduler/runtime-state.yaml"
+feedback_ref: null
+# Case4：release → 高风险 → 必须 approval，pending 时 Lead 不得执行

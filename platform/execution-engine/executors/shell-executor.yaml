@@ -1,0 +1,17 @@
+# Executor: shell-executor — v1.2
+version: 1
+id: "shell-executor"
+layer: "execution-engine-executor"
+stage: "v1.2"
+type: "process"
+supported_actions: [ "run_command" ]
+risk_level: "high"
+sandbox_required: "container"          # 危险操作走 container / human confirmation
+permission_required: true
+permissions: [ "process_run", "human_approval" ]
+rollback_support: true
+rollback_strategy: [ "state_restore" ]
+quality_gate: "validation"
+notes:
+  - "高风险：必须 human approval + container 隔离"
+  - "禁止绕过 permission / 禁止 skip_quality"

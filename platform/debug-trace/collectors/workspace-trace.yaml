@@ -1,0 +1,20 @@
+# Trace Collector: workspace — v1.4.1
+version: 1
+layer: "debug-trace-collector"
+collector: "workspace"
+stage: "v1.4.1"
+emits:
+  - event_type: "workspace_created"
+    trace_layer: "workspace"
+    reference_pattern: ".ai/context/workspace/workspace-state.yaml#WS-*"
+  - event_type: "change_created"
+    trace_layer: "workspace"
+    reference_pattern: ".ai/context/workspace/changes/change-records.yaml#CH-*"
+  - event_type: "checkpoint_created"
+    trace_layer: "workspace"
+    reference_pattern: ".ai/context/workspace/snapshots/CP-*.yaml"
+integration:
+  change_trace_ref: true        # v1.3 change record 增加 trace_ref
+  checkpoint_trace_ref: true
+constraints:
+  - "trace 不保存代码内容（只引用 CH-* / CP-*）"

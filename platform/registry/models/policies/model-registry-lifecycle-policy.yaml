@@ -1,0 +1,50 @@
+# Model Registry Lifecycle Policy (v0.6.8)
+# -----------------------------------------------------------------------------
+# Model Registry 生命周期管理：由 engops-lead 维护。
+#
+# 职责边界：
+#   - 本 Policy 定义 Model Registry（model-registry.yaml）的生命周期管理流程，
+#     包括登记 / 校对 / 失效 / 生命周期中的一致性校验。
+#   - 本层是【元数据治理】，不是执行引擎：不自动调用模型 / 不切换 Provider。
+#
+# 只推荐、不执行：生命周期管理是登记与核对，不自动应用任何运行时变更。
+# -----------------------------------------------------------------------------
+
+lifecycle_policy_version: 1
+layer: model-routing-recommendation
+stage: v0.6.8
+owner: engops-lead
+registry_ref: "platform/registry/models/model-registry.yaml"
+
+# ===================== 生命周期阶段 =====================
+states:
+  - proposed      # 档位提案登记，未生效
+  - active        # 在 Routing Policy 中可被引用（推荐）
+  - deprecated    # 已过时，不再推荐新任务使用（存量不受影响）
+  - retired       # 已下线，从推荐池移除
+
+# ===================== 生命周期流程 =====================
+lifecycle:
+  add:
+    - "新增档位：proposed → active（经评审：能力描述 / 字段完整 / 不绑定具体模型名）"
+  deprecate:
+    - "档位过时：active → deprecated（Routing Policy 不再默认推荐，存量引用保留）"
+  retire:
+    - "档位下线：deprecated → retired（从 model-registry 推荐池移除，历史推荐仍可追溯）"
+  validate:
+    - "每次发布后校验：所有 model_class 符合 model-profile-schema.yaml"
+    - "校验：routing-policy.yaml 引用的 model_class 都存在（无悬空引用）"
+    - "校验：recommendation 记录引用的档位都存在"
+
+# ===================== 一致性校验（供 project-health-agent 只读）=====================
+consistency_checks:
+  - "model-registry.yaml：所有档位符合 schema（model-profile-schema.yaml）"
+  - "routing-policy.yaml：recommended_model_class ∈ model-registry.model_classes"
+  - "recommendation-schema.yaml：example.model_class ∈ model-registry.model_classes"
+  - "history/recommendation 记录：引用档位 ∈ model-registry.model_classes"
+
+# ===================== 边界 =====================
+boundaries:
+  - "engops-lead 只维护 Model Registry 的【元数据生命周期】"
+  - "本 Policy 不涉及：具体模型 / Provider 绑定、自动切换、运行时调用（均为未来阶段）"
+  - "Model Registry 生命周期变更必须登记，不改 legacy（routing-rules / team-context）"

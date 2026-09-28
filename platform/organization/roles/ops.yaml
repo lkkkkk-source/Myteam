@@ -1,0 +1,20 @@
+# Role: ops — v1.4.3
+# 附加 role 原语，用于对齐工程运维职责（git/release/changelog，org-2 全覆盖）。
+version: 1
+layer: "organization-role-instance"
+stage: "v1.4.3"
+
+role_id: "ops"
+responsibility: "engineering-operations"
+required_capabilities:
+  - "git-workflow"
+  - "build-packaging"
+  - "release-management"
+allowed_scope:
+  - "git-operations"
+  - "release-build"
+  - "changelog"
+quality_expectation:
+  - "rollback-ready"
+  - "no-auto-push"         # 发布/推送需人工批准
+bound_agents: [ "git-manager", "release-agent", "changelog-agent" ]

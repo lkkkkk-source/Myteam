@@ -1,0 +1,21 @@
+version: 1
+task_id: "refund-feature"
+decision_id: "d-20260920-001"
+created_at: "2026-09-20T13:20:00"
+
+suggestion:
+  result: "ready"
+  steps_to_run:
+    - step: "step-2"
+      agent: "java-developer"
+      priority: "P1"
+      reason: "依赖 step-1（architecture）已完成，满足依赖"
+
+risk:
+  level: "normal"
+  high_risk: false
+  approval_required: false
+
+approval_ref: null
+runtime_ref: "scheduler/runtime-state.yaml"
+feedback_ref: "scheduler/feedback/refund-feature-feedback-20260920-1333.yaml"

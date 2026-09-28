@@ -1,0 +1,33 @@
+# java-developer Benchmark Result v0.6.5
+
+benchmark_id: BM-065-01
+proposal: P-065-01
+agent: java-developer
+compared: v1 (source/prompts) vs v2 (evolution/v0.6.5/applied)
+decision: accept
+evaluated_at: "2026-09-21"
+
+> 说明：本阶段以结构化人工评估 + 协议字段比对作为 benchmark（不调用外部 LLM）。六个维度逐项比对 v1 / v2。
+
+## Case: 退款功能（refund）开发任务
+
+| 维度 | v1 评分 | v2 评分 | 依据 |
+|------|---------|---------|------|
+| 任务理解 | 4 | 5 | v2 增加任务动词逐字解读 + 模糊先问，范围更准 |
+| 代码质量 | 3 | 5 | v2 增加 Critical Rules（最小改动 7 条）+ 逐行自证 + 不防御不可能 |
+| 测试覆盖 | 4 | 5 | v2 强调 TDD + 测试证据输出，覆盖更可验证 |
+| Artifact 完整性 | 5 | 5 | 系统层协议两版相同且保留 |
+| Handoff 质量 | 4 | 5 | v2 证据化输出含证据引用，交接可追溯 |
+| Recovery 能力 | 5 | 5 | v2 保留 v1.1 系统层 errors/log/state 协议 |
+
+## 评分汇总
+
+- v1 总分：25 / 30
+- v2 总分：30 / 30
+- delta：+5（改动清单化、证据化、可追溯）
+
+## decision detail
+
+- accept reason：v2 在模型 Plan 决策字段上全维度 ≥ v1，且是纯加法（保留全部系统层协议、无 MCP/Skill/Runtime/Agent 数量变化）
+- risk check：Agent=30 MCP=5 Skill=26 Workflow=8 不变 → 通过
+- 结论：**accept**，允许 source 端 java-developer 升级到 v2

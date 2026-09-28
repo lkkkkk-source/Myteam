@@ -1,0 +1,33 @@
+version: 1
+case_id: "MR-STM-002"
+created_at: "2026-09-21"
+layer: model-routing-recommendation
+stage: v0.6.8
+
+# STM-002：Risk + Complexity 输入 → 档位分派（Phase 4）
+# 验证：risk / complexity 参与推荐档位决策
+
+scenario:
+  input:
+    task_id: "T-068-002"
+    task_type: "research"
+    team: "research"
+    agent: "research-analyst"
+    agent_role: "execution"
+    complexity: "medium"
+    risk_level: "normal"
+    context_size: "large"
+    required_capabilities: ["research-analysis", "literature-review", "synthesis"]
+  expected:
+    model_class: "long-context"
+    fallback: "high-reasoning"
+    human_confirm: false
+  actual:
+    model_class: "long-context"
+    fallback: "high-reasoning"
+    human_confirm: false
+    reasoning: "research + large context → long-context（MR-3 / MR-4）"
+
+result: "PASS"
+assertion: "风险评估 + 复杂度 → 研究类 long-context 档位"
+ref: "platform/model-routing/history/T-068-002-research-case.yaml"

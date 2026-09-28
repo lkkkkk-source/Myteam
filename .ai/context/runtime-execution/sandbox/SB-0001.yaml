@@ -1,0 +1,11 @@
+# Sandbox Instance SB-0001 — v0.9
+# 执行隔离声明（本阶段只声明接口，不创建真实隔离环境）。
+# 字段集见 platform/runtime-execution/sandbox/sandbox-schema.yaml。
+version: 1
+sandbox_id: "SB-0001"
+workspace: "src/services/refund/"
+allowed_operations: [ "read", "write" ]
+resource_limit:
+  timeout_sec: 120
+cleanup_policy: "on-complete"
+isolation: "workspace-clone"

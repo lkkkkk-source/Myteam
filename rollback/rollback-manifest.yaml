@@ -1,0 +1,20 @@
+version: 1
+stage: "rollback-v0.6.2"
+backup_dir: "rollback/backups/"
+status: "ready"
+
+# Rollback restores the OpenCode runtime to a previous state using backups.
+backups: []
+
+procedure:
+  - name: "restore-config"
+    action: "copy {backup_dir}/opencode.json into runtime opencode.json (requires user approval)"
+  - name: "restore-prompt-dirs"
+    action: "copy prompts/docs/workflows from package or prior snapshot"
+  - name: "verify"
+    action: "confirm runtime baseline and platform agent presence before/after"
+
+guards:
+  - "never rollback into CC Switch managed skills/"
+  - "never delete node_modules or planner runtime dirs"
+  - "rollback manifests must be appended, not overwritten"

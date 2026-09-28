@@ -1,0 +1,32 @@
+version: 1
+updated_at: "2026-09-20T15:30:00"
+# Capability Trend（v0.5.1）
+# 连续任务数据 → 趋势。只分析，不决策。
+trends:
+  - capability: "spring-boot"
+    series:
+      - task_id: "task-001"
+        success_rate: 1.0
+        used_at: "2026-09-18T10:00:00"
+      - task_id: "task-002"
+        success_rate: 1.0
+        used_at: "2026-09-19T09:00:00"
+      - task_id: "refund-feature"
+        success_rate: 1.0
+        used_at: "2026-09-20T14:00:00"
+    direction: "stable"
+    note: "连续 3 任务 success_rate=1.0，能力稳定"
+  - capability: "tdd"
+    series:
+      - task_id: "task-001"
+        success_rate: 1.0
+      - task_id: "refund-feature"
+        success_rate: 1.0
+    direction: "stable"
+    note: "成功率高，TDD 工作流稳定"
+  - capability: "integration-testing"
+    series:
+      - task_id: "refund-feature"
+        success_rate: 0.0
+    direction: "watch"
+    note: "仅 1 次数据且失败，需重点观察（refund step-4 validation failed）"

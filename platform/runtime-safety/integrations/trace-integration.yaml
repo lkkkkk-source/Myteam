@@ -1,0 +1,23 @@
+# Safety → Trace Integration — v1.4.2
+version: 1
+layer: "runtime-safety-trace-integration"
+stage: "v1.4.2"
+owner: "engops-lead"
+
+# 每次 safety decision 生成 trace event（layer=safety，扩展 v1.4.1 的 12 层为 13 层）
+emits:
+  - event_type: "budget_checked"
+    trace_layer: "safety"
+    reference_pattern: ".ai/context/runtime-safety/safety-state.yaml#SF-*"
+  - event_type: "limit_checked"
+    trace_layer: "safety"
+    reference_pattern: ".ai/context/runtime-safety/safety-state.yaml#SF-*"
+  - event_type: "loop_detected"
+    trace_layer: "safety"
+    reference_pattern: ".ai/context/runtime-safety/safety-state.yaml#SF-*"
+  - event_type: "escalation_raised"
+    trace_layer: "safety"
+    reference_pattern: ".ai/context/runtime-safety/escalations.yaml#ESC-*"
+
+trace_layer_added: "safety"    # trace event schema 需接受 layer=safety
+note: "safety event 只 pointer；trace 链扩展为 ...->evolution->safety"

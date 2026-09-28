@@ -1,0 +1,84 @@
+# Routing Feedback Profile Schema (v0.6.9)
+# -----------------------------------------------------------------------------
+# Model Routing Feedback Loop：反馈数据 Schema。
+#
+# 定位：
+#   - 记录「一次模型推荐被人工执行后」的实际结果反馈（Feedback）。
+#   - Feedback 是「Model Recommendation → 执行结果」的闭环数据源，
+#     供 analytics 汇总、proposal 生成；但【只记录 / 只汇总 / 只提议】，
+#     **不自动改变模型选择 / 不自动改 policy / 不自动改行为**。
+#
+# 硬性边界（本层强制）：
+#   - feedback 只记录实际结果，不做自动策略变更。
+#   - 任何 policy 调整必须以「improvement proposal」形式提出，并由
+#     engops-lead 人工审核，未经批准不落地。
+#   - 高风险（human_confirm=true）任务的反馈，未经人工确认不视为有效反馈。
+# -----------------------------------------------------------------------------
+
+feedback_profile_schema_version: 1
+layer: model-routing-feedback
+stage: v0.6.9
+owner: engops-lead
+updated_at: "2026-09-21"
+routing_history_ref: "platform/model-routing/history/model-routing-history.yaml"
+
+# ===================== 反馈记录字段 =====================
+feedback_record:
+  feedback_id:
+    type: string
+    description: "反馈 ID（FH-069-NNN）"
+  task_id:
+    type: string
+    description: "关联的任务 ID（对应 history 中的 recommendation）"
+  recommended_class:
+    type: string
+    description: "被推荐的模型档位（引用 model-registry.yaml）"
+  actual_used_class:
+    type: string
+    description: "实际使用的模型档位（人工可覆盖推荐，这正是反馈价值的来源）"
+  outcome:
+    enum: [success, partial, failure, blocked, pending-human-confirmation]
+    description: "执行结果（实际结果，非推荐质量自评）"
+  quality_feedback:
+    description: "结果质量主观 / 客观评估（来自执行 Agent / 人工）"
+    fields:
+      outcome_quality:
+        enum: [high, medium, low]
+      match_verdict:
+        enum: [good-fit, mismatch, over-provisioned, under-provisioned]
+        description:
+          good-fit: "档位与任务匹配良好"
+          mismatch: "档位选择不合理（任务难度与档位不符）"
+          over-provisioned: "档位过强（���成本档位解决普通任务）"
+          under-provisioned: "档位不足（任务超出该档位能力）"
+      issue_description:
+        type: string
+        description: "若 mismatch，描述具体问题"
+  needed_capability:
+    type: "list[string]"
+    description: "实际发现缺失 / 需增强的能力（可空）"
+  human_confirm:
+    type: boolean
+    description: "本条反馈是否需要人工确认后才有效（高风险任务派生）"
+  recorded_by:
+    type: string
+    description: "记录方（评估 Agent / engops-lead）"
+  recorded_at:
+    type: string
+    description: "ISO 时间"
+  reference:
+    type: string
+    description: "更细粒度反馈来源（task output / observation log）"
+
+# ===================== 有效 / 无效反馈判定 =====================
+validity:
+  - "outcome 必须存在且来自实际执行结果，不得臆造"
+  - "若 human_confirm=true，须 pending-human-confirmation 或人工确认后才纳入有效统计"
+  - "match_verdict 允许为空（成功且匹配良好时可不填），但 mismatch 时须填 issue_description"
+
+# ===================== 约束 =====================
+constraints:
+  - "recommended_class / actual_used_class 必须引用 model-registry.yaml 已登记档位"
+  - "feedback ���记录 / 只汇总，【不自动】修改 routing-policy / model-registry"
+  - "发现策略问题 → 生成 improvement proposal（proposals/proposal-schema.yaml），交 engops-lead 人工审核"
+  - "本 Schema 不触发任何自动行为变更"

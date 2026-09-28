@@ -1,0 +1,102 @@
+# Agent Evolution State (v0.6.6)
+# -----------------------------------------------------------------------------
+# Evolution State：追踪每个 Agent 当前所处的「进化生命周期」状态。
+# 状态机（与 version-registry.yaml 的 states 一致）：
+#
+#   untouched ──> proposed ──> approved ──> benchmarked ──> applied ──> released
+#      │             │             │                           │
+#      │             └── rejected  │                           └──> rollback
+#      │                 (reject)  │
+#      └───────────────────────────┘ (reject 不覆盖 source)
+#
+# 语义：
+#   untouched   : 保持 v1 基线，从未进入升级流程
+#   proposed    : 提案已生成（evolution/v0.6.6/proposals/{agent}-v{n}.yaml）
+#   approved    : 提案经评审通过，允许生成新版本
+#   benchmarked : 已跑 benchmark，得到 decision
+#   applied     : 已生成 applied/{agent}-v{n}.md（新版本文件，不覆盖旧版本）
+#   released    : 已合并到 source/prompts + agents，构建通过（可在 Registry 标 released）
+#   rejected    : 提案被拒，source 保持原样（critical：不得覆盖 source）
+#   rollback    : 已从 vN 回退到 vN-1（source 恢复前一版本）
+#
+# 本文件是「当前时刻」的操作快照；历史全量见 history/。由 engops-lead 维护，
+# project-health-agent 只读校验，project-manager-agent 只读参考。
+# -----------------------------------------------------------------------------
+
+evolution_state_version: 1
+owner: engops-lead
+updated_at: "2026-09-21"
+platform: opencode-agent-platform
+
+# 各 agent 当前进化状态（仅列进入流程的；未列=untouched）
+items:
+  - agent: java-developer
+    state: released
+    version: v2
+    proposal: P-065-01
+    benchmark: BM-065-01
+    decision: accept
+    released_at: "2026-09-21"
+    batch: B-065-01
+    note: v0.6.5 首个升级闭环，作为 v0.6.6 scale 的模板
+
+  - agent: java-architect
+    state: released
+    version: v2
+    proposal: P-066-01
+    benchmark: BM-066-01
+    decision: accept
+    released_at: "2026-09-21"
+    batch: B-066-01
+    note: v0.6.6 scale 批次 1
+
+  - agent: java-reviewer
+    state: released
+    version: v2
+    proposal: P-066-02
+    benchmark: BM-066-01
+    decision: accept
+    released_at: "2026-09-21"
+    batch: B-066-01
+    note: v0.6.6 scale 批次 1
+
+  - agent: java-tester
+    state: released
+    version: v2
+    proposal: P-066-03
+    benchmark: BM-066-01
+    decision: accept
+    released_at: "2026-09-21"
+    batch: B-066-01
+    note: v0.6.6 scale 批次 1
+
+  - agent: research-analyst
+    state: released
+    version: v2
+    proposal: P-067-01
+    benchmark: BM-067-01
+    decision: accept
+    released_at: "2026-09-21"
+    batch: B-067-01
+    note: v0.6.7 跨 Team 复用（java→research）PATTERN-001，Evolution Knowledge 首次落地
+
+# 统计
+summary:
+  total: 30
+  released: 5            # java-developer, java-architect, java-reviewer, java-tester, research-analyst
+  untouched: 25
+  proposed: 0
+  approved: 0
+  benchmarked: 0
+  applied: 0
+  rejected: 0
+  rollback: 0
+  released_by_team:
+    java: 4
+    advisory: 0
+    research: 1
+    creative: 0
+    engops: 0
+    knowledge: 0
+    memory: 0
+    pm: 0

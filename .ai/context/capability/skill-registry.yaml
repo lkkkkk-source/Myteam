@@ -1,0 +1,86 @@
+version: 1
+updated_at: "2026-09-20T15:00:00"
+# Skill Registry（v0.5）
+# 26 Skill 能力索引。只用于查询，不决定执行。
+skills:
+  # ===== 软件工程 =====
+  - skill: "brainstorming"
+    provides: ["idea-generation", "discussion", "tradeoff-analysis"]
+    agents_using: ["discussion-agent", "innovation-agent"]
+  - skill: "dispatching-parallel-agents"
+    provides: ["parallel-dispatch", "multi-agent-coordination"]
+    agents_using: ["project-manager-agent", "java-lead", "research-lead", "creative-lead", "engops-lead"]
+  - skill: "executing-plans"
+    provides: ["plan-execution", "step-execution"]
+    agents_using: ["java-planner", "java-developer"]
+  - skill: "finishing-a-development-branch"
+    provides: ["branch-finishing", "merge-preparation"]
+    agents_using: ["java-tester", "engops-lead"]
+  - skill: "receiving-code-review"
+    provides: ["review-feedback-processing", "review-verification"]
+    agents_using: ["java-reviewer", "java-developer"]
+  - skill: "requesting-code-review"
+    provides: ["review-request", "pre-review"]
+    agents_using: ["project-manager-agent", "java-reviewer"]
+  - skill: "subagent-driven-development"
+    provides: ["subagent-orchestration", "development"]
+    agents_using: ["java-developer"]
+  - skill: "systematic-debugging"
+    provides: ["debugging", "root-cause-analysis", "recovery-strategy"]
+    agents_using: ["java-tester", "java-debugger"]
+  - skill: "test-driven-development"
+    provides: ["tdd", "test-first", "unit-testing"]
+    agents_using: ["java-developer", "java-tester"]
+  - skill: "using-git-worktrees"
+    provides: ["git-workflow", "worktree-isolation"]
+    agents_using: ["java-developer", "git-manager"]
+  - skill: "using-superpowers"
+    provides: ["skill-discovery", "superpowers-usage"]
+    agents_using: []
+  - skill: "verification-before-completion"
+    provides: ["completion-verification", "acceptance-verification"]
+    agents_using: ["java-tester", "project-health-agent", "engops-lead"]
+  - skill: "writing-plans"
+    provides: ["plan-writing", "task-decomposition", "documentation-planning"]
+    agents_using: ["project-manager-agent", "java-planner", "java-architect", "solution-architect", "requirement-agent", "writing-agent", "paper-writer"]
+  - skill: "writing-skills"
+    provides: ["skill-authoring", "skill-editing"]
+    agents_using: []
+  # ===== 科研 =====
+  - skill: "literature-review"
+    provides: ["literature-review", "paper-search"]
+    agents_using: ["literature-agent"]
+  - skill: "peer-review"
+    provides: ["peer-review", "paper-review"]
+    agents_using: ["paper-writer", "research-analyst"]
+  - skill: "scholar-evaluation"
+    provides: ["scholar-evaluation", "academic-assessment"]
+    agents_using: ["research-analyst"]
+  - skill: "scientific-brainstorming"
+    provides: ["research-idea-generation"]
+    agents_using: ["innovation-agent"]
+  - skill: "scientific-critical-thinking"
+    provides: ["critical-thinking", "evidence-evaluation"]
+    agents_using: ["java-reviewer", "research-analyst"]
+  - skill: "scientific-schematics"
+    provides: ["schematic-design", "diagram-generation"]
+    agents_using: ["paper-writer"]
+  - skill: "scientific-visualization"
+    provides: ["data-visualization", "chart-generation"]
+    agents_using: ["research-analyst"]
+  - skill: "scientific-writing"
+    provides: ["academic-writing", "paper-writing"]
+    agents_using: ["paper-writer"]
+  # ===== OCR / 文档解析 =====
+  - skill: "ocr-parser"
+    provides: ["ocr", "document-parsing"]
+    agents_using: []
+  - skill: "paddleocr-doc-parsing"
+    provides: ["ocr", "document-parsing", "paddleocr"]
+    agents_using: []
+  - skill: "paddleocr-text-recognition"
+    provides: ["ocr", "text-recognition", "paddleocr"]
+    agents_using: []
+  - skill: "vision"
+    provides: ["image-understanding", "visual-analysis"]
+    agents_using: []

@@ -1,0 +1,27 @@
+# rollback simulation (v0.6.6)
+# 目标：验证 released 升级可安全回滚——恢复 source/prompts/** 到前一版，
+#       并同步 registry / state / agents 三方状态。仅模拟，实际回滚前需用户批准。
+# 前置：回滚前充分备份（rollback/backups/）。
+
+sim_trigger: 演示用，未实际执行
+version_registry: evolution/version-registry.yaml
+evolution_state: evolution/evolution-state.yaml
+baseline: { agent: 30, mcp: 5, skill: 26, workflow: 8 }
+
+# 对批次 B-066-01 中任一 Agent 回滚时：
+rollback_procedure:
+  1. 先在 evolution-state 把目标 agent 置 state: rollback（依赖关系受影响下级一并标注）
+  2. 校验 dependency_graph：目标 agent 的下游（本批次仅 java-developer 同层，无真实下游阻塞）
+  3. 恢复 source/prompts/java/{agent}.md 至 v1（git 历史可追溯，v1 未被删除）
+  4. 同步恢复 agents/java/{agent}.md（hash 一致）
+  5. 更新 version-registry：该 agent version 回写 v1、state=rollback
+  6. 重跑基线（Agent=30 / MCP=5 / Skill=26 / Workflow=8）确认不破坏平台
+  7. 若回滚后重新发布，须重走 proposal -> benchmark -> released
+
+# 回滚一致性命中项（供 project-health-agent 校验）
+consistency_notes:
+  - rollback 后 source 与 agents 必须 hash 一致
+  - rollback 后 registry state 必须为 rollback（非 released），避免 PM 误用旧版本
+  - 回滚不删除 applied/{agent}-v2.md 与 benchmark 记录（历史保留，语义=NH/不被追溯抹除）
+
+sim_result: not_executed_pending_approval

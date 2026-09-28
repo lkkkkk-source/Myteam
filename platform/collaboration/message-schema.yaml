@@ -1,0 +1,43 @@
+# =====================================================================
+# Agent Message Schema — v1.4
+# =====================================================================
+# Agent 通信格式。消息保存结论 + evidence_ref，不保存完整聊天 / 完整代码。
+# =====================================================================
+
+version: 1
+layer: "collaboration-message"
+stage: "v1.4"
+owner: "engops-lead"
+schema_for: ".ai/context/collaboration/messages/*.yaml"
+
+message:
+  - field: "message_id"
+    type: "string"
+    required: true            # MSG-NNNN
+  - field: "from_agent"
+    type: "string"
+    required: true
+  - field: "to_agent"
+    type: "string"
+    required: true
+  - field: "task_id"
+    type: "string"
+    required: true
+  - field: "type"
+    type: "enum"
+    values: [ "information", "request", "response", "handoff", "decision", "review", "conflict" ]
+    required: true
+  - field: "content"
+    type: "string"
+    required: true            # 结论 / 要点，不是完整聊天
+  - field: "evidence_ref"
+    type: "string"
+    required: false           # 指向 workspace_ref / artifact / gate 等证据
+  - field: "created_at"
+    type: "string"
+    required: true
+
+rules:
+  - "content 只保存结论 / 要点（cl-3），不保存完整聊天"
+  - "消息不包含完整代码；引用 workspace_ref / artifact 指针"
+  - "message 只增记录（审计）"

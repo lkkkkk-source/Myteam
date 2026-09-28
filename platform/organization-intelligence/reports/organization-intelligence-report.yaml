@@ -1,0 +1,63 @@
+# Organization Intelligence Report — v1.5
+# 自观察组织分析报告：summary + team/role/collaboration insights + bottlenecks + recommendations。
+# 只分析 / 只报告 / 只建议；所有 recommendation 需人工审批（oi-3）。
+version: 1
+layer: "organization-intelligence-report"
+stage: "v1.5"
+owner: "engops-lead"
+intelligence_id: "OI-0001"
+generated_at: "2026-09-23T11:00:00"
+time_range: "2026-09-01..2026-09-23"
+scope: [ "team", "role", "agent", "workflow", "collaboration" ]
+
+source_refs:
+  - ".ai/context/organization/organization-state.yaml"
+  - ".ai/context/debug-trace/trace-index.yaml"
+  - ".ai/context/collaboration/handoffs/handoff-history.yaml"
+  - ".ai/context/execution-engine/execution-results.yaml"
+  - ".ai/context/runtime-safety/safety-state.yaml"
+  - ".ai/context/analytics/reports/analytics-report.yaml"
+
+summary:
+  teams_analyzed: 6
+  roles_analyzed: 5
+  agents_analyzed: 4
+  overall_success_rate: 0.91
+  overall_first_pass_rate: 0.77
+  bottlenecks_found: 3
+  failure_patterns: 4
+  success_patterns: 3
+  recommendations: 4          # 全部 draft
+  recommendations_auto_applied: 0
+  note: "self-observing organization snapshot; analyze/report/recommend only (oi-1)"
+
+team_insights:
+  - "software-engineering 负载最高（120 tasks, tasks_per_agent 17.1），success_rate 0.92"
+  - "creative first_pass_rate 最高（0.82），cycle_time 最短（2.1h）"
+  - "各 team handoff_success_rate 均 ≥ 0.90，协作链稳定"
+
+role_insights:
+  - "reviewer 阶段 rework_rate 偏高（0.18）+ cycle_time 上升（2.4h）→ 流程瓶颈信号（非个人评价）"
+  - "developer rework_rate 0.15，与 integration-testing 首用失败相关"
+
+collaboration_insights:
+  - "architect→developer handoff 最稳（0.95）；tester→reviewer 最低（0.88）"
+  - "conflict 均由 lead/human 解决，无自动解决（对齐 collaboration 边界）"
+
+bottlenecks:
+  - { finding: "review_delay", severity: "medium", evidence_refs: [ "TR-0001#EV-0009" ] }
+  - { finding: "integration_test_failure_point", severity: "medium", evidence_refs: [ "gate-state#validation" ] }
+  - { finding: "dev_test_handoff_friction", severity: "low", evidence_refs: [ "HO-0002" ] }
+
+recommendations:
+  - { id: "RECO-0001", status: "draft", risk: "low" }
+  - { id: "RECO-0002", status: "draft", risk: "medium" }
+  - { id: "RECO-0003", status: "draft", risk: "low" }
+  - { id: "RECO-0004", status: "draft", risk: "low" }
+
+governance:
+  human_approval_required: true
+  auto_modification: false
+  agent_ranking: false          # 无 best/worst（oi-4）
+  baseline: { agent: 30, mcp: 5, skill: 26, workflow: 8 }
+  note: "Human Approval / Governance First / No Auto Modification"

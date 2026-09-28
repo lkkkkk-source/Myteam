@@ -1,0 +1,102 @@
+# Model Profile Schema (v0.6.8)
+# -----------------------------------------------------------------------------
+# Model Routing Recommendation Layer：Model Profile 结构化定义。
+#
+# 定位：
+#   - 本 Schema 定义「一个模型能力档位」应包含哪些字段。
+#   - 使用【抽象能力等级】，不绑定任何具体模型 / Provider / 具体模型名。
+#   - Model Registry（model-registry.yaml）按照本 Schema 登记抽象模型类。
+#
+# 只推荐、不执行：
+#   - 本层只产出「需要什么级别的模型能力」的推荐（recommendation）。
+#   - 不自动调用模型、不自动切换 Provider、不修改 OpenCode runtime。
+#
+# 分层职责（四层分离）：
+#   - Model Router 只决定「需要什么级别的模型能力」，禁止反向决定 Agent（谁负责完成）。
+# -----------------------------------------------------------------------------
+
+schema_version: 1
+owner: engops-lead
+updated_at: "2026-09-21"
+layer: model-routing-recommendation
+stage: v0.6.8
+
+# ===================== 抽象能力等级词汇表 =====================
+# 所有等级均为抽象枚举，禁止绑定具体模型名 / Provider 名。
+# 绑定具体模型 / 自动切换是未来阶段（v0.6.9+），本阶段只定义推荐档位。
+
+levels:
+  reasoning_level: [low, medium, high, very-high]       # 推理强度
+  coding_level: [low, medium, high]                     # 编码强度
+  context_capacity: [small, medium, large, very-large]  # 上下文容量
+  speed_level: [fast, medium, slow]                     # 响应速度
+  cost_level: [low, medium, high]                       # 成本档位
+  vision_support: [false, true]                         # 图像输入支持
+  tool_support: [false, true]                           # 工具调用支持
+
+# ===================== Model Profile 字段 =====================
+# model_class:  抽象模型档位 ID（推荐输出的主键），如 high-reasoning / fast-coding / long-context
+# provider:     抽象 Provider 类别（仅能力归属标记，非具体 Provider 名）
+# capability_class: 能力类别（reasoning / coding / context / general）
+# reasoning_level / coding_level / context_capacity / speed_level / cost_level
+# vision_support / tool_support：抽象能力等级
+
+model_profile:
+  model_id:
+    type: string
+    description: "抽象模型档位 ID（唯一）。只允许抽象档位名，禁止绑定具体模型名。"
+    example: "high-reasoning"
+  provider:
+    type: string
+    description: "抽象 Provider 类别（仅能力归属标记，非具体 Provider 名）。"
+    example: "abstract-provider-class"
+  capability_class:
+    type: enum
+    values: [reasoning, coding, context, general]
+    description: "能力主类别，决定该档位在 Routing Policy 中的匹配优先级。"
+  reasoning_level:
+    type: enum
+    values: [low, medium, high, very-high]
+    description: "推理强度等级（抽象）。"
+  coding_level:
+    type: enum
+    values: [low, medium, high]
+    description: "编码能力等级（抽象）。"
+  context_capacity:
+    type: enum
+    values: [small, medium, large, very-large]
+    description: "上下文容量等级（抽象）。"
+  speed_level:
+    type: enum
+    values: [fast, medium, slow]
+    description: "响应速度等级（抽象）。"
+  cost_level:
+    type: enum
+    values: [low, medium, high]
+    description: "成本档位（抽象）。"
+  vision_support:
+    type: boolean
+    description: "是否支持图像输入（抽象）。"
+  tool_support:
+    type: boolean
+    description: "是否支持工具调用（抽象）。"
+
+# ===================== 示例（抽象档位，非具体模型）=====================
+example:
+  model_id: "high-reasoning"
+  provider: "abstract-provider-class"
+  capability_class: "reasoning"
+  reasoning_level: "very-high"
+  coding_level: "high"
+  context_capacity: "large"
+  speed_level: "medium"
+  cost_level: "high"
+  vision_support: true
+  tool_support: true
+
+# ===================== 约束 =====================
+constraints:
+  - "本 Schema 禁止出现具体模型名（如 claude-*/gpt-*/deepseek-*）或具体 Provider 名。"
+  - "model-registry.yaml 中的每个 model_class 必须符合本 Schema 字段集。"
+  - "routing-policy.yaml 的输出 recommended_model_class 必须引用 model-registry.yaml 已登记的 model_class。"
+  - "本层只做推荐（recommendation），不触发任何执行 / 切换动作。"

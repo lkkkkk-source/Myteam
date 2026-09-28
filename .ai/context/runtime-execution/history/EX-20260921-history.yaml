@@ -1,0 +1,42 @@
+# Execution History — 只增记录（v0.9）
+# 执行历史（审计留底，只增不改）。含 Observability 执行指标。
+version: 1
+task_id: "refund-feature"
+generated_at: "2026-09-21T16:45:00"
+owner: "engops-lead"
+
+entries:
+  - execution_id: "EX-0001"
+    action_ref: "AP-0001"
+    executor: "code-workspace-executor"
+    status: "completed"
+    execution_duration_sec: 60
+    failure_type: null
+    rollback_count: 0
+    artifact_output: ".ai/artifacts/code/refund-feature/calculate-refund.ts"
+  - execution_id: "EX-0002"
+    action_ref: "AP-0002"
+    executor: "test-executor"
+    status: "cancelled"
+    execution_duration_sec: 0
+    failure_type: "unapproved-action"      # 未批准被拒
+    rollback_count: 0
+    artifact_output: null
+  - execution_id: "EX-0003"
+    action_ref: "AP-0001"
+    executor: "code-workspace-executor"
+    status: "rolled_back"
+    execution_duration_sec: 60
+    failure_type: "execution-failure"
+    rollback_count: 1
+    artifact_output: null
+
+# Observability 执行指标（进入 execution metrics）
+execution_metrics:
+  total: 3
+  completed: 1
+  cancelled: 1
+  rolled_back: 1
+  failed: 0
+  rollback_count: 1
+  approved_before_execution_rate: 1.0     # 所有 running/completed 均来自 approved action（EX-0002 未批准即被拒）

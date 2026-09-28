@@ -1,0 +1,34 @@
+# =====================================================================
+# Role Schema — v1.4.3
+# =====================================================================
+# 定义一个 Role（职责单元，跨 team 可复用）的结构。
+# Role 是能力与职责的抽象；Agent 通过 agent-role-binding 绑定到 role。
+# =====================================================================
+
+version: 1
+layer: "organization-role"
+stage: "v1.4.3"
+owner: "engops-lead"
+schema_for: "platform/organization/roles/*.yaml"
+
+role:
+  - field: "role_id"
+    type: "string"
+    required: true            # architect / developer / tester / reviewer / analyst / lead / planner / writer / ops / manager
+  - field: "responsibility"
+    type: "string"
+    required: true            # 核心职责（如 implementation）
+  - field: "required_capabilities"
+    type: "list"
+    required: true            # 该 role 需要的能力（对齐 capability-registry）
+  - field: "allowed_scope"
+    type: "list"
+    required: true            # 允许的操作范围（边界）
+  - field: "quality_expectation"
+    type: "list"
+    required: false           # 质量期望
+
+rules:
+  - "role 只定义职责 + 能力 + 范围；不绑定具体 Agent（绑定在 agent-role-binding）"
+  - "role 可被多个 team / 多个 agent 复用"
+  - "role 不执行 / 不选 Agent（org-3）"

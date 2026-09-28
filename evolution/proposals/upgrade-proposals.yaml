@@ -1,0 +1,40 @@
+# Upgrade Proposals — v0.6.3 (Proposal Only)
+
+> 提案仅记录演进方向，**本阶段不修改任何 source prompt**。
+> 每条提案标注：目标 Agent / 来源外部参考 / 类型（Professional / Context / Memory / Quality）/ 状态（proposed）。
+
+## Professional 能力协议
+| ID | 目标 Agent | 来源外部参考 | 建议动作 |
+|----|-----------|--------------|----------|
+| P-01 | java/java-architect | engineering/engineering-software-architect | Guardrails 增加架构原则参考：No architecture astronautics；Trade-offs over best practices；Reversibility matters；Protect dependency direction |
+| P-02 | advisory/solution-architect | engineering/engineering-software-architect | 输出参考增加 ADR 结构（Context / Options / Rationale），复用 adr-recorder |
+| P-03 | java/java-reviewer | engineering/engineering-code-reviewer | 增加评审验收清单（正确性 / 边界 / 可维护性 / 安全 / 性能），输出含逐项证据引用 |
+| P-04 | java/java-tester | testing/testing-api-tester | 增加 API 测试边界清单（状态码 / 参数校验 / 契约 / 幂等 / 安全） |
+| P-05 | engops/git-manager | engineering/engineering-git-workflow-master | Guardrails 增加 Git 规范清单（提交原子性 / 分支模型 / 冲突处理） |
+| P-06 | research/literature-agent | engineering/engineering-rag-pipeline-engineer | 检索结构增加相关性评分与来源溯源（证据化） |
+| P-07 | research/research-analyst | academic/academic-statistician | 增加统计实验方法清单（样本 / 显著性 / 效应量 / 多重比较） |
+
+## Context 协议
+| ID | 目标 Agent | 来源外部参考 | 建议动作 |
+|----|-----------|--------------|----------|
+| C-01 | pm/project-manager-agent | project-management/project-manager-senior | Output 增加里程碑收口（决策 / 风险 / 下一步），复用 platform-state |
+| C-02 | pm/project-manager-agent | project-management/project-management-project-shepherd | Guardrails 增加风险清单维度（范围 / 资源 / 依赖 / 技术） |
+| C-03 | research/experiment-agent | project-management/project-management-experiment-tracker | 输出结构参考实验跟踪（假设 / 变量 / 指标 / 结果 / 复现） |
+
+## Memory 协议
+| ID | 目标 Agent | 来源外部参考 | 建议动作 |
+|----|-----------|--------------|----------|
+| M-01 | memory/task-memory-agent | (保持集中式) | 维持 `.ai/context/memory/task-memory.yaml` 为唯一来源，不引入分散记忆 |
+
+## Quality 协议
+| ID | 目标 Agent | 来源外部参考 | 建议动作 |
+|----|-----------|--------------|----------|
+| Q-01 | java/java-reviewer | security/security-appsec-engineer | Output 增加安全评审项（注入 / 鉴权 / 密钥 / 依赖漏洞） |
+| Q-02 | engops/project-health-agent | security/security-compliance-auditor | 健康检查维度增加合规/安全审计项（引用 security division 清单） |
+| Q-03 | java/java-developer | engineering/engineering-minimal-change-engineer | Guardrails 增加最小改动原则（避免无关重构 / 变更可追溯） |
+| Q-04 | creative/writing-agent | specialized/specialized-document-generator | Output 增加文档结构规范（标题层级 / 术语统一 / 可读性检查） |
+
+## 本阶段状态
+- 以上均为 **proposed**，未修改任何 prompt。
+- 未来升级需人工评审后写入 `source/prompts/**` 并跑基线测试。
+- 全程不新增 / 不删除 Agent，不触碰 runtime 与 skills。

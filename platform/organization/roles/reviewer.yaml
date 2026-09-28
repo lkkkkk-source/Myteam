@@ -1,0 +1,19 @@
+# Role: reviewer — v1.4.3
+version: 1
+layer: "organization-role-instance"
+stage: "v1.4.3"
+
+role_id: "reviewer"
+responsibility: "review-and-quality"
+required_capabilities:
+  - "code-review"
+  - "quality-assessment"
+  - "consistency-check"
+allowed_scope:
+  - "review"
+  - "health-check"
+  - "report"
+quality_expectation:
+  - "read-only-review"     # reviewer 不改代码（对齐 workspace changes_allowed=none）
+  - "evidence-based"
+bound_agents: [ "java-reviewer", "project-health-agent" ]

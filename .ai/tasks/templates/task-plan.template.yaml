@@ -1,0 +1,19 @@
+# 模板：task-plan.yaml
+
+> 复制到 `.ai/tasks/{task_id}/task-plan.yaml` 后按需编辑。
+
+```yaml
+version: 1
+task_id: "{task_id}"
+title: "{任务标题}"
+steps:
+  - id: step-1
+    name: "{步骤名}"
+    agent: "{agent 名}"
+    depends_on: []
+    inputs: []
+    outputs: []
+    status: pending
+    parallel_group: ""
+  # 复制 步骤块 追加
+```

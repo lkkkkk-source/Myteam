@@ -1,0 +1,18 @@
+/**
+ * MyTeam OpenCode Plugin — Local Project Reference Shim — v1.5.2
+ * ---------------------------------------------------------------------------
+ * 本机本地加载入口（OpenCode 项目级 plugin 目录：<project>/.opencode/plugins/）。
+ *
+ * 目的：让本机 OpenCode 在 MyTeam 仓库内启动时，通过【就地引用】加载 MyTeam 插件，
+ *       无需发布 npm、无需写宿主 ~/.config/opencode、无需复制 runtime/source/prompts。
+ *
+ * 本文件仅【再导出】既有插件入口（引用，非复制）：
+ *   MyTeam Entry → project-manager-agent → Router → Team → Role → 30 Agents
+ *
+ * 隔离（强制）：
+ *   - 位于 MyTeam 仓库内（非宿主 config），host 零污染；
+ *   - 只 re-export，不复制 runtime/source/platform/prompts；
+ *   - 删除本文件即卸载（reversible）。
+ */
+
+export { MyTeamPlugin, default } from "../../plugin/opencode/index.ts";

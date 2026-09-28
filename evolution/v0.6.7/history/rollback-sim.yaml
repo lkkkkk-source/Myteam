@@ -1,0 +1,22 @@
+# rollback sim（v0.6.7）— research-analyst v2 → v1
+# -----------------------------------------------------------------------------
+# 演示：知识层/升级均可在保持基线不变的前提下回滚。
+# 说明：本文件仅登记回滚可用性（git 可追踪），并不代表本次已回滚。
+#   research-analyst 本次实际为 released（BM-067-01 accept），本模拟证明「若需可回退」。
+
+rollback_id: RB-067-01
+agent: research-analyst
+from_version: v2
+to_version: v1
+released_at: "2026-09-21"
+rollback_available: true
+method: |
+  1. git 恢复 evolution/v0.6.7/applied/research-analyst-v2.md 所应用的 source 前状态
+     → source/prompts/research/research-analyst.md 还原为 v1
+  2. 同步还原 agents/research/research-analyst.md 镜像
+  3. evolution-state.yaml 中 research-analyst 标回 rollback（state=rollback, version=v1）
+  4. version-registry.yaml 对应条目 state 回写 v1 / rollback
+  5. 重跑基线确认 Agent=30 MCP=5 Skill=26 Workflow=8 不变
+invariant:
+  - 回滚只作用于 research-analyst 自身，不影响已 released 的 java 链 4 个 Agent
+  - knowledge/pattern-registry 为只读证据，回滚 prompt 不删除 pattern 记录

@@ -1,0 +1,25 @@
+# Trace Index — 集成台账（v1.4.1）
+# 所有 task trace 索引。只记录 pointer，不执行 / 不改状态。
+version: 1
+layer: "debug-trace-storage"
+stage: "v1.4.1"
+updated_at: "2026-09-21T21:00:00"
+owner: "engops-lead"
+
+traces:
+  - trace_id: "TR-0001"
+    task_id: "refund-feature"
+    workflow_id: "java-feature-development"
+    start_time: "2026-09-21T18:00:00"
+    end_time: "2026-09-21T19:30:00"
+    status: "completed"
+    layers: [ "router", "team", "agent", "collaboration", "workspace", "action", "approval", "execution", "quality", "artifact", "memory", "evolution", "safety" ]
+    events_ref: ".ai/context/debug-trace/events/TR-0001-events.yaml"
+
+summary:
+  total: 1
+  completed: 1
+  running: 0
+  failed: 0
+  archived: 0
+  note: "trace records pointers only; never executes / repairs / schedules"

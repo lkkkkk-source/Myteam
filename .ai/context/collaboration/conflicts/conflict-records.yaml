@@ -1,0 +1,25 @@
+# Conflict Records — v1.4（只增，可追溯；冲突不自动解决）
+version: 1
+layer: "collaboration-conflict"
+stage: "v1.4"
+task_id: "refund-feature"
+updated_at: "2026-09-21T20:00:00"
+
+conflicts:
+  # Case4: reviewer reject developer change → resolution recorded
+  - conflict_id: "CF-0001"
+    participants: [ "java-reviewer", "java-developer" ]
+    issue: "step-3b 命名与分层不规范（reviewer reject developer change）"
+    positions:
+      - { agent: "java-reviewer", stance: "命名违反规范，需返工" }
+      - { agent: "java-developer", stance: "功能正确，命名可后续优化" }
+    evidence: ".ai/context/quality/gates/refund-feature-review.yaml"
+    resolution: "采纳 reviewer：developer 按规范返工 step-3b（review gate 重走）"
+    resolver: "java-lead"      # 人工裁决（非自动）
+    status: "resolved"
+
+summary:
+  total: 1
+  open: 0
+  resolved: 1
+  note: "conflicts resolved by human/lead (resolver), never auto-resolved"

@@ -1,0 +1,56 @@
+# External Repository Metadata — agency-agents
+
+> 外部 Agent Prompt 研究库。本仓库为**只读参考源**，不做合并/替换/安装。
+
+## Repository
+- **name**: agency-agents
+- **upstream**: https://github.com/lkkkkk-source/agency-agents.git
+- **origin README badge**: https://github.com/msitarzewski/agency-agents (upstream fork)
+- **license**: MIT
+- **clone path**: `external/agency-agents/`
+- **clone depth**: 1 (shallow)
+- **cloned head**: 459dce8 "Add GaussDB Expert Engineer specialist (#587) (#726)"
+- **cloned at**: 2026-09-21
+
+## Scale (source of truth on disk)
+| Metric | Count |
+|--------|-------|
+| Agent .md files (frontmatter name) | 264 |
+| Raw agent-style .md files | 276 |
+| Top-level divisions | 21 (excl. .github, examples, integrations, scripts, strategy) |
+| divisions.json | present (division catalog) |
+| tools.json | present (tool install contracts) |
+
+## Division Breakdown (by .md count)
+| Division | Agents |
+|----------|-------|
+| specialized | 56 |
+| engineering | 54 |
+| marketing | 36 |
+| game-development | 20 |
+| gis | 13 |
+| security | 12 |
+| testing | 9 |
+| sales | 9 |
+| design | 9 |
+| project-management | 7 |
+| paid-media | 7 |
+| spatial-computing | 6 |
+| academic | 6 |
+| support | 6 |
+| product | 5 |
+| finance | 5 |
+| healthcare | 3 |
+| integrations | 1 (converted output dir, not source agents) |
+
+## Frontmatter Schema (external)
+- `name`, `description`, `color`, `emoji`, `vibe`, optional `tools`/`services`/`Mode`/`TRIGGER`
+
+## Relevance to MyTeam
+- Highest relevance divisions for mapping: **engineering**, **project-management**, **testing**, **security**, **product**, **academic**, **design**, **support**, **specialized**
+- Lowest relevance: game-development, gis, paid-media, spatial-computing, healthcare, sales, finance, marketing (domain-specific, outside MyTeam baseline)
+
+## Usage Policy
+- Reference / research only.
+- No auto-merge, no auto-replace, no auto-install.
+- Any future adoption must be manually curated into `source/` prompts and re-verified against baseline.

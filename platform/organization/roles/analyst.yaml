@@ -1,0 +1,20 @@
+# Role: analyst — v1.4.3
+version: 1
+layer: "organization-role-instance"
+stage: "v1.4.3"
+
+role_id: "analyst"
+responsibility: "analysis-and-inquiry"
+required_capabilities:
+  - "analysis"
+  - "requirement-gathering"
+  - "research-inquiry"
+allowed_scope:
+  - "requirement-analysis"
+  - "literature-search"
+  - "experiment-design"
+  - "discussion"
+quality_expectation:
+  - "evidence-based"
+  - "trade-off-first"
+bound_agents: [ "research-analyst", "literature-agent", "experiment-agent", "innovation-agent", "requirement-agent", "discussion-agent" ]

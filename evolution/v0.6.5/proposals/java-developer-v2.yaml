@@ -1,0 +1,47 @@
+# Upgrade Proposal: java-developer v1 → v2
+
+proposal_id: P-065-01
+status: approved
+reviewed_by: engops-lead (人工审核模拟)
+reviewed_at: "2026-09-21"
+review_note: 加法升级，系统层协议字段完整保留；风险可控，批准生成 v2 并进入 benchmark
+created_at: "2026-09-21"
+agent: java-developer
+team: software-engineering
+current_version: v1
+target_version: v2
+upgrade_type: additive
+
+## changes
+
+- 引入 Critical Rules（转写 minimal-change 工程纪律到 Spring Boot / MyBatis 语境）
+- 引入 Engineering Checklist（提交前 Scope Self-Check）
+- 引入 Evidence based output（改动行引用 + 测试证据 + diff size + follow-ups）
+- 引入 Production awareness（系统边界校验 / 事务 / 幂等 / N+1 自查）
+- 保留全部系统层协议（Context / Memory / Artifact / Quality Gate / Failure handling）
+
+## removed
+
+- 无删除项（v2 为加法升级，不删任何 v1 字段）
+
+## added
+
+- Guardrails 增加：Critical Rules 七条 + Scope Self-Check
+- Output Format 重写为证据化结构（附模板）
+- Workflow 增加：提交前逐行自检 + 评审加活拒绝转 follow-up
+- Role 增加：生产意识描述（不引入新 MCP / Skill / 不新增文件协议）
+
+## risk
+
+- 低：纯加法，不触碰系统层协议字段
+- 中：Workflow 长度增加，需确认 step 数可维护（控制在 9 步内）
+- 低：evidence 输出增加 token 消耗，换取可追溯性
+- 无：不改 MCP / Skill / Runtime / Agent 数量
+
+## benchmark_plan
+
+- 测试场景：退款功能（refund）开发任务
+- 比较 v1（旧 Prompt）vs v2（新 Prompt）
+- 维度：任务理解 / 代码质量 / 测试覆盖 / Artifact 完整性 / Handoff 质量 / Recovery 能力
+- 结果写入：evolution/v0.6.5/benchmarks/java-developer-result.yaml
+- decision: accept | reject（accept 才允许 source 升级）

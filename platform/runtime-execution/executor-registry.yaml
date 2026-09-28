@@ -1,0 +1,72 @@
+# =====================================================================
+# Executor Registry — v0.9
+# =====================================================================
+# 定义：哪些执行器（executor）支持哪些动作、需要什么权限、在什么环境、是否支持回滚。
+# 只登记能力，不实现真实执行；Execution Request 的 executor_id 必须引用本表。
+# 阶段：v0.9 · Runtime Controlled Execution Interface Layer（只登记 / 只检查）
+# =====================================================================
+
+version: 1
+layer: "runtime-execution-executor-registry"
+stage: "v0.9"
+owner: "engops-lead"
+updated_at: "2026-09-21"
+
+# executor 与 v0.8 action_type 对齐（supported_actions ⊆ action-policy.action_types）
+executors:
+  - executor_id: "code-workspace-executor"
+    type: "workspace"
+    supported_actions: [ "write-file" ]
+    permissions: [ "workspace_write" ]
+    environment: "workspace"
+    rollback_support: true
+    rollback_strategy: [ "artifact_restore", "workspace_restore" ]
+
+  - executor_id: "test-executor"
+    type: "process"
+    supported_actions: [ "run-command", "trigger-workflow" ]
+    permissions: [ "workspace_write", "process_run" ]
+    environment: "sandbox"
+    rollback_support: true
+    rollback_strategy: [ "workspace_restore", "state_restore" ]
+
+  - executor_id: "docs-executor"
+    type: "workspace"
+    supported_actions: [ "write-file" ]
+    permissions: [ "workspace_write" ]
+    environment: "workspace"
+    rollback_support: true
+    rollback_strategy: [ "artifact_restore" ]
+
+  - executor_id: "deploy-executor"
+    type: "deploy"
+    supported_actions: [ "deploy-artifact" ]
+    permissions: [ "human_approval", "deploy_target_write" ]
+    environment: "external"
+    rollback_support: true
+    rollback_strategy: [ "state_restore" ]
+
+  - executor_id: "release-executor"
+    type: "release"
+    supported_actions: [ "release-publish" ]
+    permissions: [ "human_approval", "publish" ]
+    environment: "external"
+    rollback_support: false      # 发布类通常不可自动回滚，需人工处理
+    rollback_strategy: [ ]
+
+  - executor_id: "config-executor"
+    type: "config"
+    supported_actions: [ "config-change" ]
+    permissions: [ "explicit_user_confirmation", "config_write" ]
+    environment: "platform"
+    rollback_support: true
+    rollback_strategy: [ "state_restore" ]
+
+# ---------------------------------------------------------------------
+# 一致性约束（供 project-health-agent 校验）
+# ---------------------------------------------------------------------
+constraints:
+  - "每个 executor 的 supported_actions 必须都是 action-policy.yaml 中登记的 action_type"
+  - "Execution Request.executor_id 必须存在于本表，且该 executor 支持该 action_type"
+  - "rollback_support=false 的 executor（如 release）失败时需人工处理，不得自动回滚"
+  - "本表只登记执行能力，不实现真实执行"

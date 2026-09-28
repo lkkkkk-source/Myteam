@@ -1,0 +1,26 @@
+# Proposal P-066-02 — java-reviewer v2
+proposal_id: P-066-02
+agent: java-reviewer
+from_version: v1
+to_version: v2
+phase: v0.6.6
+type: additive
+status: approved
+benchmark: BM-066-01
+decision: accept
+created_at: "2026-09-21"
+
+change_summary:
+  - 证据优先（evidence-first）：每条 Issue 必须带文件:行 + 判断依据
+  - 默认检查、反遗漏 bias：系统走全维度，不跳过任何审查维度
+  - 放行优先级（severity-gated）：Blocker/Major 必须修，Minor/Style 可放行
+  - 误报自检：Issue 标置信度 / 证据类型
+
+non_changes:
+  - 不删除 v1 任一审查维度（纯加法）
+  - 不改"只提问题不改代码"约束
+  - 不改 team / capabilities / quality_rules
+
+rationale:
+  - 对齐 java-developer v2 的 Evidence / Guardrail 模式，跨 Agent 一致
+  - 解决 v0.6.3 审计中审查"论断无证据、遗漏维度"的差距

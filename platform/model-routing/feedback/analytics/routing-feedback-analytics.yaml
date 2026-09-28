@@ -1,0 +1,62 @@
+# Routing Feedback Analytics (v0.6.9)
+# -----------------------------------------------------------------------------
+# Model Routing Feedback Loop：反馈分析报告。
+#
+# 汇总 feedback-history + feedback-metrics，产出「什么任务适合什么模型能力等级」
+# 的知识洞察；并以 improvement proposal 形式给出可审核的改进候选。
+#
+# 最终目标：Model Recommendation → Model Recommendation Intelligence，
+# 使系统「知道」任务 ↔ 档位的适配关系；但始终：
+#   - 人工审核
+#   - 策略可追踪
+#   - 不自动改变行为
+# -----------------------------------------------------------------------------
+
+routing_feedback_analytics_version: 1
+layer: model-routing-feedback
+stage: v0.6.9
+owner: engops-lead
+updated_at: "2026-09-21"
+sources:
+  - "platform/model-routing/feedback/feedback-history.yaml"
+  - "platform/model-routing/feedback/metrics/feedback-metrics.yaml"
+  - "platform/model-routing/history/model-routing-history.yaml"
+
+# ===================== 分析结论（知识）=====================
+findings:
+  - id: "F-069-01"
+    task_pattern: "architecture-design + high complexity"
+    learned_class: "high-reasoning"
+    confidence: "high"       # T-068-001 成功，档位匹配良好
+    evidence: ["T-068-001", "FH-069-001"]
+    action: "维持 MR-2 规则不动"
+  - id: "F-069-02"
+    task_pattern: "feature + low complexity"
+    learned_class: "fast-coding"
+    confidence: "high"
+    evidence: ["T-068-003", "FH-069-002"]
+    action: "维持 MR-5 规则不动"
+  - id: "F-069-03"
+    task_pattern: "research + large context"
+    learned_class: "long-context"
+    confidence: "medium"     # 成功但档位偏强
+    evidence: ["T-068-002", "FH-069-003"]
+    action: "评估 research 类默认档位可否下调（候选提案 P-069-01）"
+  - id: "F-069-04"
+    task_pattern: "content 多模态生成"
+    learned_class: "general" # 当前不足
+    confidence: "high"       # 明确 under-provisioned
+    evidence: ["T-068-004", "FH-069-004"]
+    action: "调整 content 类默认档位为更强档位（候选提案 P-069-02）"
+
+# ===================== 知识沉淀 =====================
+knowledge:
+  - "系��已能从历史反馈归纳『任务类型 ↔ 推荐档位』适配关系（Model Recommendation Intelligence 雏形）"
+  - "该知识以 findings / insights 呈现，供人工与 proposal 审核参考"
+  - "知识只增不改：每条 finding 带 evidence，可追溯到具体反馈记录"
+
+# ===================== 边界 =====================
+constraints:
+  - "analytics 只沉淀知识/洞察，不自动修改 routing-policy 或 model-registry"
+  - "任何策略变更以 improvement proposal 形式提出，经 engops-lead 人工审核批准后才落地"
+  - "knowledge 可追溯、可回滚；不引入不可解释的『自动学习改行为』"

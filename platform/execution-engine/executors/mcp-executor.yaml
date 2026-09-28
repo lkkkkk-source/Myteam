@@ -1,0 +1,19 @@
+# Executor: mcp-executor — v1.2
+version: 1
+id: "mcp-executor"
+layer: "execution-engine-executor"
+stage: "v1.2"
+type: "mcp"
+supported_actions: [ "call_mcp_tool" ]
+risk_level: "medium"
+sandbox_required: "temp-env"
+permission_required: true
+permissions: [ "mcp_invoke" ]
+# 只允许平台已登记的 5 个 MCP（对齐 .ai/context/capability/mcp-registry.yaml）
+allowed_mcp: [ "context7", "fetch", "memory", "playwright", "sequential-thinking" ]
+rollback_support: true
+rollback_strategy: [ "state_restore" ]
+quality_gate: "validation"
+notes:
+  - "只调用已登记 MCP；不自动新增 MCP"
+  - "playwright 浏览器动作应经 browser-executor 或 sandbox 约束"

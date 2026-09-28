@@ -1,0 +1,16 @@
+version: 1
+parallelism:
+  default: 2
+  per_team: 2
+  max: 3
+
+allow_parallel: true
+merge_policy: "wait_all"
+
+resource_rules:
+  - condition: "step 无依赖且同 Team"
+    action: "可并行（≤ per_team）"
+  - condition: "跨 Team 依赖"
+    action: "等待 shared/handoff 就绪"
+  - condition: "MCP 密集型 step"
+    action: "降级为串行（避免 MCP 超时）"

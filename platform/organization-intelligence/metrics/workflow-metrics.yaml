@@ -1,0 +1,59 @@
+# Workflow Metrics — v1.5
+# 分析 phase duration / bottleneck / failure point；来源：Trace。
+version: 1
+layer: "organization-intelligence-workflow-metrics"
+stage: "v1.5"
+owner: "engops-lead"
+scope: "workflow"
+time_range: "2026-09-01..2026-09-23"
+read_only: true
+
+source_refs:
+  - ".ai/context/debug-trace/trace-index.yaml"
+  - ".ai/context/debug-trace/events/TR-0001-events.yaml"
+
+# 以 refund-feature（TR-0001）生命周期为样本，统计各阶段耗时
+phases:
+  - phase: "router/classification"
+    layer: "router"
+    duration: "2m"
+    evidence_refs: [ "TR-0001#EV-0001" ]
+  - phase: "team/agent-assignment"
+    layer: "agent"
+    duration: "3m"
+    evidence_refs: [ "TR-0001#EV-0003" ]
+  - phase: "collaboration/handoff"
+    layer: "collaboration"
+    duration: "15m"
+    evidence_refs: [ "TR-0001#EV-0004" ]
+  - phase: "workspace/implementation"
+    layer: "workspace"
+    duration: "20m"
+    evidence_refs: [ "TR-0001#EV-0005" ]
+  - phase: "action+approval"
+    layer: "approval"
+    duration: "2m"
+    evidence_refs: [ "TR-0001#EV-0006", "TR-0001#EV-0007" ]
+  - phase: "execution"
+    layer: "execution"
+    duration: "3m"
+    evidence_refs: [ "TR-0001#EV-0008" ]
+  - phase: "quality/review"
+    layer: "quality"
+    duration: "15m"          # review 阶段耗时偏高 → bottleneck 候选
+    bottleneck_candidate: true
+    evidence_refs: [ "TR-0001#EV-0009" ]
+
+failure_points:
+  - point: "quality/validation (integration-testing)"
+    note: "refund step-4 validation first-use failure"
+    evidence_refs: [ "gate-state#validation", "analytics-report#integration-testing" ]
+
+summary:
+  phases_analyzed: 7
+  bottleneck_candidates: [ "quality/review" ]
+  note: "durations derived from trace pointers only; workflow not modified (oi-2)"
+
+boundaries:
+  - "只分析 trace 阶段耗时；不自动调整 workflow（oi-2）"
+  - "只读来源，不修改（oi-1）"

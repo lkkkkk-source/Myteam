@@ -1,0 +1,59 @@
+# =====================================================================
+# Merge Policy — v1.3
+# =====================================================================
+# workspace 合并治理：Agent workspace → Review → Quality Gate → Approval → Merge。
+# 禁止 automatic_merge。
+# =====================================================================
+
+version: 1
+layer: "workspace-merge"
+stage: "v1.3"
+owner: "engops-lead"
+
+# 合并流程（强制顺序）
+flow:
+  - "1. Agent workspace（active）提交合并请求 → status=pending"
+  - "2. Review（java-reviewer / java-architect 只读评审）→ status=reviewing"
+  - "3. Quality Gate（validation/review/acceptance，.ai/context/quality/gate-state.yaml）"
+  - "4. Approval（PM/human，依 risk）"
+  - "5. Merge（人工触发）→ status=merged"
+
+# 合并状态机
+states:
+  - "pending"
+  - "reviewing"
+  - "approved"
+  - "rejected"
+  - "merged"
+
+# 合并请求字段
+merge_request:
+  - field: "merge_id"
+    type: "string"
+    required: true            # MG-NNNN
+  - field: "workspace_id"
+    type: "string"
+    required: true
+  - field: "review_ref"
+    type: "string"
+    required: true            # 评审记录
+  - field: "quality_ref"
+    type: "string"
+    required: true            # quality gate 结果
+  - field: "approved_by"
+    type: "string"
+    required: false
+  - field: "status"
+    type: "string"
+    required: true
+
+rules:
+  - "automatic_merge = false（禁止自动合并，ws-3）"
+  - "merge 前必须 review + quality gate 通过 + approval"
+  - "review rejected → status=rejected，merge blocked"
+  - "quality gate 未过 → 不得 approved / merged"
+  - "禁止自动覆盖其他 Agent 修改（冲突转人工）"
+
+not_implemented:
+  - "automatic-merge"
+  - "auto-conflict-overwrite"

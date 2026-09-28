@@ -1,0 +1,26 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case4-quality-gate-failure"
+created_at: "2026-09-20T14:46:00"
+
+# Case4：质量 Gate 失败
+# 验证：quality failure 统计
+
+scenario:
+  trigger: "step-3b review rejected（质量 Gate 失败）"
+
+expected:
+  quality_gate_failures_before: 0
+  quality_gate_failures_after: 1   # 增加
+  quality_metrics_updated: true
+  gate_pass_rate: 0.75
+
+actual:
+  quality_gate_failures_before: 0
+  quality_gate_failures_after: 1
+  refs:
+    - "observability/metrics/task-metrics.yaml"
+    - "observability/metrics/quality-metrics.yaml"
+
+result: "PASS"
+assertion: "质量 Gate 失败 → quality_gate_failures 统计 +1，gate_pass_rate 更新"

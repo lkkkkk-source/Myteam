@@ -1,0 +1,39 @@
+# Message History — v1.4（只增审计；只存结论 + evidence_ref）
+version: 1
+layer: "collaboration-message"
+stage: "v1.4"
+task_id: "refund-feature"
+updated_at: "2026-09-21T20:00:00"
+
+messages:
+  # Case1: developer → tester
+  - message_id: "MSG-0001"
+    from_agent: "java-developer"
+    to_agent: "java-tester"
+    task_id: "refund-feature"
+    type: "request"
+    content: "refund 计算逻辑已改（CH-0001），请补边界回归测试"
+    evidence_ref: ".ai/context/workspace/changes/change-records.yaml#CH-0001"
+    created_at: "2026-09-21T18:42:00"
+  - message_id: "MSG-0002"
+    from_agent: "java-tester"
+    to_agent: "java-developer"
+    task_id: "refund-feature"
+    type: "response"
+    content: "已补 refund.spec.ts（CH-0002），阶梯边界覆盖"
+    evidence_ref: ".ai/context/workspace/changes/change-records.yaml#CH-0002"
+    created_at: "2026-09-21T18:47:00"
+  # Case5: message references workspace
+  - message_id: "MSG-0003"
+    from_agent: "java-reviewer"
+    to_agent: "java-developer"
+    task_id: "refund-feature"
+    type: "review"
+    content: "review WS-0001：step-3b 命名不规范，reject，需返工"
+    evidence_ref: ".ai/context/workspace/workspace-state.yaml#WS-0001"
+    created_at: "2026-09-21T18:55:00"
+
+summary:
+  total: 3
+  by_type: { request: 1, response: 1, review: 1 }
+  note: "content = conclusions only (no full chat / no full code)"

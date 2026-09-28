@@ -1,0 +1,19 @@
+# Role: architect — v1.4.3
+version: 1
+layer: "organization-role-instance"
+stage: "v1.4.3"
+
+role_id: "architect"
+responsibility: "architecture-and-design"
+required_capabilities:
+  - "system-design"
+  - "api-contract-design"
+  - "trade-off-analysis"
+allowed_scope:
+  - "design-docs"
+  - "architecture-review"
+  - "interface-definition"
+quality_expectation:
+  - "api-contract-first"
+  - "dependency-direction-clarity"
+bound_agents: [ "java-architect", "solution-architect" ]

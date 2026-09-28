@@ -1,0 +1,37 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case3-required-capabilities"
+created_at: "2026-09-20T15:44:00"
+
+# Case3：任务"开发退款功能"
+# 验证：生成 required capabilities，但不自动选择 Agent
+
+scenario:
+  task: "开发退款功能"
+  source: "capability/agent-capabilities.yaml"
+
+expected:
+  required_capabilities:
+    - "spring-boot"
+    - "mybatis"
+    - "rest-api"
+    - "tdd"
+    - "unit-testing"
+    - "code-review"
+    - "architecture-design"
+  auto_select_agent: false       # 关键断言
+  note: "required capabilities 生成后由 PM + Approval 决定执行者"
+
+actual:
+  required_capabilities:
+    - "spring-boot"
+    - "mybatis"
+    - "rest-api"
+    - "tdd"
+    - "unit-testing"
+    - "code-review"
+    - "architecture-design"
+  auto_select_agent: false
+
+result: "PASS"
+assertion: "任务 → 生成 required capabilities，不自动选 Agent"

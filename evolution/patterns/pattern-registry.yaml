@@ -1,0 +1,148 @@
+# Pattern Registry (v0.6.7)
+# -----------------------------------------------------------------------------
+# Agent Evolution Pattern Registry：登记「哪些升级方式过去有效、哪些失效」。
+# 由 engops-lead 从每次 released / rejected / rolled-back 升级中沉淀，供未来升级复用。
+# 该注册表是 Evolution Knowledge 的证据主体，**只建议、不自动应用**。
+#
+# 字段约定：
+#   id            : PATTERN-<n>
+#   name          : 模式名（在 Proposal 中通过 patterns_used 引用）
+#   category      : effective（有效，可复用）/ failed（失效，避免重复）/ caution（有条件）
+#   evidence      : 来源 benchmark / proposal id（可追溯）
+#   delta_quality : 该模式独立贡献的 benchmark 分数变化（同源归一）
+#   applicability : 适用 Agent 特性（跨 Team 复用的依据）
+#   applied_agents: 已实证应用过的 Agent（跨 Team 来源）
+#   status        : verified（≤2 次实证）/ proven（≥3 次实证，跨 2+ Team）/ watch（观察中）
+
+patterns:
+  - id: PATTERN-001
+    name: evidence-based-output
+    category: effective
+    status: verified
+    delta_quality: +5
+    confidence: 0.9
+    evidence: [BM-065-01, BM-066-01]
+    origin: java-developer v2 (v0.6.5)
+    applied_agents: [java-developer, java-architect, java-reviewer, java-tester]
+    capabilities_targeted: [claim-with-evidence, traceable-output, fact-vs-speculation]
+    mechanism: |
+      强制 Agent 在 Output Fragment 中为每个结论附带「模块/文件/行引用 + 验证途径」，
+      无法附证据的论断不再作为结论输出（转为待核实 / 明确标注推测）。
+    applicability: |
+      适用于任何会输出"论断型结论"的 Agent：开发者（改动/修复）、tester（归属/通过与否）、
+      reviewer（issue/放行）、architect（设计取舍）、research-analyst（趋势/空白/判断）。
+    cross_team_release: v0.6.7 research-analyst（本阶段首例跨 Team 复用）
+    reuse_hint: 新增论证型/结论型 Agent 提案时首先考虑。
+
+  - id: PATTERN-002
+    name: anti-omission-checklist
+    category: effective
+    status: verified
+    delta_quality: +4
+    confidence: 0.85
+    evidence: [BM-066-01]
+    origin: java-reviewer v2 (v0.6.6)
+    applied_agents: [java-reviewer]
+    capabilities_targeted: [coverage-completeness, dimension-coverage]
+    mechanism: |
+      为"必须覆盖的能力维度"建立显式清单，评审/分析时逐项走完，禁止因熟练而跳过子维度。
+    applicability: |
+      适用于以「覆盖完整性」为质量衡量的 Agent（reviewer 维度覆盖、tester 边界覆盖、
+      research-analyst 的多源观点覆盖）。
+    cross_team_release: 待定（v0.6.7 观察 research-analyst 复用潜力）
+    reuse_hint: 与 evidence-based-output 常组合使用。
+
+  - id: PATTERN-003
+    name: anti-fantasy-default-to-failed
+    category: effective
+    status: verified
+    delta_quality: +6
+    confidence: 0.85
+    evidence: [BM-066-01]
+    origin: java-tester v2 (v0.6.6)
+    applied_agents: [java-tester]
+    capabilities_targeted: [grounded-claim, no-fabrication]
+    mechanism: |
+      无证据支撑的乐观结论（"该能过 / 应该没问题"）默认按失败/未验证处理，直到补证。
+    applicability: |
+      适用于验证/评估型 Agent：凡作"通过 / 达标 / 成立"断言必须给证据，否则默认失败。
+    cross_team_release: 待定
+    reuse_hint: 与 PATTERN-001 评估侧互补。
+
+  - id: PATTERN-004
+    name: severity-gated-prioritization
+    category: effective
+    status: verified
+    delta_quality: +4
+    confidence: 0.8
+    evidence: [BM-066-01]
+    origin: java-reviewer v2 (v0.6.6)
+    applied_agents: [java-reviewer]
+    capabilities_targeted: [prioritization, risk-tiering]
+    mechanism: |
+      输出按严重度分级门控（Blocker/Major 必处理，Minor 可放行），让下游优先处理高风险项。
+    applicability: |
+      适用于产出"问题/风险清单"的 Agent（reviewer、tester、research-analyst 的方向优先级）。
+    cross_team_release: 待定
+    reuse_hint: 让结论可被下游直接消费，提升建议的可执行性。
+
+  - id: PATTERN-005
+    name: failed-overinstall-scope-creep
+    category: failed
+    status: watch
+    delta_quality: -2
+    confidence: 0.7
+    evidence: [v0.6.6 proposal review]
+    origin: 早期提案中曾尝试一次纳入过多能力（overinstall 倾向）
+    applied_agents: []
+    capabilities_targeted: []
+    mechanism: |
+      单轮升级贪多（同时加超过 3 项新协议/新职责），导致 review 时难以归因每项对质量的独立贡献，
+      benchmark 无法给出干净 delta。
+    applicability: |
+      反例：任何 Agent 升级都应保持 additive 且单轮聚焦，能力分批演进。
+    failure_cause: "无法归因、破坏可追溯性；review 复杂度上升"
+    reuse_hint: 提案前对照：本 Proposal 是否超过 3 项独立新增 → 若是则拆分批次。
+
+  - id: PATTERN-006
+    name: evidence-without-attribution-foot-gun
+    category: failed
+    status: watch
+    delta_quality: -2
+    confidence: 0.7
+    evidence: [v0.6.6 test-observability]
+    origin: 具名变更缺失、归属臆断（tester 曾把失败错误归因于实现 bug）
+    applied_agents: []
+    capabilities_targeted: []
+    mechanism: |
+      只有"证据"但不区分证据归属（测试写错 vs 实现 bug），会把同一证据误当作两类结论使用。
+    applicability: |
+      反例：作"是否通过"断言时，证据必须指明责任归属，否则反证会失效。
+    failure_cause: "证据无归属 → 反证无效 / 误报"
+    reuse_hint: evidence-based-output 的补充约束：证据需携带 role 归属。
+
+  - id: PATTERN-007
+    name: additive-only-no-teardown
+    category: effective
+    status: proven
+    delta_quality: +0 (enablement)
+    confidence: 0.95
+    evidence: [BM-065-01, BM-066-01]
+    origin: 平台级约定（v0.6.2/v0.6.5 确立）
+    applied_agents: [java-developer, java-architect, java-reviewer, java-tester]
+    capabilities_targeted: []
+    mechanism: |
+      升级只增不改删：保留全部系统层协议（Context/Memory/Artifact metadata/Quality Gate/Failure handling），
+      新增内容可回滚，从机制上避免破坏既有行为契约。
+    applicability: |
+      平台级约束，适用所有 Agent 升级。
+    reuse_hint: 所有 Proposal 的强制前置约束。
+
+# 聚合统计（供 evolution-knowledge / analytics 消费）
+summary:
+  total: 7
+  effective: 5
+  failed: 2
+  verified: 二者均 <3 次实证
+  proven: 1            # PATTERN-007 additive-only
+  watch: 0 (failed 均为 watch)

@@ -1,0 +1,14 @@
+# reject demo (v0.6.6) — 演示 reject 不覆盖 source
+> 该 demo 模拟一个被 reject 的提案：即便存在该提案，其"目标版本"的专属标记也不得出现在 source。
+
+proposal: java-planner-v2-hypothetical
+agent: java-planner
+status: rejected
+decision: reject
+note: demo only — 仅用于测试 assert reject 路径不覆盖 source
+reject_reason: 假设性提案，评估后 reject
+marker: REJECT_DEMO_066_NEVER_IN_SOURCE
+created_at: "2026-09-21"
+invariant:
+  - 该 marker 字符串绝不出现在 source/prompts/**
+  - 被 reject 的 agent 保持原版本，不升级

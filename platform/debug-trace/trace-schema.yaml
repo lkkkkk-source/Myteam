@@ -1,0 +1,90 @@
+# =====================================================================
+# Trace Schema — v1.4.1
+# =====================================================================
+# 目标：建立 Task Trace Runtime，提供一次任务【完整生命周期视图】：
+#   User → Router → Team → PM → Agent → Collaboration → Handoff → Workspace →
+#   Action → Approval → Execution → Executor → Quality → Artifact → Memory → Evolution
+#
+# Trace 只记录（pointer），不执行任何动作。
+# Trace ≠ Memory ≠ Observability ≠ Collaboration ≠ Execution Ledger（不替代）。
+#
+# 阶段：v1.4.1 · MyTeam Debug & Trace Mode Layer
+# 基线：Agent=30 · MCP=5 · Skill=26 · Workflow=8（不新增 / 不删除 / 不改核心行为）
+# =====================================================================
+
+version: 1
+layer: "debug-trace"
+stage: "v1.4.1"
+status: "observe-only"
+schema_for: "platform/debug-trace/**/*.yaml + .ai/context/debug-trace/**/*.yaml"
+
+depends_on:
+  - "v1.4-collaboration"
+  - "v1.3-workspace"
+  - "v1.2-execution-engine"
+  - "v0.4.4-observability"
+
+# ---------------------------------------------------------------------
+# 一、验收不变量（Trace 铁律）
+# ---------------------------------------------------------------------
+invariants:
+  - "tr-1: Trace 只记录 pointer + metadata；不复制大对象 / 不保存代码内容"
+  - "tr-2: Trace 不执行任何动作（不自动执行 / 不自动修复 / 不自动调度 / 不自动改状态）"
+  - "tr-3: Trace ≠ Memory ≠ Observability ≠ Collaboration ≠ Execution Ledger（不替代）"
+  - "tr-4: 每个 trace event 必引用真实来源（reference 有效）"
+  - "tr-5: event.layer 必须是合法层枚举"
+  - "tr-6: Memory 只存 trace pointer + 关键 decision，不存完整 trace"
+
+# ---------------------------------------------------------------------
+# 二、Trace 字段
+# ---------------------------------------------------------------------
+trace:
+  - field: "trace_id"
+    type: "string"
+    required: true            # TR-NNNN
+  - field: "task_id"
+    type: "string"
+    required: true
+  - field: "workflow_id"
+    type: "string"
+    required: false
+  - field: "start_time"
+    type: "string"
+    required: true
+  - field: "end_time"
+    type: "string"
+    required: false
+  - field: "status"
+    type: "string"
+    required: true            # 见 states
+  - field: "events"
+    type: "list"
+    required: true            # trace-event 引用
+  - field: "layers"
+    type: "list"
+    required: true            # 覆盖的层
+
+states:
+  - "created"
+  - "running"
+  - "completed"
+  - "failed"
+  - "archived"
+
+# ---------------------------------------------------------------------
+# 三、禁止字段（出现即 Trace 违规 Critical）
+# ---------------------------------------------------------------------
+forbidden_fields:
+  - "auto_execute"
+  - "auto_repair"
+  - "auto_decision"
+  - "auto_schedule"
+  note: "trace / event 不得出现自动执行 / 自动修复 / 自动决策 / 自动调度字段"
+
+not_implemented:
+  - "trace-auto-execute"
+  - "trace-auto-repair"
+  - "trace-auto-schedule"
+  - "trace-modify-task-state"
+  - "trace-as-memory"
+  - "trace-as-observability"

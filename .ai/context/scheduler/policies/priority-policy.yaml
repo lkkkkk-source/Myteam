@@ -1,0 +1,17 @@
+version: 1
+priority_levels:
+  P0:
+    - "blocker 依赖"
+    - "交付关键路径"
+  P1:
+    - "核心功能 step"
+  P2:
+    - "增强 / 优化 step"
+  P3:
+    - "文档 / 低价值 step"
+
+sort_rules:
+  - "P0 > P1 > P2 > P3"
+  - "同优先级：长依赖链优先（critical path）"
+  - "同优先级同链长：先到先服务（按 plan 顺序）"
+  - "失败恢复的 step 无条件置顶（preempt）"

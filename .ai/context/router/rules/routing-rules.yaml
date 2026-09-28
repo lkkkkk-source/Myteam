@@ -1,0 +1,33 @@
+version: 1
+updated_at: "2026-09-20T15:40:00"
+# Router 规则表（v0.6）：按顺序匹配，先命中先生效。
+# 只选部门 / Lead / Workflow，不自动选执行 Agent。
+rules:
+  - id: "R1"
+    match: { type: "feature", domain: "java" }
+    keywords: ["java", "后端", "接口", "api", "数据库", "refund", "payment", "订单", "module", "feature"]
+    route_to: { team: "java", lead: "java-lead", workflow: "java-feature-development" }
+  - id: "R2"
+    match: { type: "research", domain: "research" }
+    keywords: ["论文", "文献", "综述", "research", "paper", "数据分析", "实验", "科研"]
+    route_to: { team: "research", lead: "research-lead", workflow: "research-paper" }
+  - id: "R3"
+    match: { type: "content", domain: "creative" }
+    keywords: ["ppt", "幻灯片", "简历", "写作", "博客", "文案", "content", "report"]
+    route_to: { team: "creative", lead: "creative-lead", workflow: "content-create" }
+  - id: "R4"
+    match: { type: "ops", domain: "engops" }
+    keywords: ["git", "release", "changelog", "健康检查", "部署", "版本", "observability"]
+    route_to: { team: "engops", lead: "engops-lead", workflow: "quick-fix" }
+  - id: "R5"
+    match: { cross_team: true }
+    route_to: { mode: "multi-lead", coordination_file: "router/coordination/{task_id}-coordination.yaml" }
+  - id: "R6"
+    match: { type: "advisory" }
+    keywords: ["方案比较", "需求澄清", "风险讨论", "技术选型"]
+    route_to: { mode: "direct-coordination", agents: ["discussion", "requirement", "solution-architect"] }
+
+conflict_resolution:
+  - "先命中先执行（R1 → R6 顺序）"
+  - "关键词命中数相同时，按规则顺序取先者"
+  - "cross_team=true 强制走 R5（协调文件）"

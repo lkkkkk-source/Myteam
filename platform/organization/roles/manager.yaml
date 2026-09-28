@@ -1,0 +1,21 @@
+# Role: manager — v1.4.3
+# 附加 role 原语，用于对齐编排 / 知识 / 记忆治理职责（org-2 全覆盖）。
+version: 1
+layer: "organization-role-instance"
+stage: "v1.4.3"
+
+role_id: "manager"
+responsibility: "orchestration-and-governance"
+required_capabilities:
+  - "orchestration"
+  - "knowledge-management"
+  - "memory-management"
+allowed_scope:
+  - "task-orchestration"
+  - "knowledge-record"
+  - "memory-archive"
+  - "approval-coordination"
+quality_expectation:
+  - "platform-state-aware"
+  - "no-auto-execution"    # manager 只编排 / 记录，不直接执行
+bound_agents: [ "project-manager-agent", "adr-recorder", "project-knowledge-manager", "task-memory-agent" ]

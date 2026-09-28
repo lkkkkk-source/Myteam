@@ -1,0 +1,36 @@
+# Human Escalations — v1.4.2（只增审计）
+version: 1
+layer: "runtime-safety-escalation"
+stage: "v1.4.2"
+task_id: "refund-feature"
+updated_at: "2026-09-21T22:00:00"
+
+escalations:
+  # Case6: critical action (production deployment)
+  - escalation_id: "ESC-0001"
+    task_id: "refund-feature"
+    trigger: "production deployment (AP-0003 deploy-artifact)"
+    status: "pending"           # 等待人工确认（未自动放行）
+    confirmed_by: null
+    safety_ref: "SF-0006"
+  # Case2: budget exceeded
+  - escalation_id: "ESC-0002"
+    task_id: "refund-feature"
+    trigger: "budget exceeded (token)"
+    status: "pending"
+    confirmed_by: null
+    safety_ref: "SF-0002"
+  # Case3: repeated failure
+  - escalation_id: "ESC-0003"
+    task_id: "refund-feature"
+    trigger: "repeated failure (retry limit reached)"
+    status: "pending"
+    confirmed_by: null
+    safety_ref: "SF-0003"
+
+summary:
+  total: 3
+  pending: 3
+  confirmed: 0
+  rejected: 0
+  note: "escalations await explicit human confirmation; never auto-skipped (sf-3/sf-6)"

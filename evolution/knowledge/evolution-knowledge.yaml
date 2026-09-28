@@ -1,0 +1,72 @@
+# Evolution Knowledge Layer (v0.6.7)
+# -----------------------------------------------------------------------------
+# Agent Evolution Knowledge：把「升级经验」沉淀为长期资产，供未来升级复用。
+#
+# 定位：
+#   - v0.6.5/0.6.6 建立了「升级流水线」（Research→Proposal→Approval→Upgrade→Benchmark→Release）。
+#   - v0.6.7 在其上增加「经验积累」层：每次升级的结论（哪些有效/失效）落库为 Pattern，
+#     未来升级 research-analyst / reviewer / tester 等时可直接引用，不必从零研究。
+#
+# 只建议、不自动应用：本层是知识/证据，不触发任何自动升级 / 自动 Selection / Model Routing。
+
+version: "0.6.7"
+created_at: "2026-09-21"
+maintainer: engops-lead
+
+## pattern_registry（知识证据主体）
+# 单向权威：evolution/patterns/pattern-registry.yaml
+pattern_registry: evolution/patterns/pattern-registry.yaml
+
+## knowledge_sources（升级经验来源，可追溯）
+sources:
+  - id: SRC-001
+    ref: v0.6.5 java-developer
+    evidence: BM-065-01
+    learned: evidence-based-output → quality +5
+    pattern: PATTERN-001
+  - id: SRC-002
+    ref: v0.6.6 java-architect
+    evidence: BM-066-01
+    learned: evidence + scope self-check + decision/explore 分离，跨 Agent 一致
+    pattern: [PATTERN-001, PATTERN-007]
+  - id: SRC-003
+    ref: v0.6.6 java-reviewer
+    evidence: BM-066-01
+    learned: anti-omission + severity-gated → +4
+    pattern: [PATTERN-002, PATTERN-004]
+  - id: SRC-004
+    ref: v0.6.6 java-tester
+    evidence: BM-066-01
+    learned: evidence + anti-fantasy + 根因归属 → +6
+    pattern: [PATTERN-003, PATTERN-006]
+  - id: SRC-005
+    ref: v0.6.7 research-analyst（跨 Team 首例）
+    evidence: BM-067-01
+    learned: evidence-based-output 跨 Team 复用 → 判定型结论质量提升
+    pattern: [PATTERN-001]
+
+## cross_team_reuse（跨 Team 复用记录）
+# 证明同一 Pattern 可在不同 Team 的 Agent 上复用，而不仅限首个来源 Team。
+# v0.6.3 仅在同 Team（java 链）演进；v0.6.7 首次把 java 链实证的 Pattern 迁移到 research Team。
+cross_team_reuse:
+  - pattern_id: PATTERN-001
+    origin_team: java
+    from_agents: [java-developer, java-architect, java-reviewer, java-tester]
+    to_team: research
+    to_agents: [research-analyst]
+    source: BM-067-01
+    decision: accept
+    reused_at: "2026-09-21"
+
+## lifecycle / next_candidates（下一步隐性候选，仅登记、不自动执行）
+# 平台知道「哪些能力可跨 Team 复用」，但本阶段不自动应用，由 engops-lead 在提案时人工选。
+next_candidates:
+  - pattern: PATTERN-002   # anti-omission-checklist
+    candidate_agents: [research-analyst, java-tester]
+    note: research-analyst 的多源观点覆盖可复用反遗漏清单
+  - pattern: PATTERN-003   # anti-fantasy
+    candidate_agents: [research-analyst, pm, engops-lead]
+    note: 评估/断言型结论默认持证
+  - pattern: PATTERN-004   # severity-gated
+    candidate_agents: [research-analyst]
+    note: 研究方向优先级可按置信度分级

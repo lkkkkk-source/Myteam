@@ -1,0 +1,48 @@
+# =====================================================================
+# Team Schema — v1.4.3
+# =====================================================================
+# 定义一个 Team（组织单元）的结构。
+# Team 聚合 roles + agents，并引用 team-registry（Runtime Registry）。
+# =====================================================================
+
+version: 1
+layer: "organization-team"
+stage: "v1.4.3"
+owner: "engops-lead"
+schema_for: "platform/organization/teams/*.yaml"
+
+team:
+  - field: "team_id"
+    type: "string"
+    required: true            # software-engineering / research / creative / engops / advisory / pm
+  - field: "name"
+    type: "string"
+    required: true
+  - field: "lead"
+    type: "string"
+    required: true            # 该 team 的 lead agent_id
+  - field: "roles"
+    type: "list"
+    required: true            # 该 team 包含的 role_id 列表
+  - field: "agents"
+    type: "list"
+    required: true            # 该 team 的 agent_id 列表（对齐 agent-role-binding）
+  - field: "capabilities"
+    type: "list"
+    required: true            # team 级能力（对齐 capability-registry）
+  - field: "workflows"
+    type: "list"
+    required: false           # 可用 workflow（对齐 source/workflows/）
+  - field: "quality_rules"
+    type: "list"
+    required: false
+  - field: "registry_ref"
+    type: "string"
+    required: true            # 指向 team-registry.yaml 中的 team id（Runtime Registry，不替代）
+
+rules:
+  - "team.agents 必须全部出现在 agent-role-binding（org-2）"
+  - "team.lead 必须是 team.agents 之一"
+  - "team.roles 必须全部在 roles/ 中定义"
+  - "registry_ref 指向已有 team-registry，Organization 不替代 Registry（org-4）"
+  - "team 只建模聚合，不执行 / 不选 Agent（org-3）"

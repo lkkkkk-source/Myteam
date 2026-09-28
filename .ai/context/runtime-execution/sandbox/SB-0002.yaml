@@ -1,0 +1,11 @@
+# Sandbox Instance SB-0002 — v0.9
+# 执行隔离声明（本阶段只声明接口，不创建真实隔离环境）。
+# 字段集见 platform/runtime-execution/sandbox/sandbox-schema.yaml。
+version: 1
+sandbox_id: "SB-0002"
+workspace: ".test-tmp/refund-regression/"
+allowed_operations: [ "read", "write", "process" ]
+resource_limit:
+  timeout_sec: 600
+cleanup_policy: "on-success"
+isolation: "temp-env"

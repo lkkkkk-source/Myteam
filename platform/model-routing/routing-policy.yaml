@@ -1,0 +1,149 @@
+# Routing Policy (v0.6.8)
+# -----------------------------------------------------------------------------
+# Model Routing Recommendation Layer：模型档位推荐规则（Routing Policy）。
+#
+# 定位：
+#   - 规则输入：task_type / complexity / risk_level / required_capabilities /
+#     agent_role / context_size（+ 可选的 historical performance / version quality）
+#   - 规则输出：recommended_model_class（引用 model-registry.yaml 的抽象档位）
+#
+# 分层职责（四层分离，强制）：
+#   - PM / Router：决定任务是什么
+#   - Team / Agent：决定谁负责完成
+#   - Model Router（本层）：决定需要什么级别的模型能力（只推荐）
+#   - Scheduler：决定什么时候执行
+#   - 禁止：Model Router 反向决定 Agent。
+#
+# 只推荐、不执行：
+#   - 输出是「推荐策略」（Model Recommendation Policy），不自动调用模型 /
+#     不自动切换 Provider / 不自动修改 Agent Prompt / 不自动执行任务。
+# -----------------------------------------------------------------------------
+
+routing_policy_version: 2
+layer: model-routing-recommendation
+stage: v0.6.9
+owner: engops-lead
+updated_at: "2026-09-21"
+registry_ref: "platform/registry/models/model-registry.yaml"
+
+# ===================== 变更记录（策略可追踪）=====================
+change_log:
+  - { version: 2, from_proposal: "P-069-01", approved_by: "engops-lead",
+      change: "MR-3 research 类按 context_size 分级，避免 over-provisioned" }
+  - { version: 1, from_proposal: "-", approved_by: "engops-lead", change: "v0.6.8 初始规则" }
+
+# ===================== 输入字段定义 =====================
+inputs:
+  task_type:            # 任务类型（来自 Router classification）
+    enum: [feature, refactor, bugfix, research, content, ops, advisory, architecture-design, analysis]
+  complexity:
+    enum: [low, medium, high]
+  risk_level:           # 来自 Scheduler risk-policy
+    enum: [normal, high]
+  required_capabilities:
+    type: "list[string]"   # 来自 Capability Registry（agent-capabilities.yaml）
+  agent_role:
+    enum: [execution, lead, review, status]
+  context_size:         # 上下文容量需求
+    enum: [small, medium, large, very-large]
+  historical_performance:   # 来自 Capability Analytics（可选，只读）
+    type: "object"
+    fields: [first_pass_rate, quality_pass_rate, success_rate]
+  version_quality:      # 来自 Evolution Knowledge / Version Registry（可选，只读）
+    type: "object"
+    fields: [agent_version, state]
+
+# ===================== 推荐规则（按顺序匹配，先命中先生效）=====================
+rules:
+
+  - id: "MR-1"
+    desc: "高风险任务 / 失败恢复 → 高推理档位"
+    match:
+      risk_level: "high"
+      mode: "recovery"          # 失败恢复任务（failed step + recovery mode）
+    recommend: "high-reasoning"
+    fallback: "general"
+    human_confirm: true          # 高风险发布类 → 需要人工确认
+
+  - id: "MR-2"
+    desc: "架构设计 / 复杂分析 / 高复杂度 → 高推理档位"
+    match:
+      task_type: "architecture-design"
+      complexity: "high"
+    recommend: "high-reasoning"
+    fallback: "long-context"
+
+  - id: "MR-3"
+    desc: "研究 / 论文分析 / 长文档（按 context 分级；P-069-01 调整，避免 over-provisioned）"
+    match:
+      task_type: "research"
+      context_size: "large"
+    recommend: "long-context"
+    fallback: "high-reasoning"
+    note: "context_size=medium/small 的研究任务建议走 general/fast-coding（见次条 MR-3b）"
+
+  - id: "MR-3b"
+    desc: "研究 / 论文分析（中小上下文）→ 轻量档位（P-069-01 新增，人工批准）"
+    match:
+      task_type: "research"
+      context_size: "medium"
+    recommend: "general"
+    fallback: "fast-coding"
+
+  - id: "MR-4"
+    desc: "Research 论文分析（research-analyst，large context）"
+    match:
+      agent_role: "execution"
+      agent: "research-analyst"
+      context_size: "large"
+    recommend: "long-context"
+    fallback: "high-reasoning"
+
+  - id: "MR-5"
+    desc: "简单代码修改 / 低复杂度常规实现 → 快速编码档位"
+    match:
+      task_type: "feature"
+      complexity: "low"
+      agent_role: "execution"
+    recommend: "fast-coding"
+    fallback: "general"
+
+  - id: "MR-6"
+    desc: "默认档位（无特殊匹配）"
+    match: {}
+    recommend: "general"
+    fallback: "general"
+
+# ===================== 复杂度判定（供规则输入）=====================
+complexity_heuristics:
+  - "修改文件数 > 10 或涉及核心模块 → high"
+  - "架构决策 / 技术选型 / 跨模块重构 → high"
+  - "单文件小改 / 常规 CRUD → low"
+  - "其余 → medium"
+
+# ===================== 上下文容量判定 =====================
+context_heuristics:
+  - "论文 / 文献 / 长文档 / 多源研究 → large"
+  - "大型仓库分析 / 全量调研 → very-large"
+  - "常规任务 → medium"
+
+# ===================== 高风险判定（引用 Scheduler risk-policy）=====================
+risk_ref: ".ai/context/scheduler/policies/risk-policy.yaml"
+high_risk_operations:
+  - "release"
+  - "db_schema_change"
+  - "delete"
+  - "prod_deploy"
+
+# ===================== 人工确认策略 =====================
+human_confirmation:
+  - condition: "risk_level = high 且 operation ∈ high_risk_operations"
+    action: "推荐输出标记 human_confirm=true，交付 PM 人工确认后才可视为有效推荐"
+  - condition: "historical_performance 缺失 且 complexity = high"
+    action: "推荐附加 uncertainty 提示，建议人工复核"
+
+# ===================== 约束 =====================
+constraints:
+  - "recommended_model_class 必须引用 model-registry.yaml 已登记 model_id"
+  - "本层只产出推荐（recommendation），不自动调用模型 / 不切换 Provider / 不修改 Prompt"
+  - "Model Router 禁止反向决定 Agent（谁负责完成由 Team / Agent 决定）"

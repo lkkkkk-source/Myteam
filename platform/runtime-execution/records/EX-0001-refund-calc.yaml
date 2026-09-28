@@ -1,0 +1,27 @@
+# Execution Request EX-0001
+# -----------------------------------------------------------------------------
+# 来源：AP-0001（write-file, medium, approved）→ 受治理执行请求。
+# 状态：completed（本阶段仅状态登记，不触发真实副作用）。
+# 说明：Case2 代码修改 → executor 匹配 → 执行记录生成 → 连 Quality。
+# -----------------------------------------------------------------------------
+
+version: 1
+execution_id: "EX-0001"
+action_proposal_ref: "platform/runtime-action/records/AP-0001-refund-calc-edit.yaml"
+runtime_context_ref: ".ai/context/runtime/runtime-context.yaml"
+executor_id: "code-workspace-executor"
+target: "src/services/refund/calculate-refund.ts"
+input:
+  change: "补阶梯退费 boundary case"
+permission_context:
+  risk_level: "medium"
+  granted_permission: "workspace_write"
+  approved_by: "project-manager-agent"     # 与 AP-0001 decision.approved_by 对齐
+sandbox_context:
+  sandbox_id: "SB-0001"
+  workspace: ".ai/context/runtime-execution/sandbox/SB-0001.yaml"
+  isolation: "workspace-clone"
+rollback_strategy: "artifact_restore"
+status: "completed"
+created_at: "2026-09-21T16:30:00"
+completed_at: "2026-09-21T16:31:00"

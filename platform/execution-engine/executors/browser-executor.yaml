@@ -1,0 +1,18 @@
+# Executor: browser-executor — v1.2
+version: 1
+id: "browser-executor"
+layer: "execution-engine-executor"
+stage: "v1.2"
+type: "browser"
+supported_actions: [ "browser_action" ]
+risk_level: "high"
+sandbox_required: "container"          # 浏览器动作高风险，容器隔离
+permission_required: true
+permissions: [ "browser_control", "human_approval" ]
+backing_mcp: "playwright"              # 经 playwright MCP
+rollback_support: false                # 浏览器副作用通常不可自动回滚，转人工
+rollback_strategy: [ ]
+quality_gate: "validation"
+notes:
+  - "高风险：human approval + container；不自动重试"
+  - "e2e / ui-automation 场景"

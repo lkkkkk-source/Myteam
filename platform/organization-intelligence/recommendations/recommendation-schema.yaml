@@ -1,0 +1,46 @@
+# Recommendation Schema — v1.5
+# Recommendation 必须经人工审批（draft → review → approved/rejected）；
+# 禁止直接进入 source / 禁止自动应用（oi-3）。
+version: 1
+layer: "organization-intelligence-recommendation"
+stage: "v1.5"
+owner: "engops-lead"
+schema_for: "platform/organization-intelligence/recommendations/*.yaml"
+
+recommendation:
+  - field: "id"
+    type: "string"
+    required: true            # RECO-NNNN
+  - field: "source_metrics"
+    type: "list"
+    required: true            # 引用的 metrics / analysis
+  - field: "evidence_refs"
+    type: "list"
+    required: true            # 可追溯真实来源（oi-5）
+  - field: "suggestion"
+    type: "string"
+    required: true            # 建议内容（人工参考）
+  - field: "risk"
+    type: "string"
+    required: true            # low / medium / high
+  - field: "status"
+    type: "enum"
+    values: [ "draft", "review", "approved", "rejected" ]
+    required: true
+
+states:
+  - "draft"      # 生成，未审阅
+  - "review"     # 人工审阅中
+  - "approved"   # 人工批准（仍需后续人工执行，不自动应用）
+  - "rejected"   # 人工拒绝
+
+rules:
+  - "所有 recommendation 初始为 draft；只能人工推进状态（oi-3）"
+  - "禁止直接进入 source / 禁止自动应用（no auto_apply，oi-3）"
+  - "approved 也不自动执行；执行是独立的人工动作"
+  - "每条 recommendation 必须带 evidence_refs（oi-5）"
+
+forbidden_fields: [ "auto_apply", "auto_modify", "auto_execute" ]
+
+boundaries:
+  - "recommendation 只建议；不修改 Agent / Team / Role / Workflow / Prompt / Router / Model Routing（oi-2）"

@@ -1,0 +1,65 @@
+# =====================================================================
+# Rollback Plan — v1.0
+# =====================================================================
+# 部署失败后的运行时回滚。【复用已有 Recovery + rollback/ 基础设施】，不重设计。
+# 阶段：v1.0（只定义流程，不自动执行）
+# =====================================================================
+
+version: 1
+layer: "runtime-adapter-rollback-plan"
+stage: "v1.0"
+owner: "engops-lead"
+
+# 复用已有恢复 / 回滚基础设施（不重设计）
+reuse:
+  recovery_strategy: ".ai/context/recovery/strategy-registry.yaml"
+  recovery_checkpoints: ".ai/context/recovery/checkpoints/"
+  runtime_backups: "rollback/backups/"
+  rollback_manifest: "rollback/rollback-manifest.yaml"
+  execution_rollback: "platform/runtime-execution/rollback/rollback-schema.yaml"
+
+# ---------------------------------------------------------------------
+# 回滚字段
+# ---------------------------------------------------------------------
+rollback_entry_schema:
+  - field: "backup_ref"
+    type: "string"
+    required: true            # rollback/backups/{deployment_id}/
+  - field: "previous_version"
+    type: "string"
+    required: true            # 回退到的 runtime 版本
+  - field: "restore_steps"
+    type: "list"
+    required: true
+  - field: "verification"
+    type: "map"
+    required: true            # baseline + hash 校验
+
+# ---------------------------------------------------------------------
+# 当前回滚计划（对应 DEP-0001 失败场景 → Case5）
+# ---------------------------------------------------------------------
+rollbacks:
+  - rollback_id: "RBK-0001"
+    deployment_ref: "DEP-0001"
+    backup_ref: "rollback/backups/DEP-0001/"
+    previous_version: "pre-v1.0 (runtime baseline)"
+    restore_steps:
+      - "restore opencode.json (agent block) from backup"
+      - "restore prompts/docs/workflows from backup snapshot"
+      - "verify baseline agent=30 / mcp=5 / skill=26 / workflow=8"
+    verification:
+      baseline_ok: true
+      hash_match: true
+    status: "ready"           # ready / restoring / restored（本阶段仅计划）
+
+# ---------------------------------------------------------------------
+# guards（复用 rollback-manifest 红线）
+# ---------------------------------------------------------------------
+guards:
+  - "never rollback into CC Switch managed skills/"
+  - "never delete node_modules / .opencode / .omo"
+  - "rollback 记录只追加不覆盖"
+  - "回滚复用 Recovery，不重设计恢复系统"
+
+not_implemented:
+  - "auto-rollback"          # 不自动回滚（人工触发）

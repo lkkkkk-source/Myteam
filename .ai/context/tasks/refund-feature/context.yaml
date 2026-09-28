@@ -1,0 +1,31 @@
+# Refund-Feature 任务共享上下文
+
+> task_id: refund-feature | team: java | 版本: 2026-09-20
+
+## 任务元数据
+| 字段 | 值 |
+|------|-----|
+| task_id | refund-feature |
+| team | java |
+| 入口 Lead | java-lead |
+| Workflow | feature-development |
+| 状态 | in-progress |
+
+## 各 Team 职责
+| Team | 职责 | 入口 Agent |
+|------|------|-----------|
+| java | 架构 / 开发 / 审查 / 测试 | java-lead |
+| research | （本任务无需科研） | research-lead（只读参考） |
+| creative | （本任务无需创作） | creative-lead（只读参考） |
+| engops | 提交 / 发布（如需） | engops-lead |
+
+## Knowledge 摘要
+见 `shared/knowledge/knowledge-summary.md`（PM 生成）。
+
+## 交接记录
+- 见 `.ai/context/current-task.yaml` handoff_log（v1.0）
+- 跨 Team 交接追加到 `shared/handoff/`
+
+## 权限
+- java Team 可写 `teams/java/` + 本任务目录
+- 其他 Team 只读本目录 + `shared/`

@@ -1,0 +1,97 @@
+# =====================================================================
+# Agent–Role–Team Binding — v1.4.3
+# =====================================================================
+# 权威映射：agent_id -> role_id -> team_id（30/30 全覆盖，org-2）。
+#
+# 说明：
+#   - 只建立映射，不新增 / 不删除 / 不复制 / 不重写 Agent（30 恒定，org-1）。
+#   - 每个 Agent 绑定到恰好一个 primary team + 一个 role。
+#   - team 对齐 platform/organization/teams/*.yaml；
+#     role 对齐 platform/organization/roles/*.yaml；
+#     agent 对齐 source/prompts/**（30 个）与 evolution/version-registry.yaml。
+# =====================================================================
+
+version: 1
+layer: "organization-agent-role-binding"
+stage: "v1.4.3"
+owner: "engops-lead"
+total_agents: 30
+baseline: { agent: 30, mcp: 5, skill: 26, workflow: 8 }
+
+# team_id -> platform/organization/teams/<team_id>.yaml
+# role_id -> platform/organization/roles/<role_id>.yaml
+# source_prompt 保留追溯（不修改内容）
+
+bindings:
+
+  # ================= software-engineering（7）=================
+  - { agent: "java-lead",        role: "lead",      team: "software-engineering", source_prompt: "source/prompts/leads/java-lead.md" }
+  - { agent: "java-architect",   role: "architect", team: "software-engineering", source_prompt: "source/prompts/java/java-architect.md" }
+  - { agent: "java-planner",     role: "planner",   team: "software-engineering", source_prompt: "source/prompts/java/java-planner.md" }
+  - { agent: "java-developer",   role: "developer", team: "software-engineering", source_prompt: "source/prompts/java/java-developer.md" }
+  - { agent: "java-debugger",    role: "developer", team: "software-engineering", source_prompt: "source/prompts/java/java-debugger.md" }
+  - { agent: "java-tester",      role: "tester",    team: "software-engineering", source_prompt: "source/prompts/java/java-tester.md" }
+  - { agent: "java-reviewer",    role: "reviewer",  team: "software-engineering", source_prompt: "source/prompts/java/java-reviewer.md" }
+
+  # ================= research（6）=================
+  - { agent: "research-lead",    role: "lead",      team: "research", source_prompt: "source/prompts/leads/research-lead.md" }
+  - { agent: "research-analyst", role: "analyst",   team: "research", source_prompt: "source/prompts/research/research-analyst.md" }
+  - { agent: "literature-agent", role: "analyst",   team: "research", source_prompt: "source/prompts/research/literature-agent.md" }
+  - { agent: "experiment-agent", role: "analyst",   team: "research", source_prompt: "source/prompts/research/experiment-agent.md" }
+  - { agent: "innovation-agent", role: "analyst",   team: "research", source_prompt: "source/prompts/research/innovation-agent.md" }
+  - { agent: "paper-writer",     role: "writer",    team: "research", source_prompt: "source/prompts/research/paper-writer.md" }
+
+  # ================= creative（5）=================
+  - { agent: "creative-lead",    role: "lead",      team: "creative", source_prompt: "source/prompts/leads/creative-lead.md" }
+  - { agent: "writing-agent",    role: "writer",    team: "creative", source_prompt: "source/prompts/creative/writing-agent.md" }
+  - { agent: "editor-agent",     role: "writer",    team: "creative", source_prompt: "source/prompts/creative/editor-agent.md" }
+  - { agent: "ppt-agent",        role: "writer",    team: "creative", source_prompt: "source/prompts/creative/ppt-agent.md" }
+  - { agent: "resume-agent",     role: "writer",    team: "creative", source_prompt: "source/prompts/creative/resume-agent.md" }
+
+  # ================= engops（5）=================
+  - { agent: "engops-lead",          role: "lead",     team: "engops", source_prompt: "source/prompts/leads/engops-lead.md" }
+  - { agent: "project-health-agent", role: "reviewer", team: "engops", source_prompt: "source/prompts/engops/project-health-agent.md" }
+  - { agent: "git-manager",          role: "ops",      team: "engops", source_prompt: "source/prompts/engops/git-manager.md" }
+  - { agent: "release-agent",        role: "ops",      team: "engops", source_prompt: "source/prompts/engops/release-agent.md" }
+  - { agent: "changelog-agent",      role: "ops",      team: "engops", source_prompt: "source/prompts/engops/changelog-agent.md" }
+
+  # ================= advisory（3）=================
+  - { agent: "solution-architect", role: "architect", team: "advisory", source_prompt: "source/prompts/advisory/solution-architect.md" }
+  - { agent: "requirement-agent",  role: "analyst",   team: "advisory", source_prompt: "source/prompts/advisory/requirement-agent.md" }
+  - { agent: "discussion-agent",   role: "analyst",   team: "advisory", source_prompt: "source/prompts/advisory/discussion-agent.md" }
+
+  # ================= pm（4）=================
+  - { agent: "project-manager-agent",     role: "manager", team: "pm", source_prompt: "source/prompts/pm/project-manager-agent.md" }
+  - { agent: "adr-recorder",              role: "manager", team: "pm", source_prompt: "source/prompts/knowledge/adr-recorder.md" }
+  - { agent: "project-knowledge-manager", role: "manager", team: "pm", source_prompt: "source/prompts/knowledge/project-knowledge-manager.md" }
+  - { agent: "task-memory-agent",         role: "manager", team: "pm", source_prompt: "source/prompts/memory/task-memory-agent.md" }
+
+# ---------------------------------------------------------------------
+# 覆盖校验（org-2）
+# ---------------------------------------------------------------------
+coverage:
+  total_bound: 30
+  by_team:
+    software-engineering: 7
+    research: 6
+    creative: 5
+    engops: 5
+    advisory: 3
+    pm: 4
+  by_role:
+    lead: 4          # java-lead / research-lead / creative-lead / engops-lead
+    architect: 2     # java-architect / solution-architect
+    planner: 1       # java-planner
+    developer: 2     # java-developer / java-debugger
+    tester: 1        # java-tester
+    reviewer: 2      # java-reviewer / project-health-agent
+    analyst: 6       # research-analyst / literature / experiment / innovation / requirement / discussion
+    writer: 5        # paper-writer / writing / editor / ppt / resume
+    ops: 3           # git-manager / release-agent / changelog-agent
+    manager: 4       # project-manager-agent / adr-recorder / project-knowledge-manager / task-memory-agent
+
+rules:
+  - "binding 只映射，不新增 / 不删除 / 不复制 / 不重写 Agent（org-1）"
+  - "每个 Agent 恰好一条 binding（primary team + role，org-2）"
+  - "team.lead 必须是该 team 的某个 bound agent"
+  - "source_prompt 只追溯，不修改内容（org-3）"

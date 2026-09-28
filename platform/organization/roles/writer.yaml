@@ -1,0 +1,20 @@
+# Role: writer — v1.4.3
+# 附加 role 原语，用于对齐内容创作/编辑职责（org-2 全覆盖）。
+version: 1
+layer: "organization-role-instance"
+stage: "v1.4.3"
+
+role_id: "writer"
+responsibility: "content-authoring-and-editing"
+required_capabilities:
+  - "technical-writing"
+  - "academic-writing"
+  - "editing"
+allowed_scope:
+  - "content-create"
+  - "content-edit"
+  - "document-authoring"
+quality_expectation:
+  - "clarity-first"
+  - "tone-consistent"
+bound_agents: [ "paper-writer", "writing-agent", "editor-agent", "ppt-agent", "resume-agent" ]

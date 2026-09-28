@@ -1,0 +1,49 @@
+# Team: software-engineering — v1.4.3
+# Agent Organization Model：Team -> Role -> Agent
+# 引用 team-registry（Runtime Registry）id="java"，不替代（org-4）。
+version: 1
+layer: "organization-team-instance"
+stage: "v1.4.3"
+
+team_id: "software-engineering"
+name: "Software Engineering Team"
+lead: "java-lead"
+registry_ref: ".ai/context/team-registry.yaml#java"
+domain: "software-engineering"
+
+roles:
+  - "lead"
+  - "architect"
+  - "planner"
+  - "developer"
+  - "tester"
+  - "reviewer"
+
+agents:
+  - "java-lead"        # lead
+  - "java-architect"   # architect
+  - "java-planner"     # planner
+  - "java-developer"   # developer
+  - "java-debugger"    # developer
+  - "java-tester"      # tester
+  - "java-reviewer"    # reviewer
+
+capabilities:
+  - "spring-boot"
+  - "mybatis"
+  - "java-core"
+  - "tdd"
+  - "sql"
+  - "database"
+
+workflows:
+  - "java-feature-development"
+  - "java-refactor"
+  - "java-debug"
+
+quality_rules:
+  - "strict-dependency-direction"
+  - "minimal-change"
+  - "api-contract-first"
+
+status: "active"

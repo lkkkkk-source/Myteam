@@ -1,0 +1,63 @@
+# Runtime Context 模板 — v0.7
+# 复制到 .ai/context/runtime/runtime-context.yaml 后由 engops-lead 按需维护（人工，非自动）。
+# 字段集必须符合 platform/runtime/runtime-context-schema.yaml。
+version: 1
+context_id: "{context_id}"
+task_id: "{task_id}"
+contract_version: 1
+updated_at: "{ISO 时间}"
+owner: "engops-lead"
+
+modules:
+  - id: "router"
+    provides: ".ai/context/router/"
+    state: "pending"
+    owner_agent: "project-manager-agent"
+    contract_ok: true
+  - id: "team"
+    provides: ".ai/context/team-registry.yaml"
+    state: "pending"
+    owner_agent: "project-manager-agent"
+    contract_ok: true
+  - id: "agent"
+    provides: ".ai/context/capability/"
+    state: "pending"
+    owner_agent: "engops-lead"
+    contract_ok: true
+  - id: "model-routing"
+    provides: "platform/model-routing/"
+    state: "pending"
+    owner_agent: "engops-lead"
+    contract_ok: true
+  - id: "scheduler"
+    provides: ".ai/context/scheduler/"
+    state: "pending"
+    owner_agent: "project-manager-agent"
+    contract_ok: true
+  - id: "execution"
+    provides: ".ai/context/runtime/execution-state.yaml"
+    state: "pending"
+    owner_agent: "project-manager-agent"
+    contract_ok: true
+  - id: "quality"
+    provides: ".ai/context/quality/"
+    state: "pending"
+    owner_agent: "project-manager-agent"
+    contract_ok: true
+  - id: "observability"
+    provides: ".ai/context/observability/"
+    state: "pending"
+    owner_agent: "engops-lead"
+    contract_ok: true
+  - id: "memory"
+    provides: ".ai/context/memory/"
+    state: "pending"
+    owner_agent: "project-knowledge-manager"
+    contract_ok: true
+  - id: "evolution"
+    provides: "evolution/"
+    state: "pending"
+    owner_agent: "engops-lead"
+    contract_ok: true
+
+snapshot_refs: []

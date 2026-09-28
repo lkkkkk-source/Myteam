@@ -1,0 +1,88 @@
+# Action Proposal Schema — v0.8
+# 定义 Action Proposal（action-proposal.yaml）允许出现的字段集。
+# project-health-agent 用本 schema 校验 Action Proposal / Action Ledger 是否非法 / 合规。
+version: 1
+layer: "runtime-action-proposal"
+stage: "v0.8"
+schema_for: "platform/runtime-action/records/*.yaml + .ai/context/runtime-action/action-ledger.yaml"
+
+allowed_fields: "*(schema:runtime-action-proposal.v1)"
+
+root:
+  - field: "version"
+    type: "int"
+    required: true
+  - field: "proposal_id"
+    type: "string"
+    required: true
+  - field: "title"
+    type: "string"
+    required: true
+  - field: "task_id"
+    type: "string"
+    required: true            # 必须存在于 runtime-context 的 task_id（与 v0.7 台账对齐）
+  - field: "stage"
+    type: "string"
+    required: true            # 固定 v0.8
+  - field: "layer"
+    type: "string"
+    required: true            # runtime-action-proposal
+  - field: "owner"
+    type: "string"
+    required: true            # 提案维护者（engops-lead / PM）
+  - field: "created_at"
+    type: "string"
+    required: true
+  - field: "action"
+    type: "map"
+    required: true            # 见 action 条目
+  - field: "risk"
+    type: "map"
+    required: true            # 见 risk 条目
+  - field: "status"
+    type: "string"
+    required: true            # draft / pending / approved / rejected / cancelled
+  - field: "decision"
+    type: "map"
+    required: false           # 见 decision 条目
+
+action:
+  - field: "action_type"
+    type: "string"
+    required: true            # 必须存在于 action-policy.yaml 的 action_types[].id
+  - field: "target"
+    type: "string"
+    required: true            # 动作对象（命令 / 文件 / 工作流 / 产物）
+  - field: "detail"
+    type: "string"
+    required: false
+
+risk:
+  - field: "level"
+    type: "string"
+    required: true            # low / medium / high，必须存在于 action-policy.yaml risk_levels
+  - field: "approval_model"
+    type: "string"
+    required: true            # auto-approve / agent-approval / human-approval，由 risk 派生
+  - field: "approver"
+    type: "string"
+    required: false
+
+decision:
+  - field: "approved_by"
+    type: "string"
+    required: true
+  - field: "approved_at"
+    type: "string"
+    required: true
+  - field: "decision_note"
+    type: "string"
+    required: false
+
+forbidden_fields:
+  - "auto_exec"
+  - "auto_approve"
+  - "auto_bypass"
+  - "executed"
+  - "result"
+  note: "任何 Action Proposal / Ledger 不得出现自动执行 / 自动批准 / 自动绕过 / 已执行 / 执行结果字段；出现即 Action Contract 违规（Critical）——本阶段明确不实现执行"

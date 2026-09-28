@@ -1,0 +1,35 @@
+# =====================================================================
+# Artifact Link Schema — v1.3
+# =====================================================================
+# 连接 Workspace → Change → Artifact。已合并的变更关联为正式产物。
+# Workspace ≠ Artifact：workspace 是过程环境，artifact 是正式产物（ws-5）。
+# =====================================================================
+
+version: 1
+layer: "workspace-artifact-link"
+stage: "v1.3"
+owner: "engops-lead"
+schema_for: ".ai/context/workspace/artifact-links.yaml"
+
+artifact_link:
+  - field: "artifact_id"
+    type: "string"
+    required: true            # 指向 .ai/artifacts/{category}/{task}/...
+  - field: "workspace_id"
+    type: "string"
+    required: true
+  - field: "changes"
+    type: "list"
+    required: true            # 关联的 change_id（CH-*）
+  - field: "quality_ref"
+    type: "string"
+    required: true            # quality gate 结果
+  - field: "status"
+    type: "string"
+    required: true            # linked / archived
+
+rules:
+  - "只有 merged workspace 的 change 才能关联为 artifact"
+  - "artifact 关联必须带 quality_ref（经质量验收）"
+  - "workspace 不替代 artifact（artifact 是正式产物，只增归档）"
+  - "artifact 生命周期沿用 v0.3.4 artifact-lifecycle（draft→reviewing→approved→archived）"

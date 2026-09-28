@@ -1,0 +1,34 @@
+version: 1
+task_id: "refund-feature"
+evaluated_at: "2026-09-20T13:10:00"
+
+resolution:
+  - step: "step-1"
+    status: "completed"
+    result: "done"
+  - step: "step-2"
+    status: "pending"
+    result: "ready"
+    depends: ["step-1"]
+    unmet: []
+  - step: "step-3a"
+    status: "pending"
+    result: "ready"
+    depends: []
+    unmet: []
+  - step: "step-3b"
+    status: "pending"
+    result: "ready"
+    depends: []
+    unmet: []
+  - step: "step-4"
+    status: "pending"
+    result: "blocked"
+    depends: ["step-3a", "step-3b"]
+    unmet: ["step-3a", "step-3b"]
+
+summary:
+  done: 1
+  ready: 3
+  blocked: 1
+  failed: 0

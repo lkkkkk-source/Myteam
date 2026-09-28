@@ -1,0 +1,118 @@
+# Trace Events for TR-0001 — v1.4.1（只增，pointer only）
+# 一次任务（refund-feature）完整生命周期链路事件。
+version: 1
+trace_id: "TR-0001"
+task_id: "refund-feature"
+updated_at: "2026-09-21T21:00:00"
+
+events:
+  - event_id: "EV-0001"
+    trace_id: "TR-0001"
+    timestamp: "2026-09-21T18:00:00"
+    layer: "router"
+    source: "project-manager-agent"
+    event_type: "classification_completed"
+    reference: ".ai/context/router/rules/routing-rules.yaml"
+    metadata: { type: "java-feature" }
+  - event_id: "EV-0002"
+    trace_id: "TR-0001"
+    timestamp: "2026-09-21T18:02:00"
+    layer: "team"
+    source: "project-manager-agent"
+    event_type: "routing_completed"
+    reference: ".ai/context/team-registry.yaml#java"
+    metadata: { team: "java", domain: "software-engineering" }
+  - event_id: "EV-0003"
+    trace_id: "TR-0001"
+    timestamp: "2026-09-21T18:05:00"
+    layer: "agent"
+    source: "java-lead"
+    event_type: "agent_assigned"
+    reference: ".ai/context/capability/agent-capabilities.yaml#java-developer"
+    metadata: { agent: "java-developer" }
+  - event_id: "EV-0004"
+    trace_id: "TR-0001"
+    timestamp: "2026-09-21T18:20:00"
+    layer: "collaboration"
+    source: "java-architect"
+    event_type: "handoff_created"
+    reference: ".ai/context/collaboration/handoffs/handoff-history.yaml#HO-0001"
+    metadata: { from: "java-architect", to: "java-developer" }
+  - event_id: "EV-0005"
+    trace_id: "TR-0001"
+    timestamp: "2026-09-21T18:40:00"
+    layer: "workspace"
+    source: "java-developer"
+    event_type: "change_created"
+    reference: ".ai/context/workspace/changes/change-records.yaml#CH-0001"
+    metadata: { workspace: "WS-0001", operation: "modify" }
+  - event_id: "EV-0006"
+    trace_id: "TR-0001"
+    timestamp: "2026-09-21T18:41:00"
+    layer: "action"
+    source: "engops-lead"
+    event_type: "action_proposed"
+    reference: "platform/runtime-action/records/AP-0001-refund-calc-edit.yaml"
+    metadata: { action: "AP-0001", risk: "medium" }
+  - event_id: "EV-0007"
+    trace_id: "TR-0001"
+    timestamp: "2026-09-21T18:42:00"
+    layer: "approval"
+    source: "project-manager-agent"
+    event_type: "action_approved"
+    reference: ".ai/context/runtime-action/action-ledger.yaml#AP-0001"
+    metadata: { approved_by: "project-manager-agent" }
+  - event_id: "EV-0008"
+    trace_id: "TR-0001"
+    timestamp: "2026-09-21T18:45:00"
+    layer: "execution"
+    source: "code-executor"
+    event_type: "execution_completed"
+    reference: ".ai/context/execution-engine/engine-state.yaml#EE-0002"
+    metadata: { executor: "code-executor", status: "completed" }
+  - event_id: "EV-0009"
+    trace_id: "TR-0001"
+    timestamp: "2026-09-21T19:00:00"
+    layer: "quality"
+    source: "java-tester"
+    event_type: "gate_passed"
+    reference: ".ai/context/quality/gate-state.yaml"
+    metadata: { gate: "validation", result: "passed" }
+  - event_id: "EV-0010"
+    trace_id: "TR-0001"
+    timestamp: "2026-09-21T19:10:00"
+    layer: "artifact"
+    source: "java-tester"
+    event_type: "artifact_linked"
+    reference: ".ai/context/workspace/artifact-links.yaml"
+    metadata: { workspace: "WS-0002" }
+  - event_id: "EV-0011"
+    trace_id: "TR-0001"
+    timestamp: "2026-09-21T19:20:00"
+    layer: "memory"
+    source: "task-memory-agent"
+    event_type: "memory_archived"
+    reference: ".ai/context/memory/task-memory.yaml"
+    metadata: { archived: false }
+  - event_id: "EV-0012"
+    trace_id: "TR-0001"
+    timestamp: "2026-09-21T19:30:00"
+    layer: "evolution"
+    source: "engops-lead"
+    event_type: "evolution_feedback"
+    reference: "platform/model-routing/feedback/feedback-history.yaml"
+    metadata: { note: "routing feedback recorded" }
+  - event_id: "EV-0013"
+    trace_id: "TR-0001"
+    timestamp: "2026-09-21T18:44:00"
+    layer: "safety"
+    source: "engops-lead"
+    event_type: "budget_checked"
+    reference: ".ai/context/runtime-safety/safety-state.yaml#SF-0007"
+    metadata: { status: "normal", gate: "allowed" }
+
+summary:
+  total_events: 13
+  layers_covered: 13
+  complete: true
+  missing_references: []

@@ -1,0 +1,24 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case2-mcp-query"
+created_at: "2026-09-20T15:42:00"
+
+# Case2：查询浏览器测试能力
+# 验证：返回 playwright MCP
+
+scenario:
+  query_capability: "browser-testing"
+  source: "capability/mcp-registry.yaml"
+
+expected:
+  result_type: "mcp"
+  mcp: "playwright"
+  agent_using: ["java-tester"]
+
+actual:
+  result_type: "mcp"
+  mcp: "playwright"
+  agent_using: ["java-tester"]
+
+result: "PASS"
+assertion: "查询浏览器测试能力 → 返回 playwright MCP（由 java-tester 使用）"

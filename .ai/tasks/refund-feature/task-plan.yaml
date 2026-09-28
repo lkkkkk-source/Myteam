@@ -1,0 +1,74 @@
+version: 1
+task_id: "refund-feature"
+title: "给订单系统增加退款功能"
+steps:
+  - id: step-1
+    name: "架构分析"
+    agent: "java-architect"
+    depends_on: []
+    inputs:
+      - ".ai/context/current-task.yaml"
+      - ".ai/knowledge/architecture.md"
+    outputs:
+      - ".ai/artifacts/architecture/refund-feature-architecture.md"
+    status: done
+    parallel_group: ""
+    notes: "产物已落盘"
+
+  - id: step-2
+    name: "开发计划"
+    agent: "java-planner"
+    depends_on: ["step-1"]
+    inputs:
+      - ".ai/artifacts/architecture/refund-feature-architecture.md"
+    outputs:
+      - "细化 step-3..6"
+    status: pending
+    parallel_group: ""
+    notes: ""
+
+  - id: step-3
+    name: "实现退款接口"
+    agent: "java-developer"
+    depends_on: ["step-2"]
+    inputs: []
+    outputs:
+      - ".ai/artifacts/code/refund-feature/"
+    status: pending
+    parallel_group: "A"
+    notes: ""
+
+  - id: step-4
+    name: "实现状态机扩展"
+    agent: "java-developer"
+    depends_on: ["step-2"]
+    inputs: []
+    outputs:
+      - ".ai/artifacts/code/refund-feature/"
+    status: pending
+    parallel_group: "A"
+    notes: ""
+
+  - id: step-5
+    name: "代码审查"
+    agent: "java-reviewer"
+    depends_on: ["step-3", "step-4"]
+    inputs:
+      - ".ai/artifacts/code/refund-feature/"
+    outputs:
+      - ".ai/artifacts/review/refund-feature-review.md"
+    status: pending
+    parallel_group: ""
+    notes: ""
+
+  - id: step-6
+    name: "测试验证"
+    agent: "java-tester"
+    depends_on: ["step-5"]
+    inputs:
+      - ".ai/artifacts/code/refund-feature/"
+    outputs:
+      - ".ai/artifacts/review/refund-feature-test.md"
+    status: pending
+    parallel_group: ""
+    notes: ""

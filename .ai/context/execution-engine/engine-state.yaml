@@ -1,0 +1,77 @@
+# Execution Engine State — 集成台账（v1.2）
+# 记录 Execution Engine 当前受治理执行请求（只记录审计，不自动调度/执行）。
+# 三层分离：Context=状态 / Action=意图 / Execution=执行记录（本文件）。
+version: 1
+layer: "execution-engine-state"
+stage: "v1.2"
+engine_context_id: "ee-refund-feature-001"
+task_id: "refund-feature"
+updated_at: "2026-09-21T18:00:00"
+owner: "engops-lead"
+schema_version: 1
+
+executions:
+  # Case1: 低风险文档生成 → completed
+  - execution_id: "EE-0001"
+    action_ref: "AP-0001"
+    executor: "code-executor"
+    permission: "workspace_write"
+    permission_granted: true
+    sandbox: "workspace-clone"
+    status: "completed"
+    result_ref: "execution-results.yaml#EE-0001"
+  # Case2: 代码修改 → completed → quality gate
+  - execution_id: "EE-0002"
+    action_ref: "AP-0001"
+    executor: "code-executor"
+    permission: "workspace_write"
+    permission_granted: true
+    sandbox: "workspace-clone"
+    status: "completed"
+    result_ref: "execution-results.yaml#EE-0002"
+  # Case3: 未批准 action → blocked (cancelled)
+  - execution_id: "EE-0003"
+    action_ref: "AP-0002"       # AP-0002 status=pending（未批准）
+    executor: "test-executor"
+    permission: "process_run"
+    permission_granted: true
+    sandbox: "temp-env"
+    status: "cancelled"
+    reject_reason: "action AP-0002 not approved (pending) — ee-1 blocks running"
+  # Case4: 权限不足 → failed (permission denied)
+  - execution_id: "EE-0004"
+    action_ref: "AP-0002"
+    executor: "test-executor"
+    permission: "process_run"
+    permission_granted: false   # permission denied（approved_by=null）
+    sandbox: "temp-env"
+    status: "failed"
+    reject_reason: "permission denied (approved_by=null) — ee-2 requires permission granted"
+  # Case5: 执行失败 → Recovery
+  - execution_id: "EE-0005"
+    action_ref: "AP-0001"
+    executor: "test-executor"
+    permission: "process_run"
+    permission_granted: true
+    sandbox: "temp-env"
+    status: "failed"
+    result_ref: "execution-results.yaml#EE-0005"
+    recovery_ref: ".ai/context/recovery/checkpoints/refund-feature-checkpoint.yaml"
+  # Case6: MCP 执行 → completed
+  - execution_id: "EE-0006"
+    action_ref: "AP-0001"
+    executor: "mcp-executor"
+    permission: "mcp_invoke"
+    permission_granted: true
+    sandbox: "temp-env"
+    status: "completed"
+    result_ref: "execution-results.yaml#EE-0006"
+    mcp: "playwright"
+
+summary:
+  total: 6
+  completed: 3
+  failed: 2
+  cancelled: 1
+  approved_before_execution: true    # 所有 completed 均来自 approved action（EE-0003/0004 被拦）
+  auto_execute_disabled: true        # 引擎不自动执行（避免使用 forbidden 字段名 auto_execute）

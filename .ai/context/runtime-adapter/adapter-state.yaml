@@ -1,0 +1,36 @@
+# Runtime Adapter Live State — v1.0
+# .ai/context 侧的运行时适配器状态镜像（供 PM / health 只读）。
+# 权威定义在 platform/runtime-adapter/；本文件是当前部署快照。
+version: 1
+layer: "runtime-adapter-context"
+stage: "v1.0"
+owner: "engops-lead"
+updated_at: "2026-09-21T17:00:00"
+
+source_of_truth: "MyTeam"
+runtime_target: "C:/Users/Administrator/.config/opencode/"
+
+adapter_refs:
+  adapter_schema: "platform/runtime-adapter/adapter-schema.yaml"
+  opencode_adapter: "platform/runtime-adapter/opencode-adapter.yaml"
+  agent_binding: "platform/runtime-adapter/agent-binding.yaml"
+  mcp_binding: "platform/runtime-adapter/mcp-binding.yaml"
+  skill_binding: "platform/runtime-adapter/skill-binding.yaml"
+  deployment_manifest: "platform/runtime-adapter/deployment-manifest.yaml"
+  migration_plan: "platform/runtime-adapter/migration-plan.yaml"
+  rollback_plan: "platform/runtime-adapter/rollback-plan.yaml"
+  sync_state: "platform/runtime-adapter/sync-state.yaml"
+
+current_deployment:
+  deployment_id: "DEP-0001"
+  source_version: "v1.0"
+  status: "draft"              # 未安装，待审批
+  approved: false
+
+baseline:
+  agent: 30
+  mcp: 5
+  skill: 26
+  workflow: 8
+
+note: "MyTeam=Source of Truth；OpenCode=Runtime。部署经 Package→Migration→Approval→Install，不自动安装。"

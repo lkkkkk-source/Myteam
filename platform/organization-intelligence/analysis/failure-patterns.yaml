@@ -1,0 +1,45 @@
+# Failure Pattern Analysis — v1.5
+# 分析：重复失败 / 重复阻塞 / 安全升级 / handoff 失败。输出 pattern + frequency + evidence。
+version: 1
+layer: "organization-intelligence-failure-patterns"
+stage: "v1.5"
+owner: "engops-lead"
+scope: "workflow"
+time_range: "2026-09-01..2026-09-23"
+read_only: true
+
+source_refs:
+  - ".ai/context/execution-engine/execution-results.yaml"
+  - ".ai/context/runtime-safety/safety-state.yaml"
+  - ".ai/context/runtime-safety/escalations.yaml"
+  - ".ai/context/collaboration/handoffs/handoff-history.yaml"
+
+patterns:
+  - pattern: "repeated_failure_retry_limit"
+    category: "repeated-failure"
+    frequency: 1
+    description: "同一 task retry 达上限 → blocked（SF-0003）"
+    evidence_refs: [ "SF-0003", "ESC-0003" ]
+  - pattern: "repeated_block_loop"
+    category: "repeated-block"
+    frequency: 1
+    description: "相同失败原因重复 3 次 → suspected-loop → blocked（SF-0004）"
+    evidence_refs: [ "SF-0004" ]
+  - pattern: "safety_escalation_budget"
+    category: "safety-escalation"
+    frequency: 1
+    description: "预算超限 → waiting-human（SF-0002 / ESC-0002）"
+    evidence_refs: [ "SF-0002", "ESC-0002" ]
+  - pattern: "integration_test_failure"
+    category: "quality-failure"
+    frequency: 1
+    description: "integration-testing 首用失败（refund step-4 validation）"
+    evidence_refs: [ "gate-state#validation", "analytics-report#integration-testing" ]
+
+summary:
+  total_patterns: 4
+  by_category: { "repeated-failure": 1, "repeated-block": 1, "safety-escalation": 1, "quality-failure": 1 }
+  note: "patterns with frequency + evidence only; no auto remediation (oi-2/oi-3)"
+
+boundaries:
+  - "只识别失败模式 + evidence；不自动修复 / 不自动改流程（oi-2）"

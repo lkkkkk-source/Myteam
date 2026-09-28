@@ -1,0 +1,81 @@
+# Recommendation Schema (v0.6.8)
+# -----------------------------------------------------------------------------
+# Model Routing Recommendation Layer：模型推荐输出 Schema。
+#
+# 定义 Model Recommendation Policy 的结构：一次推荐（recommendation）的输出格式。
+#
+# 只推荐、不执行：
+#   - 输出为「推荐策略」，仅供决策参考，不自动调用模型 / 不切换 Provider。
+#   - 历史数据集成（history/）当前只记录，不自动学习。
+# -----------------------------------------------------------------------------
+
+recommendation_schema_version: 1
+layer: model-routing-recommendation
+stage: v0.6.8
+owner: engops-lead
+updated_at: "2026-09-21"
+
+# ===================== 推荐输出字段 =====================
+recommendation:
+  task_id:
+    type: string
+    description: "任务 ID（来自 Router / current-task.yaml）"
+  agent:
+    type: string
+    description: "执行 Agent（谁负责完成，由 Team / Agent 层决定）"
+  team:
+    type: string
+    description: "所属 Team（来自 team-registry.yaml）"
+  requirements:
+    type: object
+    fields:
+      reasoning:
+        enum: [low, medium, high, very-high]
+      coding:
+        enum: [low, medium, high]
+      context:
+        enum: [small, medium, large, very-large]
+      speed:
+        enum: [fast, medium, slow]
+      risk:
+        enum: [normal, high]
+  recommendation:
+    type: object
+    fields:
+      model_class:
+        type: string
+        description: "推荐模型档位（引用 model-registry.yaml 的 model_id）"
+      fallback:
+        type: string
+        description: "降级档位（首选不可用时的备选）"
+      human_confirm:
+        type: boolean
+        description: "是否需要人工确认（高风险任务 = true）"
+        default: false
+      reasoning:
+        type: string
+        description: "推荐依据（引用了哪些输入：复杂度 / 风险 / 上下文 / 历史表现）"
+
+# ===================== 示例 =====================
+example:
+  task_id: "T-068-002"
+  agent: "java-architect"
+  team: "java"
+  requirements:
+    reasoning: "high"
+    coding: "medium"
+    context: "large"
+    speed: "medium"
+    risk: "normal"
+  recommendation:
+    model_class: "high-reasoning"
+    fallback: "long-context"
+    human_confirm: false
+    reasoning: "architecture-design + high complexity + large context → high-reasoning 档位"
+
+# ===================== 约束 =====================
+constraints:
+  - "model_class / fallback 必须引用 model-registry.yaml 已登记档位"
+  - "recommendation.agent 只能引用 agent-capabilities.yaml 中的 Agent（Model Router 不新增 / 不替换 Agent）"
+  - "human_confirm=true 的推荐，未经人工确认不得视为有效推荐"
+  - "本 Schema 输出是推荐策略，不触发任何执行动作"

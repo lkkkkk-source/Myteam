@@ -1,0 +1,19 @@
+# Artifact Links — v1.3
+# 连接 Workspace → Change → Artifact。只有 merged workspace 的 change 可关联为产物。
+version: 1
+layer: "workspace-artifact-link"
+stage: "v1.3"
+task_id: "refund-feature"
+updated_at: "2026-09-21T19:00:00"
+
+links:
+  # Case7: workspace change → artifact（WS-0002 merged）
+  - artifact_id: ".ai/artifacts/code/refund-feature/refund.spec.ts"
+    workspace_id: "WS-0002"
+    changes: [ "CH-0002" ]
+    quality_ref: ".ai/context/quality/gate-state.yaml"
+    status: "linked"
+
+summary:
+  total_links: 1
+  note: "仅 merged workspace（WS-0002/MG-0002）的 change 关联为 artifact；WS-0001 merge rejected 未关联"

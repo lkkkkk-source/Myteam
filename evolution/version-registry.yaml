@@ -1,0 +1,342 @@
+# Agent Version Registry (v0.6.6)
+# -----------------------------------------------------------------------------
+# 中心版本注册表：为 30 个 Agent 提供「持续版本化演进」的单一权威数据源。
+# 设计原则：
+#   - 不新增 / 不删除 Agent（数量恒为 30），只管理 prompt 版本
+#   - 每个 agent 记录：当前版本、版本状态、依赖（升级需先到位的前置 Agent）
+#   - version 单调递增（v1 < v2 < ...），旧版本永不覆盖（可回滚）
+#   - 本文件只登记元数据，不决定执行；执行归各 Agent
+#   - 升级流程：proposed -> approved -> benchmarked -> applied -> released
+#     （任一阶段可 reject / roll-back，见 evolution/evolution-state.yaml）
+# -----------------------------------------------------------------------------
+
+version_registry_version: 1
+platform: opencode-agent-platform
+generated_at: "2026-09-21"
+owner: engops-lead
+total_agents: 30
+baseline: { agent: 30, mcp: 5, skill: 26, workflow: 8 }
+
+# Organization Model reference (v1.4.3)
+# 本 registry 的 `team:` 字段沿用原始域名（java/advisory/research/creative/engops/knowledge/memory/pm），
+# 不改动；Team Organization Model（Team -> Role -> Agent）在 platform/organization/ 层建模，
+# 通过 agent-role-binding.yaml 提供 6-team 组织映射（software-engineering 等），只引用不替代（org-4）。
+organization_model_ref:
+  layer: "platform/organization/"
+  binding: "platform/organization/agent-role-binding.yaml"
+  state: ".ai/context/organization/organization-state.yaml"
+  note: "org 只建模/映射/查询/验证，不改本 registry 的 agent team 字段；30/30 全覆盖"
+
+# Organization Intelligence reference (v1.5)
+# Self-Observing Agent Organization：只读历史运行数据做分析/报告/建议，不改本 registry、不改任何来源。
+organization_intelligence_ref:
+  layer: "platform/organization-intelligence/"
+  report: "platform/organization-intelligence/reports/organization-intelligence-report.yaml"
+  state: ".ai/context/organization-intelligence/intelligence-state.yaml"
+  note: "只分析/只报告/只建议；read-only；recommendation 须人工审批，不自动应用；不生成 Agent 排名"
+
+# 版本状态机（state lifecycle）：
+#   v0: untouched        # 从未升级，沿用 v1 基线
+#   vN: released         # 已合并到 source/prompts + agents，构建通过
+#   vN-proposed:         # 提案已生成，未批准
+#   vN-rejected:         # 被拒绝，未覆盖 source
+#   vN-rollback:         # 已回退到前一版本
+states:
+  - untouched
+  - proposed
+  - approved
+  - benchmarked
+  - applied
+  - released
+  - rejected
+  - rollback
+
+# ===================== 版本注册（30 Agent）=====================
+# version: 当前 source 中生效的 prompt 版本
+# state:   状态机取值
+# team:    所属 team（对齐 .ai/context/team-registry.yaml）
+# depends_on: 依赖的前置 Agent（升级/协同时需先到位，做依赖追踪）
+# note:     本次升级记录
+
+agents:
+
+  # ================= java（software-engineering domain）=================
+  - agent: java-developer
+    version: v2
+    state: released
+    team: java
+    domain: software-engineering
+    depends_on: [java-planner, java-architect]
+    note: v0.6.5 升级 v1->v2（P-065-01, BM-065-01 accept）
+  - agent: java-architect
+    version: v2
+    state: released
+    team: java
+    domain: software-engineering
+    depends_on: []
+    note: v0.6.6 升级 v1->v2（P-066-01, BM-066-01 accept）
+  - agent: java-planner
+    version: v1
+    state: untouched
+    team: java
+    domain: software-engineering
+    depends_on: [java-architect]
+    note: 基线 v1
+  - agent: java-reviewer
+    version: v2
+    state: released
+    team: java
+    domain: software-engineering
+    depends_on: [java-developer]
+    note: v0.6.6 升级 v1->v2（P-066-02, BM-066-01 accept）
+  - agent: java-tester
+    version: v2
+    state: released
+    team: java
+    domain: software-engineering
+    depends_on: [java-developer]
+    note: v0.6.6 升级 v1->v2（P-066-03, BM-066-01 accept）
+  - agent: java-debugger
+    version: v1
+    state: untouched
+    team: java
+    domain: software-engineering
+    depends_on: [java-tester, java-developer]
+    note: 基线 v1
+  - agent: java-lead
+    version: v1
+    state: untouched
+    team: java
+    domain: software-engineering
+    depends_on: [java-architect, java-planner, java-developer, java-reviewer, java-tester, java-debugger]
+    note: 基线 v1
+
+  # ================= advisory（advisory domain）=================
+  - agent: requirement-agent
+    version: v1
+    state: untouched
+    team: advisory
+    domain: advisory
+    depends_on: []
+    note: 基线 v1
+  - agent: discussion-agent
+    version: v1
+    state: untouched
+    team: advisory
+    domain: advisory
+    depends_on: []
+    note: 基线 v1
+  - agent: solution-architect
+    version: v1
+    state: untouched
+    team: advisory
+    domain: advisory
+    depends_on: []
+    note: 基线 v1
+
+  # ================= research（research domain）=================
+  - agent: research-lead
+    version: v1
+    state: untouched
+    team: research
+    domain: research
+    depends_on: [literature-agent, experiment-agent, paper-writer, research-analyst, innovation-agent]
+    note: 基线 v1
+  - agent: literature-agent
+    version: v1
+    state: untouched
+    team: research
+    domain: research
+    depends_on: []
+    note: 基线 v1
+  - agent: experiment-agent
+    version: v1
+    state: untouched
+    team: research
+    domain: research
+    depends_on: []
+    note: 基线 v1
+  - agent: paper-writer
+    version: v1
+    state: untouched
+    team: research
+    domain: research
+    depends_on: [literature-agent, experiment-agent]
+    note: 基线 v1
+  - agent: research-analyst
+    version: v2
+    state: released
+    team: research
+    domain: research
+    depends_on: []
+    note: v0.6.7 跨 Team 复用 PATTERN-001 evidence-based-output（origin=java），BM-067-01 accept
+  - agent: innovation-agent
+    version: v1
+    state: untouched
+    team: research
+    domain: research
+    depends_on: []
+    note: 基线 v1
+
+  # ================= creative（creative domain）=================
+  - agent: creative-lead
+    version: v1
+    state: untouched
+    team: creative
+    domain: creative
+    depends_on: [writing-agent, editor-agent, ppt-agent, resume-agent]
+    note: 基线 v1
+  - agent: writing-agent
+    version: v1
+    state: untouched
+    team: creative
+    domain: creative
+    depends_on: []
+    note: 基线 v1
+  - agent: editor-agent
+    version: v1
+    state: untouched
+    team: creative
+    domain: creative
+    depends_on: [writing-agent]
+    note: 基线 v1
+  - agent: ppt-agent
+    version: v1
+    state: untouched
+    team: creative
+    domain: creative
+    depends_on: []
+    note: 基线 v1
+  - agent: resume-agent
+    version: v1
+    state: untouched
+    team: creative
+    domain: creative
+    depends_on: []
+    note: 基线 v1
+
+  # ================= engops（engops domain）=================
+  - agent: engops-lead
+    version: v1
+    state: untouched
+    team: engops
+    domain: engops
+    depends_on: []
+    note: 基线 v1；v0.6.6 起负责 Evolution Release 管理，v0.6.7 起负责 Evolution Knowledge 生命周期，v0.6.8 起负责 Model Registry 生命周期，v0.6.9 起负责 Model Routing Feedback 生命周期（职责扩展，非 prompt 大版本），v0.7 起负责 Runtime Contract 生命周期（统一 Runtime Context 驱动协作，人工维护契约与台账），v0.8 起负责 Runtime Action Proposal & Approval 生命周期（Action Policy / Proposal / Ledger 人工维护，只提案只记录只检查），v0.9 起负责 Runtime Controlled Execution 生命周期（execution-schema / executor-registry / permission-policy / sandbox / rollback 人工维护，不实现真实执行引擎），v1.0 起负责 Runtime Adapter & Deployment Governance 生命周期（build / migration / rollback，Source→Runtime 受治理部署，不自动安装不自动覆盖），v1.0.1 起负责 MyTeam Plugin 生命周期（plugin/opencode 就地只读封装），v1.1 起负责 MyTeam CLI release 生命周期（build CLI / version / changelog / rollback，CLI 只管理不安装），v1.2 起负责 Controlled Execution Engine 生命周期（executor registry / sandbox policy / execution release，只执行治理通过请求），v1.3 起负责 Workspace Infrastructure 生命周期（workspace 创建 / checkpoint / merge 治理 / artifact 关联，不自动 merge），v1.4 起负责 Collaboration Protocol 生命周期（message / handoff / decision / conflict 治理，不自动执行），v1.4.1 起负责 Debug & Trace 生命周期（trace 采集 / 索引 / 查询，只记录不执行），v1.4.2 起负责 Runtime Safety Policy 生命周期（budget / limit / timeout / escalation，只限制不执行）
+  - agent: release-agent
+    version: v1
+    state: untouched
+    team: engops
+    domain: engops
+    depends_on: []
+    note: 基线 v1
+  - agent: git-manager
+    version: v1
+    state: untouched
+    team: engops
+    domain: engops
+    depends_on: []
+    note: 基线 v1
+  - agent: changelog-agent
+    version: v1
+    state: untouched
+    team: engops
+    domain: engops
+    depends_on: [git-manager]
+    note: 基线 v1
+  - agent: project-health-agent
+    version: v1
+    state: untouched
+    team: engops
+    domain: engops
+    depends_on: []
+    note: 基线 v1；v0.6.6 起增加 version registry / source / build 一致性检查，v0.6.7 起增加 Evolution Knowledge 一致性检查，v0.6.8 起增加 Model Routing 一致性检查，v0.6.9 起增加 Routing Feedback 一致性检查，v0.7 起增加 Runtime Contract 一致性检查（契约 / 台账 / 快照一致性 + Contract 违规检测，只报告不执行），v0.8 起增加 Action Contract 一致性检查（提案 schema / 批准模型 / 悬空引用 + Action Contract 违规检测 + Execution 未实现校验，只报告不执行），v0.9 起增加 Execution Contract 一致性检查（action-approved-before-execution / executor-registry / permission-policy / rollback 引用 + forbidden 检测，只报告不执行），v1.0 起增加 Deployment Governance / Adapter 一致性检查（source/runtime consistency / manifest validity / hash consistency / migration safety / approval-before-install，只报告不执行），v1.0.1 起增加 Plugin Isolation 一致性检查，v1.1 起增加 Plugin CLI 一致性检查（command availability / manifest / version / lifecycle / CLI 隔离，只报告不执行），v1.2 起增加 Execution Engine 一致性检查（schema / executor registry / permission / sandbox / ledger，只报告不执行），v1.3 起增加 Workspace 一致性检查（schema / permissions / checkpoint / merge state / artifact links，只报告不执行），v1.4 起增加 Collaboration 一致性检查（message / handoff / decision / conflict / policy compliance，只报告不执行），v1.4.1 起增加 Trace 一致性检查（event 完整 / reference 有效 / layer 合法 / forbidden 字段，只报告不执行），v1.4.2 起增加 Safety 一致性检查（budget / limit / escalation / trace reference / forbidden，只报告不执行）
+
+  # ================= knowledge（knowledge domain）=================
+  - agent: adr-recorder
+    version: v1
+    state: untouched
+    team: knowledge
+    domain: knowledge
+    depends_on: []
+    note: 基线 v1
+  - agent: project-knowledge-manager
+    version: v1
+    state: untouched
+    team: knowledge
+    domain: knowledge
+    depends_on: []
+    note: 基线 v1
+
+  # ================= memory（memory/observability domain）=================
+  - agent: task-memory-agent
+    version: v1
+    state: untouched
+    team: memory
+    domain: memory
+    depends_on: []
+    note: 基线 v1
+
+  # ================= pm（pm / orchestration domain）=================
+  - agent: project-manager-agent
+    version: v1
+    state: untouched
+    team: pm
+    domain: orchestration
+    depends_on: [requirement-agent, solution-architect]
+    note: 基线 v1；v0.6.6 起读取 Agent Evolution 状态，v0.6.8 起读取 Model Routing 推荐，v0.6.9 起读取 Model Routing Feedback 报告（只读，不自动改策略），v0.7 起读取 Runtime Context 集成台账汇总任务状态（只读，不自动执行），v0.8 起承担 Action Governance 审批方角色（medium 批准 / high 转用户批准，只审批只汇总不执行），v0.9 起读取 Execution 状态汇总（execution-ledger / history，只读不执行），v1.0 起读取 Deployment 状态汇总（deployment-manifest / sync-state，只读不部署），v1.0.1 起读取 Plugin 状态，v1.1 起读取 CLI status 用于项目状态展示（只读），v1.2 起读取 execution status / trace（只读不执行），v1.3 起读取 workspace lifecycle（status / list / trace，只读不操作），v1.4 起读取 collaboration 状态（status / trace / conflicts，只读不执行），v1.4.1 起读取 trace 状态（status / show / timeline，只读展示全生命周期），v1.4.2 起读取 safety 状态（status / budget / violations，只读不放行）
+
+# ===================== 依赖追踪（dependency tracking）=====================
+# 用于升级排序 / 一致性校验 / 回滚影响面分析。
+# 依赖含义：升级 A 时，若 A.depends_on 中某前置 Agent 版本落后于其下游期望，
+# 需先评估协同性；回滚 A 时需检查 depends_on 它 的下游 Agent 是否受影响。
+dependency_graph:
+  topological_hint:
+    - layer: 0   # 无前置
+      agents: [java-architect, requirement-agent, discussion-agent, solution-architect,
+               literature-agent, experiment-agent, research-analyst, innovation-agent,
+               writing-agent, ppt-agent, resume-agent, engops-lead, release-agent,
+               git-manager, project-health-agent, adr-recorder, project-knowledge-manager,
+               task-memory-agent]
+    - layer: 1   # 依赖 layer 0
+      agents: [java-developer, java-planner, java-reviewer, java-tester,
+               changelog-agent, editor-agent, paper-writer]
+    - layer: 2   # 依赖 layer 1
+      agents: [java-debugger]
+    - layer: 3   # lead / 顶层
+      agents: [java-lead, research-lead, creative-lead, project-manager-agent]
+
+# 升级批次（本次 v0.6.6 released）
+upgrade_batches:
+  - batch: B-066-01
+    agents: [java-architect, java-reviewer, java-tester]
+    proposals: [P-066-01, P-066-02, P-066-03]
+    benchmark: BM-066-01
+    result: accept
+    released_at: "2026-09-21"
+  - batch: B-067-01
+    agents: [research-analyst]
+    proposals: [P-067-01]
+    benchmark: BM-067-01
+    result: accept
+    released_at: "2026-09-21"
+    type: cross-team-reuse   # java → research，复用 PATTERN-001
+
+# 回滚登记（可回滚升级）
+rollback_registry:
+  - agent: java-architect
+    from: v2
+    to: v1
+    available_from: evolution/v0.6.6/history/rollback-sim.yaml
+  - agent: java-reviewer
+    from: v2
+    to: v1
+    available_from: evolution/v0.6.6/history/rollback-sim.yaml
+  - agent: java-tester
+    from: v2
+    to: v1
+    available_from: evolution/v0.6.6/history/rollback-sim.yaml
+  - agent: research-analyst
+    from: v2
+    to: v1
+    available_from: evolution/v0.6.7/history/rollback-sim.yaml

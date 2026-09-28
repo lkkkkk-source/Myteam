@@ -1,0 +1,22 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case5-task-archive-metrics"
+created_at: "2026-09-20T14:48:00"
+
+# Case5：任务归档
+# 验证：task metrics 生成（定稿）
+
+scenario:
+  trigger: "任务 complete → 归档（task-memory-agent 触发）"
+
+expected:
+  task_metrics_archived: true        # archived: false → true
+  metrics_complete: true             # duration / steps / retries / recovery_count / quality_gate_failures 全齐
+  archive_ready: true
+
+actual:
+  task_metrics_archived: true
+  ref: "observability/metrics/task-metrics.yaml"
+
+result: "PASS"
+assertion: "任务归档 → task-metrics 定稿（archived: true + 指标完整）"

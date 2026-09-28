@@ -1,0 +1,63 @@
+# =====================================================================
+# Migration Plan — v1.0
+# =====================================================================
+# 定义 Source → Runtime 的迁移流程：安装前 backup → 安装 asset copy →
+# 验证 hash check → 失败 rollback。只定义流程，本阶段不自动执行。
+# 流程：Build Package → Backup Runtime → Apply Migration → Verify → Commit
+# 阶段：v1.0 · OpenCode Runtime Adapter & Deployment Governance Layer
+# =====================================================================
+
+version: 1
+layer: "runtime-adapter-migration-plan"
+stage: "v1.0"
+owner: "engops-lead"
+mode: "manual"                 # 手动执行，非自动
+deployment_ref: "platform/runtime-adapter/deployment-manifest.yaml#DEP-0001"
+
+# ---------------------------------------------------------------------
+# 迁移步骤（顺序执行，任一失败 → rollback）
+# ---------------------------------------------------------------------
+steps:
+  - id: "M1-build"
+    name: "Build Package"
+    action: "build/scripts 从 source/ 构建安装包 → build/package/opencode-agent-platform-v1.0/"
+    on_fail: "abort (no runtime change)"
+  - id: "M2-verify-baseline"
+    name: "Verify Baseline"
+    action: "断言 package: agent=30 / mcp=5 / skill=26 / workflow=8"
+    on_fail: "abort"
+  - id: "M3-backup"
+    name: "Backup Runtime"
+    action: "快照 runtime opencode.json + prompts/docs/workflows → rollback/backups/{deployment_id}/"
+    on_fail: "abort"
+  - id: "M4-apply"
+    name: "Apply Migration (asset copy)"
+    action: "按 agent-binding / mcp-binding(声明) / skill-binding(引用) / workflow / docs 复制到 runtime（platform-owned only）"
+    on_fail: "rollback (M6)"
+    guard: "只写 platform-owned；不碰 mcp/provider/shell/skills 实体/.opencode/.omo/node_modules"
+  - id: "M5-verify"
+    name: "Verify (hash check)"
+    action: "对比 runtime 文件 checksum 与 agent-binding.checksum；不一致 → rollback"
+    on_fail: "rollback (M6)"
+  - id: "M6-rollback"
+    name: "Rollback (on failure)"
+    action: "复用 rollback-plan.yaml，从 backup 恢复 runtime"
+    trigger: "M4/M5 失败时"
+  - id: "M7-commit"
+    name: "Commit"
+    action: "更新 deployment-manifest.status=installed + sync-state + migration-log 追加条目"
+    on_fail: "manual-review"
+
+# ---------------------------------------------------------------------
+# 约束
+# ---------------------------------------------------------------------
+constraints:
+  - "整个迁移仅在 deployment-manifest.status=approved 后由人工触发"
+  - "backup 必须在 apply 之前（M3 先于 M4）"
+  - "verify 失败自动进入 rollback（M6），不留半安装状态"
+  - "本阶段只定义迁移流程，不自动执行"
+
+not_implemented:
+  - "auto-install"
+  - "auto-migration"
+  - "auto-overwrite"

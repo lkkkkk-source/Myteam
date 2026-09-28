@@ -1,0 +1,19 @@
+# Execution Limit — v1.4.2
+version: 1
+layer: "runtime-safety-execution-limit"
+stage: "v1.4.2"
+owner: "engops-lead"
+
+limits:
+  max_execution_time: "30m"
+  max_retry_count: 3
+  max_parallel_execution: 5
+
+rules:
+  - "超过 max_execution_time → blocked（进入 Recovery / human）"
+  - "超过 max_retry_count → blocked（见 retry-limit）"
+  - "超过 max_parallel_execution → blocked（排队，不自动扩并发）"
+
+boundaries:
+  - "limit 只阻断，不自动放宽（sf-3）"
+  - "不修改 Execution Policy（v1.2），只加限制门槛"

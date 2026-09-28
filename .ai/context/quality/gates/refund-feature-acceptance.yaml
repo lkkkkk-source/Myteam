@@ -1,0 +1,16 @@
+version: 1
+task_id: "refund-feature"
+gate_type: "acceptance"
+updated_at: "2026-09-20T14:10:00"
+
+records:
+  - step: "step-1"
+    by: "project-manager-agent"
+    status: "approved"
+    note: "需求对齐（退款接口/状态机/记录表），交付标准达成"
+    at: "2026-09-20T14:10:00"
+  - step: "step-2"
+    by: "project-manager-agent"
+    status: "approved"
+    note: "验收标准：退款接口返回新状态 ✅"
+    at: "2026-09-20T14:12:00"

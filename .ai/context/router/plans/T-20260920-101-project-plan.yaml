@@ -1,0 +1,53 @@
+version: 2
+updated_at: "2026-09-20T15:48:00"
+# Router Planning Layer v0.6.1 — Project Plan 示例（refund-feature）
+# 说明：此文件由 PM/Router 在路由后生成，仅描述阶段（phase）级计划，
+#       不包含 Agent step。Scheduler 负责将 phase 拆成执行 plan。
+
+task_id: "T-20260920-101"
+title: "给订单系统增加退款功能"
+intent_file: ".ai/context/router/intent/T-20260920-101-intent.yaml"
+route_file: ".ai/context/router/routes/T-20260920-101-route.yaml"
+
+project_plan:
+  - phase: 1
+    name: "需求分析与架构设计"
+    description: "明确退款流程、状态机扩展点、数据模型"
+    teams: ["java"]
+    lead: "java-lead"
+    depends_on: []
+    estimated_days: 2
+    deliverables: ["退款流程设计", "状态机扩展方案", "数据模型"]
+  - phase: 2
+    name: "接口与状态机实现"
+    description: "实现退款接口、订单状态机扩展 REFUNDING/REFUNDED"
+    teams: ["java"]
+    lead: "java-lead"
+    depends_on: [1]
+    estimated_days: 3
+    deliverables: ["退款接口", "状态机迁移"]
+  - phase: 3
+    name: "退款记录与测试"
+    description: "退款记录落库、接口与状态机测试"
+    teams: ["java"]
+    lead: "java-lead"
+    depends_on: [2]
+    estimated_days: 2
+    deliverables: ["退款记录表", "测试报告"]
+  - phase: 4
+    name: "验收与发布"
+    description: "验收标准核对、QA、发布准备"
+    teams: ["java", "engops"]
+    lead: "engops-lead"
+    depends_on: [3]
+    estimated_days: 1
+    deliverables: ["验收结果", "发布计划"]
+
+constraints:
+  - "Scope 不含财务对账系统与第三方支付回调"
+  - "必须兼容现有订单状态机"
+
+# v0.6.1 边界：Router 只输出 phase 级计划，Scheduler 生成执行 step
+scheduler_boundary:
+  router_outputs: ["phases", "teams", "lead", "dependencies"]
+  scheduler_outputs: ["steps", "parallel_groups", "execution_order", "approval_queue"]

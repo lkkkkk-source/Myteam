@@ -1,0 +1,32 @@
+# Action Proposal AP-0002
+# -----------------------------------------------------------------------------
+# 动作：运行回归测试脚本（run-command，high）。
+# 状态：pending（等待显式人工批准）。
+# 注意：高风险动作必须 explicit human approval；本提案【不】包含执行 / 结果字段。
+# -----------------------------------------------------------------------------
+
+version: 1
+proposal_id: "AP-0002"
+title: "运行 refund 回归测试（收集产物）"
+task_id: "refund-feature"
+stage: v0.8
+layer: "runtime-action-proposal"
+owner: "engops-lead"
+created_at: "2026-09-21"
+
+action:
+  action_type: "run-command"
+  target: "npm test -- --regression refund"
+  detail: "回归验证退款逻辑改动；高风险，需人工批准后才允许进入执行"
+
+risk:
+  level: "high"
+  approval_model: "human-approval"
+  approver: "human"
+
+status: "pending"
+
+decision:
+  approved_by: null
+  approved_at: null
+  decision_note: null

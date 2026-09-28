@@ -1,0 +1,45 @@
+# Workspace State — 集成台账（v1.3）
+# 记录当前任务的 Agent workspaces（隔离 / 变化 / checkpoint / merge）。
+# 只记录审计，不自动创建 / 不自动合并。三层分离：Workspace≠Execution≠Memory≠Artifact。
+version: 1
+layer: "workspace-state"
+stage: "v1.3"
+task_id: "refund-feature"
+updated_at: "2026-09-21T19:00:00"
+owner: "engops-lead"
+
+workspaces:
+  # Case1: 任务开始 → 创建 workspace（developer）
+  # Case2: developer / tester 并行独立 workspace，互不污染
+  - workspace_id: "WS-0001"
+    task_id: "refund-feature"
+    agent: "java-developer"
+    team: "java"
+    branch: "ws/refund-feature/java-developer"
+    created_at: "2026-09-21T18:30:00"
+    status: "reviewing"
+    snapshot_ref: "snapshots/CP-0001.yaml"
+  - workspace_id: "WS-0002"
+    task_id: "refund-feature"
+    agent: "java-tester"
+    team: "java"
+    branch: "ws/refund-feature/java-tester"
+    created_at: "2026-09-21T18:30:00"
+    status: "active"
+    snapshot_ref: "snapshots/CP-0002.yaml"
+  - workspace_id: "WS-0003"
+    task_id: "refund-feature"
+    agent: "java-reviewer"
+    team: "java"
+    branch: "ws/refund-feature/java-reviewer"
+    created_at: "2026-09-21T18:30:00"
+    status: "active"          # reviewer 只读，无 change
+
+summary:
+  total: 3
+  created: 0
+  active: 2
+  reviewing: 1
+  merged: 0
+  archived: 0
+  isolation: "each agent workspace-local (no cross-agent write)"

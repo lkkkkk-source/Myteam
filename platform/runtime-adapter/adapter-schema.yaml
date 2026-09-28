@@ -1,0 +1,90 @@
+# =====================================================================
+# Runtime Adapter Schema — v1.0
+# =====================================================================
+# 目标：把 MyTeam（Source of Truth）到 OpenCode Runtime（Deployment）之间的
+#       映射关系结构化，建立受治理的部署链路：
+#       MyTeam Source → Build → Runtime Adapter → Migration → Approval → OpenCode Runtime
+#
+# 本质：Adapter Schema = "一条 Source→Runtime 资产映射"的字段契约。
+#   - 每条映射：source_path → runtime_path，带 asset_type / version / checksum / status
+#   - 记录同步状态与最近同步时间，支持 drift 检测
+#
+# 阶段：v1.0 · OpenCode Runtime Adapter & Deployment Governance Layer
+#   （只映射 / 只记录 / 只检查 / 只生成计划；本阶段【不自动安装、不自动覆盖】）
+# 基线：Agent=30 · MCP=5 · Skill=26 · Workflow=8（不新增 / 不删除 / 不改核心行为）
+# =====================================================================
+
+version: 1
+layer: "runtime-adapter"
+stage: "v1.0"
+status: "designed"            # designed / deployed（本阶段 designed，不自动安装）
+schema_for: "platform/runtime-adapter/*.yaml"
+
+# 上游依赖
+depends_on:
+  - "v0.6.2-source-runtime-separation"
+  - "v0.9-runtime-controlled-execution"
+
+# 权威边界
+source_of_truth: "MyTeam (D:/data/code/Agent/MyTeam)"
+runtime_target: "C:/Users/Administrator/.config/opencode/"
+
+# ---------------------------------------------------------------------
+# 一、验收不变量（Deployment Governance 铁律）
+# ---------------------------------------------------------------------
+invariants:
+  - "ra-1: MyTeam 是唯一 Source of Truth；OpenCode 只是 Runtime Deployment，禁止 runtime 反向修改 source"
+  - "ra-2: 所有部署必须 Package → Migration → Approval → Install；禁止直接改 runtime 作为开发方式"
+  - "ra-3: 禁止自动安装 / 自动覆盖用户配置 / 自动升级 / 自动删除旧版本"
+  - "ra-4: 只同步平台资产（agent prompt / metadata / mcp declaration / skill reference / workflow）；禁止碰用户私有数据 / 任务状态 / Memory / Runtime 执行记录"
+  - "ra-5: drift（source != runtime）只报告，不自动修复"
+
+# ---------------------------------------------------------------------
+# 二、资产映射字段（Adapter Mapping Entry）
+# ---------------------------------------------------------------------
+mapping_entry:
+  - field: "source_path"
+    type: "string"
+    required: true            # MyTeam 内的源路径
+  - field: "runtime_path"
+    type: "string"
+    required: true            # OpenCode runtime 内的目标（相对 runtime_target）
+  - field: "asset_type"
+    type: "enum"
+    values: [ "agent", "prompt", "workflow", "mcp", "skill", "docs", "config" ]
+    required: true
+  - field: "version"
+    type: "string"
+    required: true            # 对齐 version-registry（agent）/ v1（其他）
+  - field: "checksum"
+    type: "string"
+    required: true            # sha256 占位（本阶段 placeholder，构建时计算）
+  - field: "deployment_status"
+    type: "enum"
+    values: [ "not-deployed", "pending", "deployed", "drifted", "rolled-back" ]
+    required: true
+  - field: "last_sync"
+    type: "string"
+    required: false
+
+# ---------------------------------------------------------------------
+# 三、硬性边界（强制：本阶段【不】实现）
+# ---------------------------------------------------------------------
+not_implemented:
+  - "auto-install"             # 不自动安装
+  - "auto-upgrade"             # 不自动升级
+  - "auto-overwrite"           # 不自动覆盖用户配置
+  - "auto-delete-old-version"  # 不自动删除旧版本
+  - "runtime-reverse-mutation" # 禁止 runtime 反向改 source
+  - "auto-run-task"            # 不自动运行任务
+  - "auto-drift-repair"        # drift 只报告不自动修复
+
+# ---------------------------------------------------------------------
+# 四、forbidden 字段（出现即 Adapter Contract 违规 Critical）
+# ---------------------------------------------------------------------
+forbidden_fields:
+  - "auto_install"
+  - "auto_overwrite"
+  - "reverse_sync"
+  - "auto_upgrade"
+  note: "Adapter / binding / manifest 不得出现自动安装 / 自动覆盖 / 反向同步 / 自动升级字段"

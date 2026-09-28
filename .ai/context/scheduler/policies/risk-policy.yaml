@@ -1,0 +1,18 @@
+version: 1
+risk_levels:
+  normal:
+    desc: "普通开发 / 测试 / 文档 step"
+    approval: false
+  high:
+    desc: "release / 数据库结构变更 / 删除操作 / 生产环境改动"
+    approval: true
+
+high_risk_agents:
+  - "engops-release-manager"
+  - "engops-db-migration-manager"
+
+high_risk_operations:
+  - "release"
+  - "db_schema_change"
+  - "delete"
+  - "prod_deploy"

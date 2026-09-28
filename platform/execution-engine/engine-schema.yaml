@@ -1,0 +1,111 @@
+# =====================================================================
+# Execution Engine Schema — v1.2
+# =====================================================================
+# 目标：在 v0.9 Controlled Execution Interface（契约）之上，实现【受治理执行引擎】。
+#       Approved Action → Execution Engine → Executor → Tool/MCP/Runtime → Result → Quality/Observability
+#
+# 三层分离（强制）：
+#   Context   = 记录当前状态（.ai/context/runtime/runtime-context.yaml）
+#   Action    = 记录意图（platform/runtime-action/）
+#   Execution = 记录实际执行（本层 + platform/runtime-execution/）
+#
+# Execution Engine 不负责：决定任务 / 选择 Agent / 修改 Prompt / 自动批准 Action / 绕过 Governance。
+# 禁止：Agent 直接调用 Executor。正确：Agent → Action Proposal → Approval → Execution Engine → Executor。
+#
+# 阶段：v1.2 · MyTeam Controlled Execution Engine
+# 基线：Agent=30 · MCP=5 · Skill=26 · Workflow=8（不新增 / 不删除 / 不改核心行为）
+# =====================================================================
+
+version: 1
+layer: "execution-engine"
+stage: "v1.2"
+status: "governed"            # 受治理：只执行已治理通过的请求
+schema_for: "platform/execution-engine/**/*.yaml + .ai/context/execution-engine/*.yaml"
+
+depends_on:
+  - "v0.8-runtime-action-proposal-approval"   # 只接收 approved action
+  - "v0.9-controlled-execution-interface"     # 契约上游
+  - "v0.3.3-recovery"                         # 失败连接 Recovery
+
+# ---------------------------------------------------------------------
+# 一、验收不变量（Execution Engine 铁律）
+# ---------------------------------------------------------------------
+invariants:
+  - "ee-1: execution_request 必须引用 approved 的 action_ref；未批准不得进入 authorized/running"
+  - "ee-2: permission 与 action approval 是【两个独立状态】，都满足才可 running（ee-permission）"
+  - "ee-3: Agent 不得直接调用 Executor；必须经 Action→Approval→Engine→Executor"
+  - "ee-4: Executor 由 policy + registry 选定，Engine 不自动选择、不自动提升权限"
+  - "ee-5: 失败必须连接 Recovery（result.errors → recovery ref），不自动重试不自动推进"
+  - "ee-6: 本引擎只执行【已治理通过】的请求；critical 只生成 proposal，不执行"
+  - "ee-7: 不修改 Prompt / 不改 Model Routing / 不决定任务 / 不选 Agent"
+
+# ---------------------------------------------------------------------
+# 二、Execution Request 字段
+# ---------------------------------------------------------------------
+execution_request:
+  - field: "execution_id"
+    type: "string"
+    required: true            # EE-NNNN
+  - field: "action_ref"
+    type: "string"
+    required: true            # 引用 platform/runtime-action/records/AP-*.yaml（必须 approved）
+  - field: "task_id"
+    type: "string"
+    required: true            # 对齐 runtime-context / action-ledger
+  - field: "executor"
+    type: "string"
+    required: true            # 存在于 executor-registry；支持该 action
+  - field: "permission"
+    type: "map"
+    required: true            # 独立于 action approval（见 permission/execution-permission.yaml）
+  - field: "sandbox"
+    type: "string"
+    required: true            # none / workspace-clone / temp-env / container
+  - field: "input"
+    type: "map"
+    required: false
+  - field: "status"
+    type: "string"
+    required: true            # 见 states
+
+# ---------------------------------------------------------------------
+# 三、状态机
+# ---------------------------------------------------------------------
+states:
+  - "prepared"     # 已根据 approved action 生成执行请求
+  - "authorized"   # action approved + permission granted（两者独立满足）
+  - "queued"       # 进入执行队列（只记录，不自动调度）
+  - "running"      # 执行中
+  - "completed"    # 完成 → 连 Quality/Observability
+  - "failed"       # 失败 → 连 Recovery
+  - "cancelled"    # 撤销（如未批准）
+  - "rolled_back"  # 回滚（复用 Recovery）
+
+state_transitions:
+  - "prepared -> authorized  (requires: action=approved AND permission=granted)"
+  - "authorized -> queued"
+  - "queued -> running"
+  - "running -> completed | failed | cancelled"
+  - "failed -> rolled_back (via Recovery)"
+
+# ---------------------------------------------------------------------
+# 四、禁止字段（出现即 Execution Engine 违规 Critical）
+# ---------------------------------------------------------------------
+forbidden_fields:
+  - "auto_execute"
+  - "auto_approve"
+  - "bypass_permission"
+  - "skip_quality"
+  note: "execution request / result / queue 不得出现自动执行 / 自动批准 / 绕过权限 / 跳过质量字段"
+
+# ---------------------------------------------------------------------
+# 五、硬性边界（本阶段不实现自动化决策）
+# ---------------------------------------------------------------------
+not_implemented:
+  - "auto-execute-unapproved-action"
+  - "agent-direct-executor-call"
+  - "auto-executor-selection"
+  - "auto-permission-escalation"
+  - "auto-sandbox-policy-mutation"
+  - "auto-prompt-mutation"
+  - "auto-model-routing-mutation"

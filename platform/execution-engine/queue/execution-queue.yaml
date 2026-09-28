@@ -1,0 +1,50 @@
+# =====================================================================
+# Execution Queue — v1.2
+# =====================================================================
+# 管理执行请求队列。只记录，不自动调度（人工 / Scheduler 触发）。
+# =====================================================================
+
+version: 1
+layer: "execution-engine-queue"
+stage: "v1.2"
+owner: "engops-lead"
+updated_at: "2026-09-21"
+auto_schedule: false          # 只记录，不自动调度
+
+# 队列状态：pending / authorized / running / completed / failed
+queue:
+  - execution_id: "EE-0001"
+    action_ref: "AP-0001"
+    executor: "code-executor"
+    state: "completed"
+  - execution_id: "EE-0002"
+    action_ref: "AP-0001"
+    executor: "code-executor"
+    state: "completed"
+  - execution_id: "EE-0003"
+    action_ref: "AP-0002"
+    executor: "test-executor"
+    state: "pending"           # AP-0002 未批准 → 不进入 authorized（Case3 blocked）
+  - execution_id: "EE-0004"
+    action_ref: "AP-0002"
+    executor: "test-executor"
+    state: "failed"            # permission denied（Case4）
+  - execution_id: "EE-0005"
+    action_ref: "AP-0001"
+    executor: "test-executor"
+    state: "failed"            # 执行失败 → Recovery（Case5）
+  - execution_id: "EE-0006"
+    action_ref: "AP-0001"
+    executor: "mcp-executor"
+    state: "completed"         # MCP 执行（Case6）
+
+summary:
+  pending: 1
+  authorized: 0
+  running: 0
+  completed: 3
+  failed: 2
+
+constraints:
+  - "只记录队列状态，不自动调度（auto_schedule=false）"
+  - "未批准 action 的 execution 停在 pending，不得进入 authorized"

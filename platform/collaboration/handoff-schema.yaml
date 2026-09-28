@@ -1,0 +1,45 @@
+# =====================================================================
+# Handoff Schema — v1.4
+# =====================================================================
+# Agent 交接协议。记录已完成 / 剩余工作 / 约束 / 验收 / 证据。
+# =====================================================================
+
+version: 1
+layer: "collaboration-handoff"
+stage: "v1.4"
+owner: "engops-lead"
+schema_for: ".ai/context/collaboration/handoffs/*.yaml"
+
+handoff:
+  - field: "handoff_id"
+    type: "string"
+    required: true            # HO-NNNN
+  - field: "from"
+    type: "string"
+    required: true
+  - field: "to"
+    type: "string"
+    required: true
+  - field: "task_context"
+    type: "string"
+    required: true
+  - field: "completed_work"
+    type: "list"
+    required: true
+  - field: "remaining_work"
+    type: "list"
+    required: true
+  - field: "constraints"
+    type: "list"
+    required: true            # 禁止事项 / 边界
+  - field: "evidence"
+    type: "string"
+    required: false           # 产物 / gate 指针
+  - field: "acceptance"
+    type: "string"
+    required: true            # 验收标准
+
+rules:
+  - "handoff 交接只传结论 + 指针（不复制完整内容进消息）"
+  - "constraints 明确边界（如：禁止修改数据库结构）"
+  - "handoff 只增记录；不自动触发下游执行（cl-1：只产生 handoff，不直接 Execution）"

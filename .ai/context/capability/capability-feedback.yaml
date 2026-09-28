@@ -1,0 +1,40 @@
+version: 1
+updated_at: "2026-09-20T15:30:00"
+# Capability Feedback（v0.5）
+# 来自 Observability（engops-lead 任务完成后追加）。只增，供未来 Capability Scoring 使用。
+records:
+  - task_id: "refund-feature"
+    agent: "java-developer"
+    capability: "spring-boot"
+    used: true
+    success: true
+    source: "observability/metrics/task-metrics.yaml"
+    logged_at: "2026-09-20T14:35:00"
+  - task_id: "refund-feature"
+    agent: "java-developer"
+    capability: "tdd"
+    used: true
+    success: true
+    source: "observability/history/refund-feature-history.yaml"
+    logged_at: "2026-09-20T14:35:00"
+  - task_id: "refund-feature"
+    agent: "java-tester"
+    capability: "unit-testing"
+    used: true
+    success: true
+    source: "observability/quality/gates/refund-feature-validation.yaml"
+    logged_at: "2026-09-20T14:36:00"
+  - task_id: "refund-feature"
+    agent: "java-tester"
+    capability: "integration-testing"
+    used: true
+    success: false
+    source: "observability/failures/refund-feature-failures.yaml"
+    logged_at: "2026-09-20T14:36:00"
+
+summary:
+  total: 4
+  by_agent:
+    java-developer: 2
+    java-tester: 2
+  success_rate: 0.75

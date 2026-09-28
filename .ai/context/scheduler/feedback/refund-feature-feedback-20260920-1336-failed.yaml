@@ -1,0 +1,18 @@
+version: 1
+task_id: "refund-feature"
+feedback_id: "fb-20260920-1336"
+created_at: "2026-09-20T13:36:00"
+
+step: "step-2"
+agent: "java-developer"
+decision_ref: "d-20260920-001"
+
+result:
+  status: "failed"
+  output: "编译失败：RefundService 缺少依赖注入"
+  next_hint: null
+
+on_failure:
+  errors_ref: "runtime/errors/refund-feature-step-2.log"
+  recovery_ref: "recovery/recovery-state.yaml"
+  scheduler_action: "pause"   # Case2：失败 → 暂停，不继续执行

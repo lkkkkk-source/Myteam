@@ -1,0 +1,39 @@
+# Organization → Router Integration — v1.4.3
+# Router 输出增加 team_candidate / role_candidate / agent_candidates（候选，非最终选择）。
+version: 1
+layer: "organization-router-integration"
+stage: "v1.4.3"
+owner: "engops-lead"
+
+# Router 分类后，基于 Organization Model 产生候选（不做最终选择，org-5/org-6）
+router_output_extension:
+  - field: "team_candidate"
+    type: "string"
+    required: false           # 候选 team_id（如 software-engineering）
+  - field: "role_candidate"
+    type: "list"
+    required: false           # 候选 role_id 列表（如 architect / developer / tester）
+  - field: "agent_candidates"
+    type: "list"
+    required: false           # 候选 agent_id 列表（由 team+role 经 agent-role-binding 解析）
+
+# 解析链：task -> team_candidate -> role_candidate[] -> agent_candidates[]
+resolution:
+  - "1. Router 分类 task → team_candidate（对齐 team-registry domain）"
+  - "2. team → roles（teams/<team>.yaml.roles）→ role_candidate[]"
+  - "3. role + team → agent_candidates[]（agent-role-binding 反查）"
+
+example:
+  task: "refund feature"
+  team_candidate: "software-engineering"
+  role_candidate: [ "architect", "developer", "tester" ]
+  agent_candidates: [ "java-architect", "java-developer", "java-tester" ]
+
+rules:
+  - "Router 只产候选（candidate），不做最终 Agent 选择（org-5）"
+  - "最终 Agent 决策仍归 PM + Approval（org-6）"
+  - "不自动选择 / 不自动替换 Agent（org-7）"
+
+boundaries:
+  - "Organization ≠ Router：只提供候选映射，不替代 Router 分类决策"
+  - "Organization 不改 Router rules / capability registry"

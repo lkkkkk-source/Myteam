@@ -1,0 +1,31 @@
+version: 1
+task_id: "refund-feature"
+updated_at: "2026-09-20T13:30:00"
+
+execution:
+  - decision_ref: "d-20260920-001"
+    step: "step-2"
+    agent: "java-developer"
+    status: "completed"
+    approval_status: "approved"
+    started_at: "2026-09-20T13:30:00"
+    completed_at: "2026-09-20T13:33:00"
+    feedback_ref: "scheduler/feedback/refund-feature-feedback-20260920-1333.yaml"
+  - decision_ref: "d-20260920-002"
+    step: "step-3a"
+    agent: "java-developer"
+    status: "running"
+    approval_status: "approved"
+    started_at: "2026-09-20T13:34:00"
+  - decision_ref: "d-20260920-003"
+    step: "step-3b"
+    agent: "java-developer"
+    status: "running"
+    approval_status: "approved"
+    started_at: "2026-09-20T13:34:00"
+
+summary:
+  running: 2
+  completed: 1
+  failed: 0
+  pending_approval: 0

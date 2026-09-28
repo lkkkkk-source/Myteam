@@ -1,0 +1,81 @@
+# Organization State — 集成台账（v1.4.3）
+# Agent Organization Model 运行视图：Team -> Role -> Agent。
+# 只建模 / 映射 / 查询 / 验证；不执行 / 不选 Agent（org-3）。
+version: 1
+layer: "organization-state"
+stage: "v1.4.3"
+task_id: "refund-feature"
+updated_at: "2026-09-23T10:00:00"
+owner: "engops-lead"
+baseline: { agent: 30, mcp: 5, skill: 26, workflow: 8 }
+
+# ---------------------------------------------------------------------
+# 组织快照（6 teams / 10 roles / 30 agents）
+# ---------------------------------------------------------------------
+snapshot:
+  teams: 6
+  roles: 10
+  agents: 30
+  bound: 30            # org-2：30/30 全覆盖
+  unbound: 0
+
+teams:
+  - { team_id: "software-engineering", lead: "java-lead",             agents: 7 }
+  - { team_id: "research",             lead: "research-lead",         agents: 6 }
+  - { team_id: "creative",             lead: "creative-lead",         agents: 5 }
+  - { team_id: "engops",               lead: "engops-lead",           agents: 5 }
+  - { team_id: "advisory",             lead: "solution-architect",    agents: 3 }
+  - { team_id: "pm",                   lead: "project-manager-agent", agents: 4 }
+
+# ---------------------------------------------------------------------
+# Case3: Router Integration — 任务分类返回 team + role + agent 候选
+# ---------------------------------------------------------------------
+router_candidates:
+  - task_id: "refund-feature"
+    team_candidate: "software-engineering"
+    role_candidate: [ "architect", "developer", "tester" ]
+    agent_candidates: [ "java-architect", "java-developer", "java-tester" ]
+    note: "候选，非最终选择；最终 Agent 决策归 PM + Approval（org-5/org-6）"
+
+# ---------------------------------------------------------------------
+# Case4: Collaboration Handoff — architect role -> developer role（含 role reference）
+# ---------------------------------------------------------------------
+handoffs:
+  - handoff_id: "HO-0001"
+    from_agent: "java-architect"
+    to_agent: "java-developer"
+    from_role: "architect"
+    to_role: "developer"
+    from_team: "software-engineering"
+    to_team: "software-engineering"
+    note: "architect -> developer role handoff（同 team）"
+
+# ---------------------------------------------------------------------
+# Case5: Trace Integration — Team -> Role -> Agent -> Trace
+# ---------------------------------------------------------------------
+trace_links:
+  - trace_ref: ".ai/context/debug-trace/events/TR-0001-events.yaml#EV-0003"
+    source_agent: "java-lead"
+    role_ref: "lead"
+    team_ref: "software-engineering"
+    chain: "software-engineering -> lead -> java-lead -> TR-0001/EV-0003"
+  - trace_ref: ".ai/context/debug-trace/events/TR-0001-events.yaml#EV-0005"
+    source_agent: "java-developer"
+    role_ref: "developer"
+    team_ref: "software-engineering"
+    chain: "software-engineering -> developer -> java-developer -> TR-0001/EV-0005"
+
+# ---------------------------------------------------------------------
+# 边界（org-3 / org-7）
+# ---------------------------------------------------------------------
+boundaries:
+  - "organization 只建模 / 映射 / 查询 / 验证；不执行 / 不选 Agent / 不改 Prompt"
+  - "team-registry 保持为 Runtime Registry（不替代，org-4）"
+  - "不自动新增 Team / Role，不自动替换 Agent，不自动调整组织结构（org-7）"
+
+summary:
+  total_teams: 6
+  total_roles: 10
+  total_agents: 30
+  coverage: "30/30"
+  note: "Agent Organization Model active; model/map/query/validate only"

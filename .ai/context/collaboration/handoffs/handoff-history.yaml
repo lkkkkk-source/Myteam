@@ -1,0 +1,33 @@
+# Handoff History — v1.4（只增审计）
+version: 1
+layer: "collaboration-handoff"
+stage: "v1.4"
+task_id: "refund-feature"
+updated_at: "2026-09-21T20:00:00"
+
+handoffs:
+  # Case2: architect → developer
+  - handoff_id: "HO-0001"
+    from: "java-architect"
+    to: "java-developer"
+    task_context: "refund 模块架构设计完成，进入编码"
+    completed_work: [ "分层设计", "RefundService 接口契约", "退款独立表建模" ]
+    remaining_work: [ "实现 calculate-refund", "补边界处理" ]
+    constraints: [ "禁止修改数据库结构", "遵循 API contract" ]
+    evidence: ".ai/artifacts/architecture/refund-feature-architecture.md"
+    acceptance: "API contract passed + 阶梯退费 boundary 正确"
+  # Case6: handoff -> action proposal（不直接执行）
+  - handoff_id: "HO-0002"
+    from: "java-developer"
+    to: "java-tester"
+    task_context: "编码完成，交测试"
+    completed_work: [ "calculate-refund 修正（CH-0001）" ]
+    remaining_work: [ "回归测试", "集成测试" ]
+    constraints: [ "只在 src/test/** 改动" ]
+    evidence: ".ai/context/workspace/changes/change-records.yaml#CH-0001"
+    acceptance: "回归通过 + validation gate passed"
+    downstream_action_proposal: "AP-0002"   # handoff → action proposal（不直接 Execution，cl-1）
+
+summary:
+  total: 2
+  note: "handoff produces action proposal downstream; never direct execution"

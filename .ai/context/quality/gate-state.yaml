@@ -1,0 +1,42 @@
+version: 1
+task_id: "refund-feature"
+updated_at: "2026-09-20T14:00:00"
+
+gates:
+  # Case1：developer 完成 step-2，但三 Gate 未全通过 → result=pending（任务不能结束）
+  - step: "step-2"
+    validation: "passed"
+    review: "approved"
+    acceptance: "approved"
+    result: "passed"
+    gate_ref:
+      validation: "quality/gates/refund-feature-validation.yaml"
+      review: "quality/gates/refund-feature-review.yaml"
+      acceptance: "quality/gates/refund-feature-acceptance.yaml"
+
+  # Case2：step-4 validation 失败 → 进入 Recovery
+  - step: "step-4"
+    validation: "failed"
+    review: "pending"
+    acceptance: "pending"
+    result: "failed"
+    recovery_ref: "recovery/recovery-state.yaml"
+
+  # Case3：step-3b review 被拒 → 返回 developer 返工
+  - step: "step-3b"
+    validation: "passed"
+    review: "rejected"
+    acceptance: "pending"
+    result: "pending"
+    rework_ref: "java-developer"
+
+  # Case4：step-1 三 Gate 全通过 → 可 COMPLETE
+  - step: "step-1"
+    validation: "passed"
+    review: "approved"
+    acceptance: "approved"
+    result: "passed"
+
+task_gate: "in-progress"
+# complete 条件：所有 step.result = passed 且 task_gate = passed
+# 当前 step-4 failed / step-3b pending → task 不能 COMPLETE

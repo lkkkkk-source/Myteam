@@ -1,0 +1,58 @@
+# =====================================================================
+# MyTeam Plugin Config — myteam-plugin.yaml — v1.0.1
+# =====================================================================
+# 插件运行配置：工作区、上下文路径、启用特性。
+# 由 OpenCode 加载插件时读取（就地读取 MyTeam 仓库，不复制）。
+# =====================================================================
+
+version: 1
+plugin: "myteam"
+plugin_version: "1.0.1"
+
+# ---------------------------------------------------------------------
+# workspace：插件工作区（MyTeam 仓库根）
+# ---------------------------------------------------------------------
+workspace: "D:/data/code/Agent/MyTeam"
+
+# ---------------------------------------------------------------------
+# context_path：运行时上下文（只读挂载点）
+# ---------------------------------------------------------------------
+context_path: ".ai/context"
+
+# 平台核心资产路径（就地读取，不复制到宿主）
+paths:
+  source: "source/"
+  platform: "platform/"
+  registry: "evolution/version-registry.yaml"
+  agent_binding: "platform/runtime-adapter/agent-binding.yaml"
+  runtime_context: ".ai/context/runtime/runtime-context.yaml"
+  adapter_state: ".ai/context/runtime-adapter/adapter-state.yaml"
+
+# ---------------------------------------------------------------------
+# enabled_features：本插件启用的特性（只读聚合，不执行）
+# ---------------------------------------------------------------------
+enabled_features:
+  - "agent-registry"          # 30 Agent 绑定读取
+  - "runtime-context"         # Runtime Context 台账读取
+  - "deployment-governance"   # 部署治理状态读取
+  - "isolation-guard"         # 隔离守卫
+  # 显式关闭：不自动执行 / 不自动部署
+  disabled:
+    - "auto-install"
+    - "auto-execution"
+    - "bulk-copy"
+
+# ---------------------------------------------------------------------
+# isolation：宿主隔离策略
+# ---------------------------------------------------------------------
+isolation:
+  mode: "read-only-mount"       # 就地只读，不复制
+  host_config_write: false      # 不写宿主 opencode.json
+  pollute_global: false         # 不污染用户全局环境
+  reversible: true              # 卸载后宿主恢复原状（无残留）
+
+baseline:
+  agent: 30
+  mcp: 5
+  skill: 26
+  workflow: 8

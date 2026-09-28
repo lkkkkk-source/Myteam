@@ -1,0 +1,25 @@
+version: 1
+task_id: "refund-feature"
+case_id: "case1-capability-query"
+created_at: "2026-09-20T15:40:00"
+
+# Case1：查询能力
+# 验证：查询 "java" 能力 → 返回候选 Agent
+
+scenario:
+  query_capability: "java"
+  source: "capability/agent-capabilities.yaml"
+
+expected:
+  result_type: "candidates"          # 返回候选，不自动选
+  candidates: ["java-developer", "java-tester", "java-architect", "java-planner", "java-debugger", "java-reviewer"]
+  auto_select_agent: false
+
+actual:
+  result_type: "candidates"
+  candidates: ["java-developer", "java-tester", "java-architect", "java-planner", "java-debugger", "java-reviewer"]
+  auto_select_agent: false
+  note: "由 PM + Approval 决定执行者（Scheduler 只查询，不决定）"
+
+result: "PASS"
+assertion: "查询 'java' 能力 → 返回候选 Agent，不自动选"

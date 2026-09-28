@@ -1,0 +1,34 @@
+# Case5: 高风险发布 → 人工确认推荐 (v0.6.8)
+# -----------------------------------------------------------------------------
+# Model Recommendation flow demo: high risk + release → high-reasoning + human_confirm=true
+# 结果：PASS（推荐正确 + 需人工确认）
+# -----------------------------------------------------------------------------
+
+case: 5
+title: "高风险发布 → 高推理档位 + 人工确认"
+
+input:
+  task_id: "T-068-005"
+  task_type: "ops"
+  team: "engops"
+  agent: "release-agent"
+  agent_role: "execution"
+  complexity: "high"
+  risk_level: "high"
+  context_size: "medium"
+  required_capabilities: ["release-management", "semver", "tagging"]
+  high_risk_operation: "release"
+  historical_performance: null          # 缺失 → 附加 uncertainty
+
+expected:
+  model_class: "high-reasoning"
+  fallback: "general"
+  human_confirm: true
+
+output:
+  model_class: "high-reasoning"
+  fallback: "general"
+  human_confirm: true
+  reasoning: "risk_level=high + release（high_risk_operations）→ high-reasoning 档位（MR-1）+ 需人工确认"
+
+result: PASS

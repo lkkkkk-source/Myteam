@@ -1,0 +1,29 @@
+# Loop Detection — v1.4.2
+version: 1
+layer: "runtime-safety-loop-detection"
+stage: "v1.4.2"
+owner: "engops-lead"
+
+detects:
+  - "重复 Agent action（相同 action 反复提交）"
+  - "相同错误（identical error repeatedly）"
+  - "相同失败原因（same failure cause）"
+  - "重复 handoff（A→B→A 循环）"
+
+states:
+  - "normal"
+  - "suspected-loop"
+  - "blocked"
+
+thresholds:
+  repeat_action: 3          # 同一 action 重复 3 次 → suspected-loop
+  repeat_failure_cause: 3
+  handoff_cycle: 2          # A→B→A 出现 2 次 → suspected-loop
+
+rules:
+  - "suspected-loop → 记录 + 提示；再触发 → blocked"
+  - "禁止自动改变任务目标（auto-change-task-goal forbidden，对齐 v1.4 cl）"
+  - "blocked → 转 human-escalation"
+
+boundaries:
+  - "loop detection 只检测 / 阻断；不自动改任务 / 不替换 Agent"

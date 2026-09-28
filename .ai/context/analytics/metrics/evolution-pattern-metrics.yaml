@@ -1,0 +1,61 @@
+version: 1
+updated_at: "2026-09-21"
+# Evolution Pattern Effectiveness（v0.6.7）
+# -----------------------------------------------------------------------------
+# 把 evolution/patterns/pattern-registry.yaml 的「升级经验」接入 analytics，
+# 供 PM / engops-lead 在决策时参考「哪些升级模式实际有效」。
+# 只分析 / 参考，不触发自动 Selection / 自动 Model Routing。
+source: evolution/patterns/pattern-registry.yaml
+
+patterns:
+  - pattern_id: PATTERN-001
+    name: evidence-based-output
+    category: effective
+    status: verified
+    reuse_count: 2            # v0.6.5(java) + v0.6.7(cross-team research) 两轮实证
+    teams_served: [java, research]   # 跨 Team 复用成立
+    avg_delta_quality: 5.0    # (5+5+4+6+6)/5 = 5.2 → round 5；跨 Team 稳定
+    latest_delta_quality: 6   # BM-067-01 research-analyst
+    agents_applied: [java-developer, java-architect, java-reviewer, java-tester, research-analyst]
+    recommendation: reusable
+
+  - pattern_id: PATTERN-002
+    name: anti-omission-checklist
+    category: effective
+    status: verified
+    reuse_count: 1
+    teams_served: [java]
+    avg_delta_quality: 4.0
+    latest_delta_quality: 4   # BM-066-01 java-reviewer
+    agents_applied: [java-reviewer]
+    recommendation: candidate-cross-team
+
+  - pattern_id: PATTERN-003
+    name: anti-fantasy-default-to-failed
+    category: effective
+    status: verified
+    reuse_count: 1
+    teams_served: [java]
+    avg_delta_quality: 6.0
+    latest_delta_quality: 6   # BM-066-01 java-tester
+    agents_applied: [java-tester]
+    recommendation: candidate-cross-team
+
+  - pattern_id: PATTERN-004
+    name: severity-gated-prioritization
+    category: effective
+    status: verified
+    reuse_count: 1
+    teams_served: [java]
+    avg_delta_quality: 4.0
+    latest_delta_quality: 4
+    agents_applied: [java-reviewer]
+    recommendation: watch          # 需下游消费方（如 research 尚无 reviewer 类 Gate）→ 观察
+
+  - pattern_id: PATTERN-005
+    name: failed-overinstall-scope-creep
+    category: failed
+    status: watch
+    reuse_count: 0
+    avg_delta_quality: -2.0
+    recommendation: avoid

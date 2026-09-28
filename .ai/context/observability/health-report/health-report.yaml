@@ -1,0 +1,33 @@
+version: 1
+generated_at: "2026-09-20T14:30:00"
+overall: "degraded"
+
+layers:
+  scheduler:
+    state: "paused"
+    pending_decisions: 1
+    high_risk_pending: 0
+  recovery:
+    open_recoveries: 0
+    resolved_total: 1
+  quality:
+    gate_pass_rate: 0.75
+    open_gate_failures: 1
+  task_memory:
+    active_tasks: 1
+    archived_total: 0
+  runtime:
+    running_steps: 0
+    error_logs: 1
+
+issues:
+  - severity: "warning"
+    layer: "quality"
+    note: "step-4 validation failed → 等待 Recovery"
+  - severity: "info"
+    layer: "scheduler"
+    note: "Scheduler paused（高风险 pending）"
+
+recommendations:
+  - "完成 step-4 Recovery 后更新 gate-state"
+  - "step-3b review 返工后重走 validation"

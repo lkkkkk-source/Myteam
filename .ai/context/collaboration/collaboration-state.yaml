@@ -1,0 +1,24 @@
+# Collaboration State — 集成台账（v1.4）
+# 当前任务的 Agent 协作会话。只记录，不自动执行 / 不自动解决。
+version: 1
+layer: "collaboration-state"
+stage: "v1.4"
+task_id: "refund-feature"
+updated_at: "2026-09-21T20:00:00"
+owner: "engops-lead"
+
+collaborations:
+  - collaboration_id: "CO-0001"
+    task_id: "refund-feature"
+    participants: [ "java-architect", "java-developer", "java-tester", "java-reviewer" ]
+    team: "java"
+    status: "active"
+    created_at: "2026-09-21T18:20:00"
+
+summary:
+  total: 1
+  active: 1
+  waiting: 0
+  resolved: 0
+  archived: 0
+  note: "collaboration only produces request/decision/handoff; never direct execution"

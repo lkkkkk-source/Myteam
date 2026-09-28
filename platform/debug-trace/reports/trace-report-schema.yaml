@@ -1,0 +1,34 @@
+# Trace Report Schema — v1.4.1
+version: 1
+layer: "debug-trace-report"
+stage: "v1.4.1"
+owner: "engops-lead"
+
+report:
+  - field: "trace_id"
+    type: "string"
+    required: true
+  - field: "task_id"
+    type: "string"
+    required: true
+  - field: "layers_covered"
+    type: "list"
+    required: true
+  - field: "event_count"
+    type: "int"
+    required: true
+  - field: "complete"
+    type: "bool"
+    required: true            # 全链路是否完整
+  - field: "missing_references"
+    type: "list"
+    required: false
+
+# Observability trace metrics（只分析，不改行为）
+metrics:
+  - "trace_complete_rate"
+  - "missing_reference_count"
+  - "avg_task_trace_duration"
+
+rules:
+  - "report 只汇总 / 展示，不改变任何状态或行为"

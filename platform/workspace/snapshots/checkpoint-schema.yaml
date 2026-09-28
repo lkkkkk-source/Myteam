@@ -1,0 +1,44 @@
+# =====================================================================
+# Checkpoint Schema — v1.3
+# =====================================================================
+# workspace 快照 / checkpoint，连接 Recovery。只增不删。
+# =====================================================================
+
+version: 1
+layer: "workspace-checkpoint"
+stage: "v1.3"
+owner: "engops-lead"
+schema_for: ".ai/context/workspace/snapshots/CP-*.yaml"
+
+checkpoint:
+  - field: "checkpoint_id"
+    type: "string"
+    required: true            # CP-NNNN
+  - field: "workspace_id"
+    type: "string"
+    required: true
+  - field: "state_hash"
+    type: "string"
+    required: true            # 工作区状态指纹
+  - field: "files_snapshot"
+    type: "list"
+    required: true            # 快照文件清单（指针，不复制内容进 Memory）
+  - field: "created_at"
+    type: "string"
+    required: true
+  - field: "recovery_ref"
+    type: "string"
+    required: false           # 复用 Recovery checkpoint
+
+# ---------------------------------------------------------------------
+# 流程：Execution → Checkpoint → Continue →（Failure）→ Rollback checkpoint
+# ---------------------------------------------------------------------
+flow:
+  - "Execution 关键节点 / 高风险前 → 生成 checkpoint"
+  - "继续执行"
+  - "失败 → 从 checkpoint 回滚（复用 Recovery，ws-4）"
+
+constraints:
+  - "checkpoint 只增不删（禁止自动删除历史 checkpoint）"
+  - "回滚复用 Recovery（.ai/context/recovery/checkpoints/），不重设计"
+  - "files_snapshot 只存指针 / hash，不把内容写入 Memory（ws-5）"

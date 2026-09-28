@@ -1,0 +1,21 @@
+version: 1
+task_id: "refund-feature"
+updated_at: "2026-09-20T14:30:00"
+
+records:
+  - seq: 1
+    step: "step-4"
+    type: "validation"
+    root_cause: "RefundService.refund() 缺 @Transactional，事务未提交"
+    evidence_ref: "quality/gates/refund-feature-validation.yaml"
+    recovery_used: true
+    recovery_strategy: "debugger"
+    recovery_result: "resolved"
+    recovered_at: "2026-09-20T14:30:00"
+    recovery_count_delta: 1     # Case3：Recovery 成功 → recovery_count +1
+
+summary:
+  total: 1
+  by_type: { validation: 1 }
+  recovered: 1
+  unresolved: 0

@@ -1,0 +1,144 @@
+# Model Registry (v0.6.8)
+# -----------------------------------------------------------------------------
+# Model Routing Recommendation Layer：模型能力档位注册表（抽象）。
+#
+# 定位：
+#   - 记录「抽象模型能力档位」及其能力分类，供 Routing Policy 引用。
+#   - 使用抽象档位（high-reasoning / fast-coding / long-context / general），
+#     不绑定任何具体模型 / Provider（绑定是未来阶段 v0.6.9+ 的事）。
+#
+# 输入（下游集成）：
+#   - Router / Team / Agent / Capability Registry / Risk / Complexity / Historical Performance
+# 输出：
+#   - 为 Routing Policy 提供可引用的 model_class 档位集合。
+#
+# 只推荐、不执行：本注册表只登记档位，不触发模型调用 / Provider 切换 / runtime 修改。
+# 分层职责：Model Router 只决定「需要什么级别的模型能力」，禁止反向决定 Agent。
+# -----------------------------------------------------------------------------
+
+model_registry_version: 1
+layer: model-routing-recommendation
+stage: v0.6.8
+owner: engops-lead
+updated_at: "2026-09-21"
+schema_ref: "platform/registry/models/model-profile-schema.yaml"
+
+# 抽象能力档位（abstraction only，不绑定具体模型 / Provider）
+model_classes:
+
+  # ===== high-reasoning：高推理档位 =====
+  # 适用：架构设计 / 复杂调试 / 深度分析 / 高风险任务 / 失败恢复
+  - model_id: "high-reasoning"
+    provider: "abstract-provider-class"      # 抽象归属，非具体 Provider
+    capability_class: "reasoning"
+    reasoning_level: "very-high"
+    coding_level: "high"
+    context_capacity: "large"
+    speed_level: "medium"
+    cost_level: "high"
+    vision_support: true
+    tool_support: true
+    capabilities:
+      - architecture
+      - debugging
+      - analysis
+      - complex-reasoning
+      - root-cause
+      - decision-support
+    typical_tasks:
+      - architecture-design
+      - complex-debugging
+      - deep-analysis
+      - high-risk-review
+      - failure-recovery
+
+  # ===== fast-coding：快速编码档位 =====
+  # 适用：简单代码修改 / 重构 / 常规实现 / 低复杂度任务
+  - model_id: "fast-coding"
+    provider: "abstract-provider-class"
+    capability_class: "coding"
+    reasoning_level: "medium"
+    coding_level: "high"
+    context_capacity: "medium"
+    speed_level: "fast"
+    cost_level: "low"
+    vision_support: false
+    tool_support: true
+    capabilities:
+      - simple-edit
+      - refactor
+      - routine-coding
+      - test-writing
+    typical_tasks:
+      - simple-code-modification
+      - refactoring
+      - routine-implementation
+      - unit-test-writing
+
+  # ===== long-context：长上下文档位 =====
+  # 适用：研究 / 论文分析 / 大文档处理 / 长对话总结
+  - model_id: "long-context"
+    provider: "abstract-provider-class"
+    capability_class: "context"
+    reasoning_level: "high"
+    coding_level: "medium"
+    context_capacity: "very-large"
+    speed_level: "medium"
+    cost_level: "medium"
+    vision_support: true
+    tool_support: true
+    capabilities:
+      - research-analysis
+      - paper-analysis
+      - large-document-processing
+      - synthesis
+      - multi-source-integration
+    typical_tasks:
+      - research-paper-analysis
+      - literature-review
+      - large-document-summary
+      - cross-source-synthesis
+
+  # ===== general：通用档位（默认） =====
+  # 适用：默认档位 / 无特殊需求
+  - model_id: "general"
+    provider: "abstract-provider-class"
+    capability_class: "general"
+    reasoning_level: "medium"
+    coding_level: "medium"
+    context_capacity: "medium"
+    speed_level: "medium"
+    cost_level: "medium"
+    vision_support: true
+    tool_support: true
+    capabilities:
+      - general-purpose
+      - default
+    typical_tasks:
+      - default
+      - general-purpose
+
+# ===================== 档位能力速查（Capability → model_class）=====================
+capability_to_class:
+  architecture: "high-reasoning"
+  debugging: "high-reasoning"
+  analysis: "high-reasoning"
+  complex-reasoning: "high-reasoning"
+  simple-edit: "fast-coding"
+  refactor: "fast-coding"
+  routine-coding: "fast-coding"
+  research-analysis: "long-context"
+  paper-analysis: "long-context"
+  large-document-processing: "long-context"
+  general-purpose: "general"
+
+# ===================== 默认档位 =====================
+default_class: "general"
+default_reasoning_level: "medium"
+
+# ===================== 约束 =====================
+constraints:
+  - "所有 model_class 必须符合 model-profile-schema.yaml 的字段定义。"
+  - "本注册表只登记抽象档位，禁止绑定具体模型名 / Provider 名（绑定是 v0.6.9+ 范围）。"
+  - "routing-policy.yaml 输出的 recommended_model_class 必须引用本注册表中已登记的 model_id。"
+  - "本层只做推荐，不自动切换 Provider / 不自动调用模型 / 不修改 OpenCode runtime。"

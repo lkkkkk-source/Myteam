@@ -1,0 +1,53 @@
+# =====================================================================
+# Executor Registry — v1.2
+# =====================================================================
+# 登记 Execution Engine 可用的执行器。Engine 依据 action + policy 匹配 executor，
+# 不自动选择、不自动提升权限。每个 executor 详情见 executors/*.yaml。
+# =====================================================================
+
+version: 1
+layer: "execution-engine-executor-registry"
+stage: "v1.2"
+owner: "engops-lead"
+updated_at: "2026-09-21"
+
+executors:
+  - id: "code-executor"
+    detail: "executors/code-executor.yaml"
+    supported_actions: [ "create_file", "modify_file", "refactor_code" ]
+    risk_level: "medium"
+    sandbox_required: "workspace-clone"
+    permission_required: true
+
+  - id: "shell-executor"
+    detail: "executors/shell-executor.yaml"
+    supported_actions: [ "run_command" ]
+    risk_level: "high"
+    sandbox_required: "container"
+    permission_required: true
+
+  - id: "mcp-executor"
+    detail: "executors/mcp-executor.yaml"
+    supported_actions: [ "call_mcp_tool" ]
+    risk_level: "medium"
+    sandbox_required: "temp-env"
+    permission_required: true
+
+  - id: "test-executor"
+    detail: "executors/test-executor.yaml"
+    supported_actions: [ "run_test" ]
+    risk_level: "medium"
+    sandbox_required: "temp-env"
+    permission_required: true
+
+  - id: "browser-executor"
+    detail: "executors/browser-executor.yaml"
+    supported_actions: [ "browser_action" ]
+    risk_level: "high"
+    sandbox_required: "container"
+    permission_required: true
+
+constraints:
+  - "Execution Request.executor 必须存在于本表且 supported_actions 覆盖该 action"
+  - "sandbox_required 决定默认隔离；危险操作走 container / human confirmation"
+  - "Engine 不自动选择 executor（由 action + policy 决定），不自动提升 risk_level"

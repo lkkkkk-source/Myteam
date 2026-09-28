@@ -1,0 +1,94 @@
+version: 1
+updated_at: "2026-09-20T15:45:00"
+# Router Planning Layer v0.6.1 — 测试用例
+# 说明：v0.6.1 在 v0.6（classification + rules + routes + coordination）之上
+#       增加 Intent Analysis（PM/Router 在 routing 前先做意图拆解）+ Project Plan（输出 phase 计划）
+#       规则与 v0.6 相同；Intent 阶段不修改 routing-rules，只做输入预分析
+
+cases:
+  - id: "case1"
+    description: "普通 feature 请求：Java 退款接口"
+    input: "给订单系统加退款功能"
+    intent_analysis:
+      goal: "订单退款功能"
+      task_type: "software-development"
+      complexity: "medium"
+      cross_team: false
+      ambiguity_level: "low"
+    expected:
+      type: "feature"
+      domain: "java"
+      team: "java"
+      lead: "java-lead"
+      workflow: "java-feature-development"
+      confidence: "high"
+    actual: "PASS"
+
+  - id: "case2"
+    description: "复杂跨团队：支付系统改造（Java + EngOps）"
+    input: "改造支付系统，涉及网关重构 + CI/CD 发布流程变更"
+    intent_analysis:
+      goal: "支付系统改造"
+      task_type: "software-development"
+      complexity: "high"
+      cross_team: true
+      ambiguity_level: "medium"
+    expected:
+      type: "feature"
+      domain: "java"
+      cross_team: true
+      mode: "multi-lead"
+      coordination_file: "router/coordination/T-20260920-004-coordination.yaml"
+      confidence: "medium"   # 跨团队时 Router 标为 medium，由 PM 协调确认
+    actual: "PASS"
+
+  - id: "case3"
+    description: "恢复任务：当前任务 refund-feature 的 resume_point 恢复"
+    input: "继续上次的任务"
+    intent_analysis:
+      goal: "恢复 refund-feature"
+      task_type: "resume"
+      ambiguity_level: "low"
+    expected:
+      resume_source: "tasks/refund-feature/context.yaml"
+      routing_pointers: true   # 恢复时读 routing.* 指针，保持原 Lead
+      confidence: "high"
+    actual: "PASS"
+
+  - id: "case4"
+    description: "内容创作：PPT / 简历 / 报告"
+    input: "帮我做一份关于 AI Agent 架构的 PPT"
+    intent_analysis:
+      goal: "AI Agent 架构 PPT"
+      task_type: "content"
+      cross_team: false
+      ambiguity_level: "low"
+    expected:
+      type: "content"
+      domain: "creative"
+      team: "creative"
+      lead: "creative-lead"
+      workflow: "content-create"
+      confidence: "high"
+    actual: "PASS"
+
+  - id: "case5"
+    description: "计划变更：需求变更导致 project_plan 更新"
+    input: "原来只是加接口，现在要支持多币种退款"
+    intent_analysis:
+      goal: "多币种退款"
+      task_type: "software-development"
+      complexity: "high"
+      plan_version_change: "v1 → v2"
+    expected:
+      type: "feature"
+      domain: "java"
+      project_plan_updated: true
+      confidence: "medium"   # 需求变更 → confidence 下调，需 PM 确认
+    actual: "PASS"
+
+notes:
+  - "Intent Analysis 在 routing-rules 匹配之前执行，结果写入 .ai/context/router/intent/"
+  - "Intent 输出字段：goal / task_type / complexity / cross_team / ambiguity_level / confidence"
+  - "Confidence 规则：high（单团队 + 目标明确）/ medium（跨团队 / 需求变更）/ low（模糊，需 discussion-agent）"
+  - "v0.6.1 不新增 Agent；Intent 逻辑由 PM/Router prompt 内置完成"

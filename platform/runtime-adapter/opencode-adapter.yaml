@@ -1,0 +1,61 @@
+# =====================================================================
+# OpenCode Integration Boundary — opencode-adapter.yaml — v1.0
+# =====================================================================
+# 定义 MyTeam Source → OpenCode Runtime 的【同步边界】：允许同步什么、禁止碰什么。
+# 阶段：v1.0（只定义边界 / 只检查；不自动安装、不自动覆盖）
+# =====================================================================
+
+version: 1
+layer: "runtime-adapter-opencode-boundary"
+stage: "v1.0"
+owner: "engops-lead"
+source_of_truth: "MyTeam"
+runtime_target: "C:/Users/Administrator/.config/opencode/"
+
+# ---------------------------------------------------------------------
+# 允许同步（platform-owned assets）
+# ---------------------------------------------------------------------
+allowed_sync:
+  - asset_type: "agent"
+    desc: "Agent prompt（source/prompts/**）→ runtime prompts/**"
+    runtime_path: "prompts/"
+  - asset_type: "config"
+    desc: "Agent metadata（opencode_source.json 的 agent block）→ opencode.json agent block（merge，不覆盖 mcp/provider/shell）"
+    runtime_path: "opencode.json#agent"
+  - asset_type: "mcp"
+    desc: "MCP declaration（声明同步；不自动新增 MCP）"
+    runtime_path: "opencode.json#mcp (declaration-only)"
+  - asset_type: "skill"
+    desc: "Skill reference（引用同步；skill 实体由 cc-switch 管理）"
+    runtime_path: "skills/ (reference-only, cc-switch managed)"
+  - asset_type: "workflow"
+    desc: "Workflow definition（source/workflows/**）→ runtime workflows/**"
+    runtime_path: "workflows/"
+  - asset_type: "docs"
+    desc: "平台文档（source/docs/**）→ runtime docs/**"
+    runtime_path: "docs/"
+
+# ---------------------------------------------------------------------
+# 禁止碰（用户 / 运行私有域）
+# ---------------------------------------------------------------------
+forbidden_targets:
+  - "opencode.json#mcp (user block)"     # 不新增/覆盖用户 MCP
+  - "opencode.json#provider"             # 不碰 provider（API key 等）
+  - "opencode.json#shell"
+  - "skills/ (entity overwrite)"         # 不覆盖 cc-switch 管理的 skill 实体
+  - ".opencode/"                         # 用户私有配置
+  - ".omo/"
+  - "node_modules/"
+  - "user private data"
+  - "task state / current-task"          # 不改任务状态
+  - "memory / task-memory"               # 不改 Memory
+  - "runtime execution records"          # 不改 Runtime 执行记录
+
+# ---------------------------------------------------------------------
+# 边界规则
+# ---------------------------------------------------------------------
+rules:
+  - "只单向同步：MyTeam Source → OpenCode Runtime；禁止反向"
+  - "agent metadata 采用 merge（只并入 platform agent block），不触碰 mcp/provider/shell"
+  - "mcp / skill 只同步声明与引用，不自动新增 MCP、不覆盖 skill 实体"
+  - "所有同步经 deployment-manifest + migration-plan + approval，不直接改 runtime"

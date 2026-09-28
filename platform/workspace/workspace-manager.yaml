@@ -1,0 +1,42 @@
+# =====================================================================
+# Workspace Manager — v1.3
+# =====================================================================
+# workspace 生命周期编排契约（由 engops-lead 人工维护；不自动创建/合并）。
+# 连接 Execution Engine / Recovery / Quality Gate / Artifact / Memory。
+# =====================================================================
+
+version: 1
+layer: "workspace-manager"
+stage: "v1.3"
+owner: "engops-lead"
+
+# 生命周期编排
+lifecycle:
+  - step: "create"
+    action: "任务开始 → 为执行 Agent 创建 workspace（workspace-local 分支）"
+    writes: ".ai/context/workspace/workspace-state.yaml"
+  - step: "track"
+    action: "每次执行修改 → 追加 change-record（changes/）"
+  - step: "checkpoint"
+    action: "高风险 / merge 前 → 生成 checkpoint（snapshots/，复用 Recovery）"
+  - step: "review"
+    action: "提交合并 → status=reviewing → Review + Quality Gate"
+  - step: "merge"
+    action: "review + quality + approval 通过 → status=merged（人工触发）"
+  - step: "artifact"
+    action: "merged change → 关联 artifact（artifacts/artifact-link）"
+  - step: "archive"
+    action: "任务完成 → status=archived（checkpoint 保留）"
+
+# 集成引用
+integration:
+  execution_engine: "platform/execution-engine/  (execution request 必含 workspace_ref)"
+  recovery: ".ai/context/recovery/  (checkpoint 回滚)"
+  quality_gate: ".ai/context/quality/gate-state.yaml  (merge 前必过)"
+  artifact: ".ai/artifacts/  (merged → artifact link)"
+  memory: ".ai/context/memory/task-memory.yaml  (只存 workspace pointer / checkpoint pointer / merge status)"
+
+constraints:
+  - "manager 只编排 + 记录；创建 / 合并均人工触发（不自动）"
+  - "禁止自动 merge / 自动删 checkpoint / 自动改权限"
+  - "Workspace ≠ Execution ≠ Memory ≠ Artifact（四层分离）"

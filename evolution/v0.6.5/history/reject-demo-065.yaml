@@ -1,0 +1,13 @@
+# Reject Demo (v0.6.5) — 演示「reject 不覆盖 source」
+
+proposal_id: P-065-DEMO-REJECT
+status: rejected
+agent: java-developer
+note: 模拟一次被拒绝的升级，验证「reject 不会覆盖 source」
+rejected_at: "2026-09-21"
+reject_reason: 验证用例：拒绝路径不应写入 source（本项目实际 java-developer 升级为 accept 路径）
+
+## 关键不变式
+- `status: rejected` 的提案，其 target_version 内容**不得**出现在 `source/prompts/**`
+- 若在 source 中发现受 reject 保护内容 → Critical（非法覆盖）
+- 任一 Agent 升级被 reject → source prompt 保持原样

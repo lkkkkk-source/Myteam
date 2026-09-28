@@ -1,0 +1,47 @@
+# Organization Intelligence State — 集成台账（v1.5）
+# 自观察组织运行视图：分析状态 + 报告索引 + recommendation 状态。
+# 只分析 / 只报告 / 只建议；不修改任何来源数据（oi-1）。
+version: 1
+layer: "organization-intelligence-state"
+stage: "v1.5"
+updated_at: "2026-09-23T11:00:00"
+owner: "engops-lead"
+baseline: { agent: 30, mcp: 5, skill: 26, workflow: 8 }
+
+status:
+  intelligence_active: true
+  read_only: true
+  mutates_sources: false
+  last_run: "2026-09-23T11:00:00"
+  scope: [ "team", "role", "agent", "workflow", "collaboration" ]
+
+analyses:
+  - { intelligence_id: "OI-0001", scope: "team",          artifact: "metrics/team-performance.yaml" }
+  - { intelligence_id: "OI-0001", scope: "role",          artifact: "metrics/role-performance.yaml" }
+  - { intelligence_id: "OI-0001", scope: "agent",         artifact: "metrics/agent-performance.yaml" }
+  - { intelligence_id: "OI-0001", scope: "collaboration", artifact: "metrics/collaboration-metrics.yaml" }
+  - { intelligence_id: "OI-0001", scope: "workflow",      artifact: "metrics/workflow-metrics.yaml" }
+
+analysis_outputs:
+  - "analysis/bottleneck-analysis.yaml"
+  - "analysis/failure-patterns.yaml"
+  - "analysis/success-patterns.yaml"
+  - "analysis/workload-analysis.yaml"
+
+report: "platform/organization-intelligence/reports/organization-intelligence-report.yaml"
+
+recommendations_summary:
+  total: 4
+  draft: 4
+  approved: 0
+  rejected: 0
+  auto_applied: 0
+
+boundaries:
+  - "只分析 / 只报告 / 只建议；不修改来源数据（oi-1）"
+  - "不自动修改 Agent/Team/Role/Workflow/Prompt/Router/Model Routing（oi-2）"
+  - "所有 recommendation 需人工审批，不自动执行（oi-3）"
+  - "不生成 Agent 排名（oi-4）；基线不变（oi-7）"
+
+summary:
+  note: "Self-Observing Agent Organization; Human Approval / Governance First / No Auto Modification"

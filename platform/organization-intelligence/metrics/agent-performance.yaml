@@ -1,0 +1,56 @@
+# Agent Usage Metrics — v1.5
+# 只统计【使用情况 + 失败模式】；禁止生成 Agent 排名（无 best_agent / worst_agent，oi-4）。
+version: 1
+layer: "organization-intelligence-agent-performance"
+stage: "v1.5"
+owner: "engops-lead"
+scope: "agent"
+time_range: "2026-09-01..2026-09-23"
+read_only: true
+
+source_refs:
+  - "platform/organization/agent-role-binding.yaml"
+  - ".ai/context/analytics/agents/java-tester-analytics.yaml"
+  - ".ai/context/debug-trace/events/TR-0001-events.yaml"
+  - ".ai/context/execution-engine/execution-results.yaml"
+
+# agent_id / usage_count / task_types / success_rate / failure_patterns / capability_usage
+# 说明：success_rate 为使用统计，非评分排名；不产生 best/worst 结论。
+agents:
+  - agent_id: "java-architect"
+    usage_count: 24
+    task_types: [ "architecture", "api-contract" ]
+    success_rate: 0.94
+    failure_patterns: []
+    capability_usage: { "system-design": 24, "api-contract-design": 18 }
+    evidence_refs: [ "HO-0001" ]
+  - agent_id: "java-developer"
+    usage_count: 38
+    task_types: [ "implementation", "bug-fix" ]
+    success_rate: 0.87
+    failure_patterns: [ "integration-testing first-use failure (refund step-4)" ]
+    capability_usage: { "coding": 38, "debugging": 21, "testing": 12 }
+    evidence_refs: [ "CH-0001", "analytics-report#integration-testing" ]
+  - agent_id: "java-tester"
+    usage_count: 20
+    task_types: [ "validation", "integration-test" ]
+    success_rate: 0.83
+    failure_patterns: [ "integration-testing validation failed (refund step-4)" ]
+    capability_usage: { "validation": 20, "quality": 14 }
+    declared_but_unused: [ "browser-testing", "e2e-testing" ]   # 只记录，不自动修改
+    evidence_refs: [ "gate-state#validation", "java-tester-analytics" ]
+  - agent_id: "java-reviewer"
+    usage_count: 16
+    task_types: [ "review" ]
+    success_rate: 0.94
+    failure_patterns: [ "review rework loop (2x)" ]
+    capability_usage: { "code-review": 16 }
+    evidence_refs: [ "TR-0001#EV-0009" ]
+
+note: "usage statistics only; NO agent ranking / NO best_agent / NO worst_agent (oi-4)"
+ranking_generated: false
+
+boundaries:
+  - "禁止 Agent 排名（best_agent / worst_agent forbidden，oi-4）"
+  - "declared_but_unused 只记录，不自动精简能力 / 不改 Prompt（oi-2）"
+  - "只读来源，不修改（oi-1）"

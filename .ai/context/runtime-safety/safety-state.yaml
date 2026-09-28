@@ -1,0 +1,107 @@
+# Runtime Safety State — 集成台账（v1.4.2）
+# 记录当前任务的安全检查判定。只检测 / 限制 / 阻断 / 升级；不执行 / 不批准。
+version: 1
+layer: "runtime-safety-state"
+stage: "v1.4.2"
+task_id: "refund-feature"
+updated_at: "2026-09-21T22:00:00"
+owner: "engops-lead"
+
+# ---------------------------------------------------------------------
+# 预算
+# ---------------------------------------------------------------------
+token_budget:
+  task_id: "refund-feature"
+  model_class: "fast-coding"
+  token_limit: 200000
+  used: 120000
+  remaining: 80000
+  status: "normal"           # Case1: 正常通过
+
+cost_budget:
+  task_id: "refund-feature"
+  estimated_cost: 2.0
+  actual_cost: 1.6
+  limit: 5.0
+  status: "normal"
+
+# ---------------------------------------------------------------------
+# 安全检查记录（SF-*）
+# ---------------------------------------------------------------------
+checks:
+  # Case1: budget check 正常
+  - safety_id: "SF-0001"
+    task_id: "refund-feature"
+    check_type: "budget"
+    risk_level: "low"
+    status: "normal"
+    reference: "budget/token-budget-schema.yaml"
+    trace_ref: ".ai/context/debug-trace/events/TR-0001-events.yaml"
+  # Case2: token budget exceeded → waiting-human
+  - safety_id: "SF-0002"
+    task_id: "refund-feature"
+    check_type: "budget"
+    risk_level: "high"
+    status: "waiting-human"
+    reference: "budget/token-budget-schema.yaml"
+    detail: "token used > limit (demo) → waiting-human（禁止自动扩预算）"
+    trace_ref: ".ai/context/debug-trace/events/TR-0001-events.yaml"
+  # Case3: retry limit reached → blocked
+  - safety_id: "SF-0003"
+    task_id: "refund-feature"
+    check_type: "limit"
+    risk_level: "high"
+    status: "blocked"
+    reference: "limits/retry-limit.yaml"
+    detail: "EE-0005 retry=3 达上限 → blocked → Recovery / human-escalation"
+  # Case4: loop detection → blocked
+  - safety_id: "SF-0004"
+    task_id: "refund-feature"
+    check_type: "loop"
+    risk_level: "high"
+    status: "blocked"
+    reference: "limits/loop-detection.yaml"
+    detail: "相同失败原因重复 3 次 → suspected-loop → blocked（不自动改任务目标）"
+  # Case5: timeout → Recovery
+  - safety_id: "SF-0005"
+    task_id: "refund-feature"
+    check_type: "timeout"
+    risk_level: "medium"
+    status: "blocked"
+    reference: "timeout/timeout-policy.yaml"
+    detail: "execution 超过 30m → blocked → 进入 Recovery"
+  # Case6/Case8: critical action → human_required（execution blocked until confirm）
+  - safety_id: "SF-0006"
+    task_id: "refund-feature"
+    check_type: "escalation"
+    risk_level: "critical"
+    status: "waiting-human"
+    reference: "escalation/human-escalation-policy.yaml"
+    detail: "production deployment (AP-0003 deploy) → human_required（Execution Engine 拒绝直到确认）"
+  # Case7: safety passed → execution allowed
+  - safety_id: "SF-0007"
+    task_id: "refund-feature"
+    check_type: "budget"
+    risk_level: "low"
+    status: "normal"
+    reference: "AP-0001 (write-file, medium)"
+    detail: "safety normal → execution gate=allowed（EE-0002 允许执行）"
+
+# ---------------------------------------------------------------------
+# Execution gate status（供 Execution Engine 读取，sf-5）
+# ---------------------------------------------------------------------
+execution_gate:
+  - action_ref: "AP-0001"
+    safety_status: "allowed"       # Case7: 通过 → allowed
+  - action_ref: "AP-0002"
+    safety_status: "blocked"       # Case8: retry/loop → blocked → 拒绝执行
+  - action_ref: "AP-0003"
+    safety_status: "human_required" # Case6: deploy critical → 人工确认
+
+summary:
+  total_checks: 7
+  normal: 3
+  warning: 0
+  blocked: 3
+  waiting_human: 2
+  note: "safety only detects/limits/blocks/escalates; never executes or approves"

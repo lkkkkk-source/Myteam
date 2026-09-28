@@ -1,0 +1,38 @@
+version: 1
+task_id: "refund-feature"
+updated_at: "2026-09-20T14:30:00"
+
+records:
+  - seq: 1
+    step: "step-1"
+    agent: "java-architect"
+    started_at: "2026-09-20T13:00:00"
+    finished_at: "2026-09-20T13:10:00"
+    duration_sec: 600
+    status: "completed"
+    gate_validation: "passed"
+    gate_review: "approved"
+    gate_acceptance: "approved"
+    rework_count: 0
+  - seq: 2
+    step: "step-2"
+    agent: "java-developer"
+    started_at: "2026-09-20T13:12:00"
+    finished_at: "2026-09-20T13:40:00"
+    duration_sec: 1680
+    status: "completed"
+    gate_validation: "passed"
+    gate_review: "approved"
+    gate_acceptance: "approved"
+    rework_count: 0
+  - seq: 3
+    step: "step-3b"
+    agent: "java-developer"
+    started_at: "2026-09-20T13:50:00"
+    finished_at: "2026-09-20T14:05:00"
+    duration_sec: 900
+    status: "completed"
+    gate_validation: "passed"
+    gate_review: "rejected"     # Case3：review 返工
+    gate_acceptance: "pending"
+    rework_count: 1

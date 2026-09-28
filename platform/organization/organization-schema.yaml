@@ -1,0 +1,73 @@
+# =====================================================================
+# Team Organization Model — v1.4.3
+# =====================================================================
+# 目标：将 MyTeam 从 Agent Collection 升级为 Agent Organization Model。
+#       组织模型：Team → Role → Agent。
+#
+# 本层只负责【建模 / 映射 / 查询 / 验证】：
+#   - 不新增 / 不删除 / 不复制 / 不重写 Agent（30 个现有 Agent 原样存在）
+#   - 不替代 team-registry.yaml（Runtime Registry）；只增 organization reference
+#   - 不自动选择最终 Agent（最终决策仍归 PM + Approval）
+#
+# 阶段：v1.4.3 · MyTeam Team Organization Model Layer
+# 基线：Agent=30 · MCP=5 · Skill=26 · Workflow=8（强制不变）
+# =====================================================================
+
+version: 1
+layer: "organization"
+stage: "v1.4.3"
+principle: "model-map-query-validate-only"
+schema_for: "platform/organization/**/*.yaml + .ai/context/organization/*.yaml"
+
+# ---------------------------------------------------------------------
+# 组织模型（三层）
+# ---------------------------------------------------------------------
+model:
+  hierarchy: "Team -> Role -> Agent"
+  team: "组织单元（业务域），聚合 roles + agents + capabilities + workflows + quality_rules"
+  role: "职责单元（跨 team 可复用），定义 responsibility + capabilities + scope + quality"
+  agent: "已有 30 个 Agent（原样），通过 agent-role-binding 绑定到 role + team"
+
+depends_on:
+  - "v0.6.4-team-registry"       # 保持为 Team Runtime Registry（不替代）
+  - "v1.4-collaboration"         # handoff 增 team/role reference
+  - "v1.4.1-debug-trace"         # trace event 携带 team_ref / role_ref（metadata）
+  - "capability-registry"        # role capability mapping 对齐能力注册表
+
+# ---------------------------------------------------------------------
+# 验收不变量（Organization 铁律）
+# ---------------------------------------------------------------------
+invariants:
+  - "org-1: Agent 数量恒为 30，Organization 只建模不增删 Agent"
+  - "org-2: 每个 Agent 绑定到恰好一个 primary team + 一个 role（30/30 全覆盖）"
+  - "org-3: Organization 只建模 / 映射 / 查询 / 验证；不执行 / 不选 Agent / 不改 Prompt"
+  - "org-4: team-registry.yaml 保持为 Runtime Registry；Organization 只增 reference 不替代"
+  - "org-5: Router 输出 team_candidate / role_candidate / agent_candidates（候选，非最终选择）"
+  - "org-6: 最终 Agent 决策仍归 PM + Approval（org 不自动选择）"
+  - "org-7: 不自动新增 Team / Role，不自动替换 Agent，不自动调整组织结构"
+
+# ---------------------------------------------------------------------
+# 组成
+# ---------------------------------------------------------------------
+components:
+  team_schema: "platform/organization/team-schema.yaml"
+  role_schema: "platform/organization/role-schema.yaml"
+  agent_role_binding: "platform/organization/agent-role-binding.yaml"
+  teams_dir: "platform/organization/teams/"       # 6 teams
+  roles_dir: "platform/organization/roles/"        # role primitives
+  integrations: "platform/organization/integrations/"  # router / capability / collaboration / trace
+  state: ".ai/context/organization/organization-state.yaml"
+  registry_ref: ".ai/context/team-registry.yaml"   # Runtime Registry（不替代）
+
+# ---------------------------------------------------------------------
+# 禁止（出现即 Organization 违规）
+# ---------------------------------------------------------------------
+not_implemented:
+  - "auto-add-team"
+  - "auto-add-role"
+  - "auto-replace-agent"
+  - "auto-select-agent"
+  - "auto-modify-prompt"
+  - "auto-restructure-organization"
+  - "organization-as-router"          # 只产候选，不做最终路由决策
+  - "organization-replace-team-registry"

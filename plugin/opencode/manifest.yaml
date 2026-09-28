@@ -1,0 +1,57 @@
+# =====================================================================
+# MyTeam OpenCode Plugin Manifest — v1.0.1
+# =====================================================================
+# 将 MyTeam 封装为 OpenCode Plugin，实现宿主隔离。
+#   OpenCode = Host Runtime
+#   MyTeam   = Independent Plugin（读取 MyTeam 仓库，不复制、不污染宿主）
+#
+# 分层：OpenCode → MyTeam Plugin → MyTeam Platform Core
+# 基线：Agent=30 · MCP=5 · Skill=26 · Workflow=8（不新增 / 不删除 / 不改核心行为）
+# =====================================================================
+
+name: "myteam"
+version: "1.0.1"
+platform_version: "v1.1"          # 封装的平台核心版本（+ CLI & Developer Experience）
+kind: "opencode-plugin"
+entry: "index.ts"                 # 插件入口（OpenCode 加载）
+
+# 插件在 MyTeam 仓库内自持，宿主只需引用，不复制
+plugin_home: "plugin/opencode/"
+platform_root: "D:/data/code/Agent/MyTeam"   # MyTeam = Source of Truth（就地读取）
+
+# ---------------------------------------------------------------------
+# capabilities：插件对外声明的能力（只读聚合，不代管宿主）
+# ---------------------------------------------------------------------
+capabilities:
+  - "agent-registry-read"         # 读取 30 Agent 绑定
+  - "context-read"                # 读取 .ai/context/ 运行时上下文
+  - "runtime-adapter-read"        # 读取 platform/runtime-adapter/ 部署治理
+  - "deployment-status-read"      # 读取部署状态（不部署）
+  - "isolation-guard"             # 隔离守卫（禁止污染宿主）
+
+# ---------------------------------------------------------------------
+# 隔离契约（宿主保护）
+# ---------------------------------------------------------------------
+isolation:
+  host_runtime: "OpenCode"
+  never_modify:
+    - "~/.config/opencode/opencode.json"     # 不覆盖宿主配置
+    - "~/.config/opencode/ (bulk copy)"       # 不批量复制到宿主
+    - "opencode.json provider/mcp/shell"      # 不污染用户全局环境
+    - "runtime -> source (reverse mutation)"  # 不 runtime 反向改 source
+  read_only_mounts:
+    - "source/"
+    - "platform/"
+    - ".ai/context/"
+    - "evolution/version-registry.yaml"
+  copy_files: false                # 关键：不复制任何文件到宿主
+
+# ---------------------------------------------------------------------
+# 硬性边界（本阶段不实现）
+# ---------------------------------------------------------------------
+not_implemented:
+  - "modify-opencode-core"
+  - "bulk-copy-to-config"
+  - "pollute-global-env"
+  - "runtime-reverse-mutation"
+  - "auto-install"

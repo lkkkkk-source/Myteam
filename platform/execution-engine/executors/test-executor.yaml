@@ -1,0 +1,17 @@
+# Executor: test-executor — v1.2
+version: 1
+id: "test-executor"
+layer: "execution-engine-executor"
+stage: "v1.2"
+type: "process"
+supported_actions: [ "run_test" ]
+risk_level: "medium"
+sandbox_required: "temp-env"
+permission_required: true
+permissions: [ "process_run", "workspace_write" ]
+rollback_support: true
+rollback_strategy: [ "workspace_restore", "state_restore" ]
+quality_gate: "validation"
+notes:
+  - "运行测试并回连 Quality Gate（validation）"
+  - "失败 → result.errors 连 Recovery"

@@ -1,0 +1,62 @@
+# Collaboration Metrics — v1.5
+# 分析 handoff / conflict / decision，输出协作洞察。
+version: 1
+layer: "organization-intelligence-collaboration-metrics"
+stage: "v1.5"
+owner: "engops-lead"
+scope: "collaboration"
+time_range: "2026-09-01..2026-09-23"
+read_only: true
+
+source_refs:
+  - ".ai/context/collaboration/handoffs/handoff-history.yaml"
+  - ".ai/context/collaboration/conflicts/conflict-records.yaml"
+  - ".ai/context/collaboration/decisions/decision-records.yaml"
+  - ".ai/context/organization/organization-state.yaml"
+
+# handoff: from_role / to_role / success_rate
+handoff:
+  - from_role: "architect"
+    to_role: "developer"
+    count: 24
+    success_rate: 0.95
+    evidence_refs: [ "HO-0001" ]
+  - from_role: "developer"
+    to_role: "tester"
+    count: 20
+    success_rate: 0.90
+    evidence_refs: [ "HO-0002" ]
+  - from_role: "tester"
+    to_role: "reviewer"
+    count: 16
+    success_rate: 0.88
+    evidence_refs: [ "TR-0001#EV-0009" ]
+
+# conflict: type / resolution_time
+conflict:
+  - type: "design-disagreement"
+    count: 3
+    average_resolution_time: "1.5h"
+    resolved_by: "lead/human"       # 不自动解决（对齐 collaboration）
+    evidence_refs: [ "CF-0001" ]
+
+# decision: frequency / impact
+decision:
+  - decision_type: "architecture-choice"
+    frequency: 5
+    impact: "high"
+    evidence_refs: [ "DE-0001" ]
+  - decision_type: "scope-adjustment"
+    frequency: 2
+    impact: "medium"
+    evidence_refs: [ "DE-0002" ]
+
+insights:
+  - finding: "developer→tester handoff success 略低于 architect→developer"
+    evidence_refs: [ "HO-0002" ]
+  - finding: "tester→reviewer 阶段 success_rate 最低（0.88），与 review rework 相关"
+    evidence_refs: [ "TR-0001#EV-0009" ]
+
+boundaries:
+  - "只分析协作数据，输出洞察；不自动改 handoff / 不自动解决 conflict（oi-2）"
+  - "只读来源，不修改（oi-1）"

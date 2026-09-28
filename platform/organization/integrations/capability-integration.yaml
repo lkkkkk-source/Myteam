@@ -1,0 +1,38 @@
+# Organization → Capability Integration — v1.4.3
+# Role Capability Mapping：Role -> Capabilities -> Agents。
+version: 1
+layer: "organization-capability-integration"
+stage: "v1.4.3"
+owner: "engops-lead"
+
+# 关系：Role → Capabilities → Agents（能力经 role 聚合到 agent）
+mapping: "Role -> Capabilities -> Agents"
+
+# Role → required_capabilities（对齐 roles/*.yaml + capability-registry）
+role_capabilities:
+  architect:  [ "system-design", "api-contract-design", "trade-off-analysis" ]
+  planner:    [ "task-planning", "decomposition", "sequencing" ]
+  developer:  [ "coding", "debugging", "testing" ]
+  tester:     [ "validation", "quality", "test-design" ]
+  reviewer:   [ "code-review", "quality-assessment", "consistency-check" ]
+  analyst:    [ "analysis", "requirement-gathering", "research-inquiry" ]
+  writer:     [ "technical-writing", "academic-writing", "editing" ]
+  ops:        [ "git-workflow", "build-packaging", "release-management" ]
+  manager:    [ "orchestration", "knowledge-management", "memory-management" ]
+  lead:       [ "coordination", "task-decomposition", "review" ]
+
+example:
+  developer_role:
+    capabilities: [ "coding", "debugging" ]
+    agents: [ "java-developer", "java-debugger" ]
+  tester_role:
+    capabilities: [ "validation", "quality" ]
+    agents: [ "java-tester" ]
+
+rules:
+  - "role capability 对齐 capability-registry（不新增能力，不改 30 Agent 能力）"
+  - "capability 经 role 聚合，映射到 agent（不改变 Agent 本身能力）"
+
+boundaries:
+  - "Organization 不改 capability-registry（保持 30 Agent 能力不变）"
+  - "只提供 Role↔Capability↔Agent 视图，不执行"

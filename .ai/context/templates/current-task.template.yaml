@@ -1,0 +1,40 @@
+# 模板：current-task.yaml
+
+> 复制到 `.ai/context/current-task.yaml` 后按需编辑。
+
+```yaml
+version: 1
+task_id: "{task_id}"
+title: "{任务标题}"
+status: planning
+created_at: "{ISO 时间}"
+updated_at: "{ISO 时间}"
+
+requirements:
+  goal: ""
+  scope_in: []
+  scope_out: []
+  acceptance: []
+  open_questions: []
+
+assignment:
+  department: ""
+  lead: ""
+  workflow: ""
+  parallel_tracks: []
+
+task_plan: ".ai/tasks/{task_id}/task-plan.yaml"
+
+artifacts:
+  architecture: ""
+  code: ""
+  review: ""
+
+handoff_log: []
+
+resume_point:
+  step: ""
+  instruction: ""
+
+parallel: []
+```

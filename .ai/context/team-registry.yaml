@@ -1,0 +1,136 @@
+# Team Registry v0.6.4 (Generic)
+
+version: 1
+updated_at: "2026-09-21T15:00:00"
+# 通用 Team 注册表（v0.6.4）
+# 所有 Team 信息集中在此，不再硬编码在 Router rules / capability / context
+
+# Organization reference (v1.4.3) — 本文件保持为 Team Runtime Registry，不被替代（org-4）。
+# Team Organization Model（Team -> Role -> Agent）在 platform/organization/ 层建模，
+# 只【引用】本 registry（registry_ref），不改动本文件已有 team 条目。
+organization_ref:
+  layer: "platform/organization/"
+  model: "Team -> Role -> Agent"
+  binding: "platform/organization/agent-role-binding.yaml"
+  state: ".ai/context/organization/organization-state.yaml"
+  note: "organization 只引用本 registry 作为 Runtime Registry，不替代（org-4）"
+  registry_role: "Team Runtime Registry"
+
+teams:
+  - id: "java"
+    name: "Java Engineering Team"
+    lead: "java-lead"
+    specialists: ["java-architect", "java-developer", "java-reviewer", "java-tester", "java-planner", "java-debugger"]
+    workflows:
+      - "java-feature-development"
+      - "java-refactor"
+      - "java-debug"
+    capabilities:
+      - "spring-boot"
+      - "mybatis"
+      - "java-core"
+      - "tdd"
+      - "sql"
+      - "database"
+    quality_rules:
+      - "strict-dependency-direction"
+      - "minimal-change"
+      - "api-contract-first"
+    status: "active"
+    domain: "software-engineering"
+
+  - id: "research"
+    name: "Research Team"
+    lead: "research-lead"
+    specialists: ["literature-agent", "research-analyst", "experiment-agent", "innovation-agent", "paper-writer"]
+    workflows:
+      - "research-paper"
+      - "literature-review"
+      - "experiment-run"
+    capabilities:
+      - "literature-search"
+      - "statistical-analysis"
+      - "experiment-design"
+      - "academic-writing"
+    quality_rules:
+      - "evidence-based"
+      - "reproducibility"
+      - "statistical-significance"
+    status: "active"
+    domain: "research"
+
+  - id: "creative"
+    name: "Creative Team"
+    lead: "creative-lead"
+    specialists: ["writing-agent", "resume-agent", "ppt-agent", "editor-agent"]
+    workflows:
+      - "content-create"
+      - "resume-tailor"
+      - "ppt-generate"
+    capabilities:
+      - "technical-writing"
+      - "visual-design"
+      - "editorial-review"
+    quality_rules:
+      - "clarity-first"
+      - "evidence-backed"
+      - "tone-consistent"
+    status: "active"
+    domain: "creative"
+
+  - id: "engops"
+    name: "EngOps Team"
+    lead: "engops-lead"
+    specialists: ["git-manager", "changelog-agent", "release-agent", "project-health-agent"]
+    workflows:
+      - "quick-fix"
+      - "release-build"
+      - "migration"
+    capabilities:
+      - "git-workflow"
+      - "build-packaging"
+      - "migration"
+    quality_rules:
+      - "source-runtime-consistency"
+      - "rollback-ready"
+      - "observability"
+    status: "active"
+    domain: "ops"
+
+  - id: "pm"
+    name: "Project Management Team"
+    lead: "project-manager-agent"
+    specialists: ["project-manager-agent", "requirement-agent", "solution-architect"]
+    workflows:
+      - "project-planning"
+      - "router-classification"
+    capabilities:
+      - "orchestration"
+      - "task-decomposition"
+      - "router"
+    quality_rules:
+      - "platform-state-aware"
+      - "no-auto-install"
+      - "evolution-compliant"
+    status: "active"
+    domain: "management"
+
+  - id: "advisory"
+    name: "Advisory Team"
+    lead: "advisory-lead"   # (placeholder)
+    specialists: ["discussion-agent", "requirement-agent", "solution-architect"]
+    workflows:
+      - "advisory-discussion"
+    capabilities:
+      - "requirement-gathering"
+      - "architecture-review"
+    quality_rules:
+      - "trade-off-first"
+      - "domain-first"
+    status: "active"
+    domain: "advisory"
+
+# Team Registry 规则
+# 1. 新增 Team 时，只需添加此文件，不改 Router rules / capability registry
+# 2. Router 需支持 Generic 模式：未匹配任何具体 team 规则时，走 generic 路径
+# 3. Capability 注册表保持 30 Agent，不因 Team 抽象而变化

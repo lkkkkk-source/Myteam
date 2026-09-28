@@ -1,0 +1,47 @@
+# Execution Results — v1.2（只增记录）
+# 各执行的结果，连接 Quality / Observability；失败连 Recovery。
+version: 1
+layer: "execution-engine-results"
+stage: "v1.2"
+task_id: "refund-feature"
+updated_at: "2026-09-21T18:00:00"
+owner: "engops-lead"
+
+results:
+  - execution_id: "EE-0001"
+    executor: "code-executor"
+    output: "generated docs/generated/refund-notes.md"
+    artifacts: [ ".ai/artifacts/creative/refund-feature/refund-notes.md" ]
+    errors: []
+    quality_ref: ".ai/context/quality/gates/refund-feature-validation.yaml"
+    observability_ref: ".ai/context/runtime-execution/history/EX-20260921-history.yaml"
+  - execution_id: "EE-0002"
+    executor: "code-executor"
+    output: "modified src/services/refund/calculate-refund.ts"
+    artifacts: [ ".ai/artifacts/code/refund-feature/calculate-refund.ts" ]
+    errors: []
+    quality_ref: ".ai/context/quality/gates/refund-feature-validation.yaml"
+    observability_ref: ".ai/context/runtime-execution/history/EX-20260921-history.yaml"
+  - execution_id: "EE-0005"
+    executor: "test-executor"
+    output: null
+    artifacts: []
+    errors: [ "regression test failed: refund boundary case" ]
+    quality_ref: null
+    observability_ref: ".ai/context/runtime-execution/history/EX-20260921-history.yaml"
+    recovery_ref: ".ai/context/recovery/checkpoints/refund-feature-checkpoint.yaml"
+  - execution_id: "EE-0006"
+    executor: "mcp-executor"
+    output: "playwright e2e: refund flow OK"
+    artifacts: []
+    errors: []
+    quality_ref: ".ai/context/quality/gates/refund-feature-validation.yaml"
+    observability_ref: ".ai/context/runtime-execution/history/EX-20260921-history.yaml"
+
+# 执行指标（进 Observability）
+metrics:
+  total_results: 4
+  completed: 3
+  failed: 1
+  failed_with_recovery: 1        # EE-0005 → recovery_ref 非空
+  quality_connected: 3

@@ -1,0 +1,45 @@
+# =====================================================================
+# Conflict Schema — v1.4
+# =====================================================================
+# 处理 Agent 分歧：立场 / 证据 / 解决 / 裁决方。冲突不自动解决。
+# =====================================================================
+
+version: 1
+layer: "collaboration-conflict"
+stage: "v1.4"
+owner: "engops-lead"
+schema_for: ".ai/context/collaboration/conflicts/*.yaml"
+
+conflict:
+  - field: "conflict_id"
+    type: "string"
+    required: true            # CF-NNNN
+  - field: "participants"
+    type: "list"
+    required: true
+  - field: "issue"
+    type: "string"
+    required: true
+  - field: "positions"
+    type: "list"
+    required: true            # 各方立场
+  - field: "evidence"
+    type: "string"
+    required: false
+  - field: "resolution"
+    type: "string"
+    required: false           # 解决结论（resolved 时填）
+  - field: "resolver"
+    type: "string"
+    required: false           # 裁决方（人工 / PM / lead）
+
+states:
+  - "open"
+  - "reviewing"
+  - "resolved"
+  - "rejected"
+
+rules:
+  - "冲突不自动解决（cl-5）：resolver 由人工 / 治理裁决"
+  - "resolution 必须带 evidence / reason"
+  - "conflict 只增记录（可追溯）"

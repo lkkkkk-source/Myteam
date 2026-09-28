@@ -1,0 +1,26 @@
+# Proposal P-066-03 — java-tester v2
+proposal_id: P-066-03
+agent: java-tester
+from_version: v1
+to_version: v2
+phase: v0.6.6
+type: additive
+status: approved
+benchmark: BM-066-01
+decision: accept
+created_at: "2026-09-21"
+
+change_summary:
+  - 证据收集（evidence-first）：报告必须附真实命令输出/用例/异常栈/覆盖率
+  - 根因归属证据链：测试写错 vs 实现有 bug 需给出判断依据
+  - 反幻想（default-to-failed 偏差）：无证据的"应该能过"不采信
+  - 量化视角：关注覆盖率 / 边界分支 / 失败路径
+
+non_changes:
+  - 不删除 v1 任何验证职责（纯加法）
+  - 不改 validation Gate 职责与产物路径
+  - 不引入自动测试框架 / 新测试工具
+
+rationale:
+  - 对齐 java-developer v2 的 Evidence / Guardrail 模式，跨 Agent 一致
+  - 解决 v0.6.3 审计中 tester"报告缺证据、归属臆断"的差距

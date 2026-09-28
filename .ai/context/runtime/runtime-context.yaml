@@ -1,0 +1,64 @@
+# Runtime Context — 集成台账（v0.7）
+# 所有模块通过本台账实现 Runtime Contract 协作。
+# 本文件由 engops-lead 人工维护（非自动）；字段集见 platform/runtime/runtime-context-schema.yaml。
+version: 1
+context_id: "rc-refund-feature-001"
+task_id: "refund-feature"
+contract_version: 1
+updated_at: "2026-09-21T15:00:00"
+owner: "engops-lead"
+
+modules:
+  - id: "router"
+    provides: ".ai/context/router/"
+    state: "completed"
+    owner_agent: "project-manager-agent"
+    contract_ok: true
+  - id: "team"
+    provides: ".ai/context/team-registry.yaml"
+    state: "completed"
+    owner_agent: "project-manager-agent"
+    contract_ok: true
+  - id: "agent"
+    provides: ".ai/context/capability/"
+    state: "active"
+    owner_agent: "engops-lead"
+    contract_ok: true
+  - id: "model-routing"
+    provides: "platform/model-routing/"
+    state: "active"
+    owner_agent: "engops-lead"
+    contract_ok: true
+  - id: "scheduler"
+    provides: ".ai/context/scheduler/"
+    state: "active"
+    owner_agent: "project-manager-agent"
+    contract_ok: true
+  - id: "execution"
+    provides: ".ai/context/runtime/execution-state.yaml"
+    state: "active"
+    owner_agent: "project-manager-agent"
+    contract_ok: true
+  - id: "quality"
+    provides: ".ai/context/quality/"
+    state: "pending"
+    owner_agent: "project-manager-agent"
+    contract_ok: true
+  - id: "observability"
+    provides: ".ai/context/observability/"
+    state: "active"
+    owner_agent: "engops-lead"
+    contract_ok: true
+  - id: "memory"
+    provides: ".ai/context/memory/"
+    state: "completed"
+    owner_agent: "project-knowledge-manager"
+    contract_ok: true
+  - id: "evolution"
+    provides: "evolution/"
+    state: "active"
+    owner_agent: "engops-lead"
+    contract_ok: true
+
+snapshot_refs:
+  - "snapshots/RC-SNAP-20260921-0001.yaml"

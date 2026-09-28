@@ -1,0 +1,72 @@
+# =====================================================================
+# Permission Policy — v0.9
+# =====================================================================
+# 定义：Action（按 risk）到执行权限的映射。执行前必须满足对应权限门槛。
+# 与 v0.8 action-policy 的 risk_levels 对齐，并向上扩展 critical 档。
+# 阶段：v0.9 · Runtime Controlled Execution Interface Layer（只定义 / 只检查）
+# =====================================================================
+
+version: 1
+layer: "runtime-execution-permission-policy"
+stage: "v0.9"
+owner: "engops-lead"
+updated_at: "2026-09-21"
+
+# risk → permission 映射（Execution Request.permission_context 必须匹配）
+permission_map:
+  - action_class: "documentation_update"
+    risk: "low"
+    permission: "workspace_write"
+    approver: null                       # 低风险：workspace_write 即可（记录在案）
+    note: "文档更新，低风险"
+
+  - action_class: "code_change"
+    risk: "medium"
+    permission: "workspace_write"
+    extra: [ "review_required" ]         # 中风险：需 review
+    approver: "project-manager-agent"
+    note: "代码修改，PM 批准 + review"
+
+  - action_class: "test_run"
+    risk: "medium"
+    permission: "process_run"
+    extra: [ "workspace_write" ]
+    approver: "project-manager-agent"
+    note: "运行测试 / 工作流"
+
+  - action_class: "release"
+    risk: "high"
+    permission: "human_approval"
+    approver: "human"
+    note: "发布 / 推送，必须显式人工批准"
+
+  - action_class: "deploy"
+    risk: "high"
+    permission: "human_approval"
+    approver: "human"
+    note: "部署，高风险"
+
+  - action_class: "database_change"
+    risk: "critical"
+    permission: "explicit_user_confirmation"
+    approver: "human"
+    note: "数据库结构变更，最高等级，必须显式用户确认"
+
+# ---------------------------------------------------------------------
+# 权限等级（由低到高）
+# ---------------------------------------------------------------------
+permission_levels:
+  - "workspace_write"              # 低
+  - "process_run"                  # 低-中
+  - "review_required"              # 中（附加）
+  - "human_approval"               # 高
+  - "explicit_user_confirmation"   # critical
+
+# ---------------------------------------------------------------------
+# 一致性约束（供 project-health-agent 校验）
+# ---------------------------------------------------------------------
+constraints:
+  - "Execution Request.permission_context.risk_level 必须在 permission_map 中有对应条目"
+  - "granted_permission 必须匹配该 risk 的 permission（high/critical 必须人工 / 用户确认）"
+  - "critical（database_change）必须 explicit_user_confirmation，不得降级"
+  - "权限校验只做检查与拒绝，不代替 Action Approval，也不自动授予权限"
