@@ -43,6 +43,7 @@ import {
   completeRun,
   failRun,
   transition,
+  nextId,
 } from "../execution/execution-engine";
 import type { Resolution } from "../../workspace-resolver";
 import * as store from "../execution/execution-store";
@@ -178,7 +179,7 @@ export async function executeRunnerResult(
   runId?: string
 ): Promise<{ execution: Execution; run: AgentRun; action: RunnerEngineAction }> {
   const action = mapRunnerResultToEngineAction(result, run);
-  const effectiveRunId = runId ?? run.agent_instance_id;
+  let effectiveRunId = runId ?? run.agent_instance_id;
 
   // 0. 读取当前 execution 真相（幂等判定）
   let exec = deps.load(res, run.execution_id);
@@ -192,10 +193,34 @@ export async function executeRunnerResult(
     return { execution: exec, run, action };
   }
 
+  // 0.5 run 持久化保障：run 记录尚未落盘时先持久化（否则 lifecycle 无据可依）。
+  //    优先使用调用方提供的 runId；缺省时按 Engine 递增规则分配（run-0001…）。
+  let currentRun = deps.loadRun(res, run.execution_id, effectiveRunId);
+  if (!currentRun) {
+    const allocated = nextId(
+      "run",
+      deps.listRunIds(res, run.execution_id)
+        .filter((f) => f.endsWith(".yaml"))
+        .map((f) => f.replace(/\.yaml$/, ""))
+    );
+    const seeded: AgentRun = {
+      ...run,
+      status: "received",
+      output: "",
+    };
+    deps.saveRun(res, seeded, allocated);
+    currentRun = seeded;
+    effectiveRunId = allocated;
+  }
+
   // 1. 确保 run 状态为 running（允许 received→running）
-  let currentRun = run;
-  if (run.status === "received") {
+  if (currentRun.status === "received") {
     currentRun = startRun(res, run.execution_id, effectiveRunId, deps);
+  }
+
+  // 1.5 execution 与 run 保持同步：ready → running（completed 转移的前置状态）
+  if (exec.status === "ready") {
+    exec = transition(res, run.execution_id, "running", deps);
   }
 
   // 2. 按 targetStatus 驱动

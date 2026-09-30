@@ -113,7 +113,7 @@ function canTransition(from: ExecutionStatus, to: ExecutionStatus): boolean {
 // ---------------------------------------------------------------------------
 
 /** 纯数字 id 递增（run-0001 / cp-0001）；空目录返回 1。 */
-function nextId(prefix: string, existing: string[]): string {
+export function nextId(prefix: string, existing: string[]): string {
   let max = 0;
   const re = new RegExp(`^${prefix}-(\\d+)$`);
   for (const id of existing) {

@@ -20,6 +20,16 @@
  *   - 平台数据从 myteam_home 读取（不写）。
  *   - 项目运行数据从 team_root 读取（仅 .team/** 可初始化）。
  *   - 禁止把 MyTeamHome/.ai/context/ 当作项目 memory 继续读取。
+ * ---------------------------------------------------------------------------
+ * v1.8.3 — 开发者自测：Home-as-project bypass（不削弱生产隔离）
+ *   - 新增环境变量 MYTEAM_ALLOW_HOME_AS_PROJECT=1。
+ *   - 默认（未设置 / 非 "1"）：project_root ==/inside myteam_home 仍抛
+ *     HomeAsProjectError（生产默认行为不变）。
+ *   - 仅当该变量 === "1" 时放行【解析继续】，供在 MyTeam 仓库内自测插件。
+ *   - bypass 只影响"是否继续解析"，不放宽任何写入边界：
+ *       · myteam_home 仍是只读平台资产（source/prompts/agents/registry/platform）；
+ *       · runtime 数据仍只写 <project_root>/.team；
+ *       · 宿主写入仍由 bridge.guardHostWrite 负责（本文件不改动它）。
  */
 
 import * as fs from "node:fs";
@@ -96,6 +106,19 @@ export function readMyTeamHome(): string {
   throw new MyTeamResolutionError(`[myteam-resolution] workspace: field not found in ${yaml}`);
 }
 
+/**
+ * v1.8.3 开发者自测开关：MYTEAM_ALLOW_HOME_AS_PROJECT。
+ *
+ * 仅当环境变量严格等于 "1" 时返回 true（放行 Home-as-project 解析继续）。
+ * 任何其他取值（未设置 / "0" / "true" / "yes" / 空串 / " 1 " 等含空白）都视为
+ * 关闭 —— 生产默认行为（抛 HomeAsProjectError）保持不变。
+ *
+ * 注意：本开关只控制"是否继续解析"，不授予任何写权限。
+ */
+export function isHomeAsProjectDevAllowed(): boolean {
+  return process.env.MYTEAM_ALLOW_HOME_AS_PROJECT === "1";
+}
+
 /** 判断 child 是否等于 parent，或位于 parent 内部（基于规范化路径）。 */
 export function isInsideOrEqual(parent: string, child: string): boolean {
   const p = path.resolve(parent).replace(/\\/g, "/").replace(/\/+$/, "");
@@ -117,7 +140,11 @@ export function isInsideOrEqual(parent: string, child: string): boolean {
  *
  * 安全：
  *   若 project_root == myteam_home，或 project_root 位于 myteam_home 内部
- *   （如用���在 MyTeam 仓库内启动 OpenCode），必须拒绝（HomeAsProjectError）。
+ *   （如用户在 MyTeam 仓库内启动 OpenCode），默认必须拒绝（HomeAsProjectError）。
+ *
+ * v1.8.3 开发者自测：
+ *   仅当 MYTEAM_ALLOW_HOME_AS_PROJECT === "1" 时放行解析继续（dev override）。
+ *   放行不改变 team_root 计算，也不放宽任何写入边界（见文件头 v1.8.3 说明）。
  */
 export function resolveWorkspace(ctx: OpenCodeCtx): Resolution {
   const myteam_home = readMyTeamHome();
@@ -142,8 +169,13 @@ export function resolveWorkspace(ctx: OpenCodeCtx): Resolution {
   }
 
   // 安全：拒绝把 MyTeam Home 或其内部当作项目。
+  // v1.8.3：默认拒绝；仅当 MYTEAM_ALLOW_HOME_AS_PROJECT === "1" 时放行解析。
   if (isInsideOrEqual(myteam_home, project_root)) {
-    throw new HomeAsProjectError(project_root, myteam_home, "project_root is inside or equal to myteam_home");
+    if (!isHomeAsProjectDevAllowed()) {
+      throw new HomeAsProjectError(project_root, myteam_home, "project_root is inside or equal to myteam_home");
+    }
+    // dev override：仅继续解析，team_root 仍为 <project_root>/.team（= Home/.team），
+    // 平台资产仍只读，写入边界不变。
   }
 
   const team_root = path.join(project_root, ".team");
@@ -212,6 +244,35 @@ function readMyTeamVersion(): string {
 }
 
 /**
+ * v1.8.3 写入边界守卫（defense-in-depth）。
+ *
+ * 任何 runtime 写入目标都必须落在 <project_root>/.team/** 之内。
+ * 该守卫与 MYTEAM_ALLOW_HOME_AS_PROJECT bypass 无关：即使 bypass 放行解析，
+ * 也绝不允许写入 myteam_home 平台资产
+ * （source/ · prompts/ · agents/ · registry · platform assets）。
+ *
+ * 允许：target ∈ team_root。
+ * 拒绝：其余一切；若 target 落在 myteam_home 内则给出 Home 专属错误信息。
+ *
+ * @throws MyTeamResolutionError 目标越界（不在 team_root 内）。
+ */
+export function guardTeamWrite(res: Resolution, targetPath: string): void {
+  if (isInsideOrEqual(res.team_root, targetPath)) return;
+
+  if (isInsideOrEqual(res.myteam_home, targetPath)) {
+    throw new MyTeamResolutionError(
+      `[myteam-resolution] refused write to MyTeam Home platform asset (read-only): ` +
+        `target=${targetPath}, myteam_home=${res.myteam_home}`
+    );
+  }
+
+  throw new MyTeamResolutionError(
+    `[myteam-resolution] refused write outside project runtime (.team): ` +
+      `target=${targetPath}, team_root=${res.team_root}`
+  );
+}
+
+/**
  * lazy 初始化 .team/。首次调用为项目创建：
  *   context.yaml + memory/ + execution/ + trace/ + collaboration/
  * 永不创建 agents/（Agent 定义永远属于 MyTeam Home，禁止复制）。
@@ -223,6 +284,10 @@ export function ensureTeamRoot(res: Resolution): TeamInitResult {
   const createdNow: string[] = [];
   let isNew = false;
 
+  // v1.8.3：写入边界守卫 —— 每个实际写入目标都必须落在 team_root 内。
+  // 防止（尤其 bypass 模式下）任何路径计算把写入导向 Home 平台资产。
+  guardTeamWrite(res, tRoot);
+
   if (!fs.existsSync(tRoot)) {
     fs.mkdirSync(tRoot, { recursive: true });
     createdNow.push(tRoot);
@@ -230,6 +295,7 @@ export function ensureTeamRoot(res: Resolution): TeamInitResult {
   }
   for (const sub of TEAM_SUBDIRS) {
     const p = path.join(tRoot, sub);
+    guardTeamWrite(res, p);
     if (!fs.existsSync(p)) {
       fs.mkdirSync(p, { recursive: true });
       createdNow.push(p);
@@ -237,6 +303,7 @@ export function ensureTeamRoot(res: Resolution): TeamInitResult {
   }
 
   const contextPath = path.join(tRoot, "context.yaml");
+  guardTeamWrite(res, contextPath);
   if (!fs.existsSync(contextPath)) {
     const ctx: TeamContext = {
       schema_version: 1,
