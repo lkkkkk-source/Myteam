@@ -256,11 +256,22 @@ export function normalizeResult(
         ? "checkpoint_requested"
         : "completed";
 
+  // Checkpoint 无损（C-2）：优先镜像执行体真实 message/options；仅缺失时兜底。
+  const checkpoint =
+    status === "checkpoint_requested"
+      ? {
+          message:
+            (execResult.checkpointMessage ?? (execResult.output || "checkpoint requested by executor")),
+          options: execResult.checkpointOptions,
+        }
+      : undefined;
+
   return {
     status,
     output: execResult.output || "",
     artifacts: normalizeArtifacts(execResult.artifacts),
     nextAction,
+    checkpoint,
     meta: buildMeta(started, done, execResult.ok ? undefined : { kind: "agent_error", detail: execResult.error }),
   };
 }

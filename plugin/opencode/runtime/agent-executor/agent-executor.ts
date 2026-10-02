@@ -1,27 +1,25 @@
 /**
- * MyTeam OpenCode Plugin — Agent Executor (agent-executor.ts) — v1.8.0
+ * MyTeam OpenCode Plugin — Agent Executor (agent-executor.ts) — v1.8.4
  * ---------------------------------------------------------------------------
- * Phase 7 — AgentExecutor Core。
+ * Phase 3 — AgentExecutor V2：完整执行管线。
  *
- * 核心公式：
- *   AgentExecutionContext（Tool Bridge 产物）
- *      + AgentRuntimeInstance（Runtime 投影）
- *      + Runner ToolInvocationPort（工具下行通道）
- *      └─ AgentExecutor ─┐
- *                        ▼
- *              AgentExecutorResult（执行结果）
+ * 管线（设计 §5）：
+ *   TaskInput ──▶ [1] validateTaskInput（契约校验）
+ *              ──▶ [2] assemble（Prompt Assembly：引用 Home prompt，不复制）
+ *              ──▶ [3] complete（Model Adapter：唯一推理入口）
+ *              ──▶ [4] parse（Response Parser：模型输出 → 结构化）
+ *              ──▶ [5] validate（Action Validator：唯一放行闸门，Fail-Closed）
+ *              ──▶ [6] dispatch（answer / checkpoint / tool_calls）
+ *              ──▶ AgentExecutorResult
  *
- * 职责：
- *   1. 实现 runner/types.ts 的 AgentExecutor 接口。
- *   2. 把 TaskInput 搬上宿主工具通道（ToolInvocationPort）。
- *   3. 汇总执行结果：output / artifacts / checkpoint / error。
+ * 错误模型（设计 §8）：任何异常不外泄裸异常；按 AgentErrorKind 折叠进 error 串。
+ * Checkpoint 无损（设计 §6）：message / options 由 checkpointMessage / checkpointOptions
+ *   原样带出，Runner 只镜像、不覆盖。
  *
  * 禁则（本阶段强制）：
- *   - 不自己猜测输入（只消费 TaskInput）。
- *   - 不绕过 Tool Bridge（工具白名单来自 context.tools）。
- *   - 不写宿主配置 / 不写 MyTeam Home。
- *   - 不启动 MCP 进程（MCP 由宿主已有通道执行）。
- *   - 不做 Trace（trace_hint 仅为诊断标注）。
+ *   - 不直接 import fs（除纯内存计算）；不直接调用 OpenCode Tool / MCP。
+ *   - 不联网、不读 API Key；真实模型由上层显式注入 ModelAdapter。
+ *   - 不复制 prompt 正文到项目 / runtime（仅引用 instance.prompt_source）。
  * ---------------------------------------------------------------------------
  */
 
@@ -30,10 +28,23 @@ import type {
   AgentExecutorResult,
   TaskInput,
   ToolInvocationPort,
+  ToolInvocationRequest,
+  ToolInvocationResult,
 } from "../runner/types";
 import type { AgentExecutionContext } from "../tool-bridge/context";
 import type { AgentRuntimeInstance } from "../../agent-instance";
 import { RunnerError, RunnerValidationError } from "../runner/types";
+
+import type { ModelAdapter, ModelResponse } from "../model/types";
+import { createNullModelAdapter } from "../model";
+import type { ExecutionPrompt, PromptAssemblyInput } from "../prompt";
+import { assemble } from "../prompt";
+import type { ParsedAgentResponse } from "../response-parser";
+import { ResponseParser, createResponseParser } from "../response-parser";
+import type { ValidatedActions } from "../action-validator";
+import { ActionValidator, createActionValidator } from "../action-validator";
+
+import { AgentError, buildFailure } from "./error-model";
 
 // ---------------------------------------------------------------------------
 // AgentExecutorDeps（注入依赖；与 RunnerDeps 同风格）
@@ -49,79 +60,78 @@ export interface AgentExecutorDeps {
   instance: AgentRuntimeInstance;
   /** 可选：取消信号。 */
   signal?: AbortSignal;
+  /** 可选：模型适配器（缺省 NullModelAdapter；真实接入由上层注入）。 */
+  modelAdapter?: ModelAdapter;
+  /** 可选：响应解析器（缺省 ResponseParser）。 */
+  responseParser?: ResponseParser;
+  /** 可选：动作校验器（缺省 ActionValidator；唯一放行闸门）。 */
+  actionValidator?: ActionValidator;
 }
 
 // ---------------------------------------------------------------------------
-// AgentExecutorImpl —— 可插拔执行适配器
+// AgentExecutorImpl —— 完整执行管线
 // ---------------------------------------------------------------------------
 
 /**
- * AgentExecutorImpl —— Runner 的 AgentExecutor 真实实现。
+ * AgentExecutorImpl —— Runner 的 AgentExecutor 实现（V2 完整管线）。
  *
- * 流程（设计 §4）：
- *   1. 校验 TaskInput（goal / workspace / instance_id 与 executor 注入的 instance 一致）。
- *   2. 调用 ToolInvocationPort（如果 taskInput 中有工具调用需求；缺省 = 直接返回空结果）。
- *   3. 汇总结果：output / artifacts / checkpoint / error。
+ * 组装时序（设计 §5.2）：
+ *   validateTaskInput → assemble → complete → parse → validate → dispatch。
  *
- * 不变量：
- *   - 只消费 context.tools 中已声明的工具（不自行发明工具名）。
- *   - 工具调用失败 → 映射为 agent_error（不重试；重试由 Runner 层负责）。
- *   - 路径类参数由 Runner 层在 invokeTool 中二次校验（本层不重复校验）。
- *   - 不写盘（产物由宿主工具本体产出；本层只登记描述）。
+ * 取消语义：宿主取消通过 AbortSignal 表达；取消 → cancel（执行前 / 模型后 / 工具批内
+ *   三处检查点）。
+ *
+ * 失败语义：管线内部显式归类以 AgentError 上抛；catch-all 折叠为失败结果，不外泄异常。
  */
 export class AgentExecutorImpl implements AgentExecutor {
   private readonly deps: AgentExecutorDeps;
+  private readonly modelAdapter: ModelAdapter;
+  private readonly responseParser: ResponseParser;
+  private readonly actionValidator: ActionValidator;
 
   constructor(deps: AgentExecutorDeps) {
     this.deps = deps;
+    this.modelAdapter = deps.modelAdapter ?? createNullModelAdapter();
+    this.responseParser = deps.responseParser ?? createResponseParser();
+    this.actionValidator = deps.actionValidator ?? createActionValidator();
   }
 
-  /**
-   * 执行 TaskInput，返回 AgentExecutorResult。
-   * 任何异常 → 折叠为带 error 的失败结果（不外泄裸异常）。
-   */
-  async execute(
-    taskInput: TaskInput,
-    signal?: AbortSignal
-  ): Promise<AgentExecutorResult> {
+  /** 执行管线主入口。 */
+  async execute(taskInput: TaskInput, signal?: AbortSignal): Promise<AgentExecutorResult> {
     const effectiveSignal = signal ?? this.deps.signal;
-
     try {
-      // 1. 校验
+      // [1] 契约校验
       this.validateTaskInput(taskInput);
 
-      // 2. 取消信号检查
+      // 取消检查点（执行前）
       if (effectiveSignal?.aborted) {
-        return this.failure("cancel", "aborted before execution");
+        return buildFailure("cancel", "aborted before execution");
       }
 
-      // 3. 本阶段：TaskInput 不含显式工具调用序列。
-      //    执行体 = 把 goal 作为输出直接返回（占位实现）。
-      //    未来版本将在此处调用 ToolInvocationPort 执行工具序列。
-      return {
-        ok: true,
-        output: taskInput.goal,
-        artifacts: [],
-      };
+      // [2] Prompt Assembly（引用 Home prompt，不复制）
+      const prompt = this.assemble(taskInput);
+
+      // [3] Model Adapter（唯一推理入口）
+      const modelResponse = await this.complete(prompt, effectiveSignal);
+
+      // 取消检查点（模型返回后）
+      if (effectiveSignal?.aborted) {
+        return buildFailure("cancel", "aborted after model completion");
+      }
+
+      // [4] Response Parser（模型输出 → 结构化）
+      const parsed = this.parse(modelResponse);
+
+      // [5] Action Validator（唯一放行闸门，Fail-Closed）
+      const validated = this.validate(parsed);
+      if (!validated.ok) {
+        return buildFailure(validated.error_kind ?? "invalid_response", validated.reason);
+      }
+
+      // [6] dispatch（answer / checkpoint / tool_calls）
+      return this.dispatchValidated(validated, effectiveSignal);
     } catch (e) {
-      if (e instanceof RunnerValidationError) {
-        return this.failure("assertion_error", e.message);
-      }
-      if (e instanceof RunnerError) {
-        return this.failure(e.kind, e.message, e.kind);
-      }
-      // 宿主取消
-      if (
-        (typeof e === "object" && e !== null && (e as { name?: string }).name === "AbortError") ||
-        effectiveSignal?.aborted
-      ) {
-        return this.failure("cancel", "aborted");
-      }
-      // 其余归 agent_error
-      return this.failure(
-        "agent_error",
-        e instanceof Error ? e.message : String(e)
-      );
+      return this.collapseCatch(e, effectiveSignal);
     }
   }
 
@@ -131,17 +141,11 @@ export class AgentExecutorImpl implements AgentExecutor {
 
   /** 校验 TaskInput 与 context / instance 的一致性（与 Runner validateInvocation 同源）。 */
   private validateTaskInput(taskInput: TaskInput): void {
-    const ctx = this.deps.context;
     const inst = this.deps.instance;
-
-    if (taskInput.instance_id !== inst.id) {
+    const ctx = this.deps.context;
+    if (!taskInput.instance_id || taskInput.instance_id !== inst.id) {
       throw new RunnerValidationError(
-        `instance id mismatch: taskInput=${taskInput.instance_id} executor=${inst.id}`
-      );
-    }
-    if (taskInput.agent !== inst.agent) {
-      throw new RunnerValidationError(
-        `agent mismatch: taskInput=${taskInput.agent} instance=${inst.agent}`
+        `instance mismatch: taskInput=${taskInput.instance_id} instance=${inst.id}`
       );
     }
     if (taskInput.workspace !== inst.workspace) {
@@ -154,31 +158,149 @@ export class AgentExecutorImpl implements AgentExecutor {
     }
     if (ctx.agent_instance.id !== inst.id) {
       throw new RunnerValidationError(
-        `context.agent_instance.id mismatch: context=${ctx.agent_instance.id} instance=${inst.id}`
+        `context.agent_instance.id mismatch: ctx=${ctx.agent_instance.id} instance=${inst.id}`
+      );
+    }
+    if (taskInput.prompt_source !== inst.prompt_source) {
+      throw new RunnerValidationError(
+        `prompt_source mismatch: taskInput=${taskInput.prompt_source} instance=${inst.prompt_source}`
       );
     }
   }
 
-  /** 构建失败结果。 */
-  private failure(
-    kind: string,
-    detail: string,
-    errorCode?: string
+  /** [2] Prompt Assembly（引用 instance.prompt_source；不读取正文）。 */
+  private assemble(taskInput: TaskInput): ExecutionPrompt {
+    const input: PromptAssemblyInput = {
+      taskInput,
+      context: this.deps.context,
+      instance: this.deps.instance,
+    };
+    return assemble(input);
+  }
+
+  /** [3] Model Adapter：唯一推理入口（期望 JSON 结构化输出）。 */
+  private async complete(
+    prompt: ExecutionPrompt,
+    signal?: AbortSignal
+  ): Promise<ModelResponse> {
+    const response = await this.modelAdapter.complete({
+      prompt,
+      expects: "json",
+      signal,
+    });
+    if (!response.ok) {
+      throw new AgentError(
+        response.error_kind ?? "model_error",
+        response.error_detail || `model failed (${response.error_kind ?? "unknown"})`
+      );
+    }
+    return response;
+  }
+
+  /** [4] Response Parser：模型输出 → 结构化（untrusted）。 */
+  private parse(modelResponse: ModelResponse): ParsedAgentResponse {
+    return this.responseParser.parse(modelResponse);
+  }
+
+  /** [5] Action Validator：唯一放行闸门（Fail-Closed；不合法则不下发）。 */
+  private validate(parsed: ParsedAgentResponse): ValidatedActions {
+    return this.actionValidator.validate({ parsed, context: this.deps.context });
+  }
+
+  /**
+   * [6] dispatch —— 按校验结果分发：
+   *   answer      → 终答（output = text）
+   *   checkpoint  → 请求人工确认（Checkpoint Lossless）
+   *   tool_calls  → 单轮工具批处理 + 汇总
+   */
+  private dispatchValidated(
+    validated: ValidatedActions,
+    signal?: AbortSignal
   ): AgentExecutorResult {
-    void kind;
-    void errorCode;
+    switch (validated.kind) {
+      case "answer":
+        return {
+          ok: true,
+          output: validated.answer.text,
+          artifacts: validated.answer.artifacts ?? [],
+        };
+      case "checkpoint":
+        return {
+          ok: true,
+          output: validated.checkpoint.message,
+          checkpointRequested: true,
+          checkpointMessage: validated.checkpoint.message,
+          checkpointOptions: validated.checkpoint.options ?? [],
+        };
+      case "tool_calls":
+        return this.invokeToolCalls(validated.requests, signal);
+    }
+  }
+
+  /**
+   * 单轮工具批处理（设计 §6.4）。
+   * 逐项调用 toolPort.invoke；任一失败 → 整批失败（Fail-Closed），
+   *   错误分类遵循 ToolInvocationResult.error_kind（tool_denied 透传 / tool_error）。
+   * 全部成功 → 逐项摘要写入 output。
+   */
+  private async invokeToolCalls(
+    requests: ToolInvocationRequest[],
+    signal?: AbortSignal
+  ): Promise<AgentExecutorResult> {
+    const results: ToolInvocationResult[] = [];
+    for (const request of requests) {
+      if (signal?.aborted) {
+        return buildFailure("cancel", "aborted during tool invocation");
+      }
+      const result = await this.deps.toolPort.invoke(request);
+      results.push(result);
+    }
+
+    const failed = results.find((r) => !r.ok);
+    if (failed) {
+      const kind =
+        failed.error_kind === "tool_denied" ? "tool_denied" : "tool_error";
+      return buildFailure(
+        kind,
+        failed.error ?? `tool failed (${failed.error_kind ?? "unknown"})`
+      );
+    }
+
+    const lines = results.map((r, i) => {
+      const req = requests[i];
+      const value = r.value === undefined ? "(no value)" : JSON.stringify(r.value);
+      return `${req.tool} → ${value}`;
+    });
     return {
-      ok: false,
-      output: "",
+      ok: true,
+      output: lines.join("\n"),
       artifacts: [],
-      error: detail,
     };
   }
-}
 
-// ---------------------------------------------------------------------------
-// 工厂
-// ---------------------------------------------------------------------------
+  /** 失败折叠：把异常按设计 §8 归一为失败结果。 */
+  private collapseCatch(e: unknown, signal?: AbortSignal): AgentExecutorResult {
+    if (e instanceof AgentError) {
+      return buildFailure(e.kind, e.message);
+    }
+    if (e instanceof RunnerValidationError) {
+      return buildFailure("agent_error", e.message);
+    }
+    if (e instanceof RunnerError) {
+      return buildFailure("agent_error", e.message);
+    }
+    if (e instanceof Error && e.name === "AbortError") {
+      return buildFailure("cancel", "aborted");
+    }
+    if (signal?.aborted) {
+      return buildFailure("cancel", "aborted");
+    }
+    return buildFailure(
+      "agent_error",
+      e instanceof Error ? e.message : String(e)
+    );
+  }
+}
 
 /**
  * createAgentExecutor —— 供 Runner 注入的工厂函数。
@@ -186,6 +308,8 @@ export class AgentExecutorImpl implements AgentExecutor {
  * @param context Tool Bridge 产物（AgentExecutionContext）
  * @param instance Runtime 投影（AgentRuntimeInstance）
  * @param toolPort 工具下行端口（Runner 注入，本阶段为 mock 或真实 hostPort）
+ * @param signal 可选取消信号
+ * @param deps 可选：覆盖 modelAdapter / responseParser / actionValidator（测试注入用）
  *
  * 使用示例（Runner 注入）：
  * ```ts
@@ -198,7 +322,17 @@ export function createAgentExecutor(
   context: AgentExecutionContext,
   instance: AgentRuntimeInstance,
   toolPort: ToolInvocationPort,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  deps?: Pick<
+    AgentExecutorDeps,
+    "modelAdapter" | "responseParser" | "actionValidator"
+  >
 ): AgentExecutor {
-  return new AgentExecutorImpl({ context, instance, toolPort, signal });
+  return new AgentExecutorImpl({
+    context,
+    instance,
+    toolPort,
+    signal,
+    ...deps,
+  });
 }

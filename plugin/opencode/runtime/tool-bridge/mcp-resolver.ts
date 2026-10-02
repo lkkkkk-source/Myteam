@@ -22,7 +22,10 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { AgentDefinition } from "../../agent-loader";
-import { loadAgentDefinitions, findAgentDefinition } from "../../agent-loader";
+import {
+  loadAgentDefinitionsFromHome,
+  findAgentDefinition,
+} from "../../agent-loader";
 
 /** 一条 MCP 能力声明（来自 mcp-registry）。 */
 export interface McpCapability {
@@ -207,7 +210,7 @@ export function resolveCapabilities(inst: {
       : ""
   );
 
-  const defs = loadAgentDefinitions(path.join(home, "source", "prompts"));
+  const defs = loadAgentDefinitionsFromHome(home);
   const def = findAgentDefinition(defs, inst.agent);
   const agentsUsing = buildAgentsUsingMap(rawReg);
   const mcp = resolveMcpForAgent(mcpReg, inst.agent, agentsUsing);

@@ -82,8 +82,15 @@ export interface RunnerResult {
   output: string;
   /** 登记到的产物（文件本体由执行层落盘，Runner 只登记）。 */
   artifacts: RunnerArtifact[];
-  /** 单次执行级决策。 */
+  /**
+   * 单次执行级决策。
+   */
   nextAction: NextAction;
+  /** checkpoint 请求明细（status=checkpoint_requested 时；由执行体原样镜像，缺失则兜底）。 */
+  checkpoint?: {
+    message: string;
+    options?: string[];
+  };
   /** 计时 + 失败原因（非 Trace 埋点）。 */
   meta: RunnerMeta;
 }

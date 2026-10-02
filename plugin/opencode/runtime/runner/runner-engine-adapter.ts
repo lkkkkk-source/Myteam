@@ -99,15 +99,15 @@ export function mapRunnerResultToEngineAction(
     );
   }
 
-  // checkpoint_requested
+  // checkpoint_requested（C-2 无损：优先取真实 message/options，仅缺失时兜底不覆盖）
   if (result.status === "checkpoint_requested") {
     const checkpoint: HumanCheckpoint = {
       checkpoint_id: "cp-0001", // 实际 id 由 saveCheckpoint 分配
       type: "continue",
       stage: "running",
-      message: result.output || "checkpoint requested by runner",
+      message: result.checkpoint?.message ?? (result.output || "checkpoint requested by runner"),
       required_action: "confirm or adjust",
-      options: ["continue", "modify", "reject"],
+      options: result.checkpoint?.options ?? ["continue", "modify", "reject"],
     };
     return {
       targetStatus: "paused",

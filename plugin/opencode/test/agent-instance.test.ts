@@ -7,7 +7,11 @@
 import * as os from "node:os";
 import * as fsn from "node:fs";
 import * as pathn from "node:path";
-import { loadAgentDefinitions, findAgentDefinition, type AgentDefinition } from "../agent-loader";
+import {
+  loadAgentDefinitionsFromHome,
+  findAgentDefinition,
+  type AgentDefinition,
+} from "../agent-loader";
 import { activateAgent, readInstanceFile, instanceFilePath, type AgentRuntimeInstance } from "../agent-instance";
 
 const HOME = "D:/data/code/Agent/MyTeam";
@@ -38,7 +42,7 @@ const p2 = pathn.join(tmp, "proj-b");
 fsn.mkdirSync(p1, { recursive: true });
 fsn.mkdirSync(p2, { recursive: true });
 
-const defs = loadAgentDefinitions(pathn.join(HOME, "source/prompts"));
+const defs = loadAgentDefinitionsFromHome(HOME);
 const arch = findAgentDefinition(defs, "java-architect")!;
 if (!arch) {
   console.log("FAIL: java-architect not found");

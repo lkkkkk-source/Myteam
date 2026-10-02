@@ -27,7 +27,7 @@
  *     HomeAsProjectError（生产默认行为不变）。
  *   - 仅当该变量 === "1" 时放行【解析继续】，供在 MyTeam 仓库内自测插件。
  *   - bypass 只影响"是否继续解析"，不放宽任何写入边界：
- *       · myteam_home 仍是只读平台资产（source/prompts/agents/registry/platform）；
+ *       · myteam_home 仍是只读平台资产（opencode-global/prompts/agents/registry/platform）；
  *       · runtime 数据仍只写 <project_root>/.team；
  *       · 宿主写入仍由 bridge.guardHostWrite 负责（本文件不改动它）。
  */

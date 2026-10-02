@@ -305,7 +305,8 @@ console.log("== 5b. runStep end-to-end (checkpoint) ==");
   const cps = rt.ports.engine.deps.listCheckpoints(res, run.execution_id);
   check("checkpoint persisted (>=1)", cps.length >= 1);
   check("checkpoint unresolved", cps[0]?.resolved_at === undefined);
-  check("checkpoint message carries runner output", cps[0]?.message === "need human");
+  check("checkpoint message lossless (checkpointMessage)", cps[0]?.message === "confirm plan");
+  check("checkpoint options lossless (checkpointOptions)", JSON.stringify(cps[0]?.options) === JSON.stringify(["approve", "reject"]));
   check("checkpoint type=continue", cps[0]?.type === "continue");
 }
 

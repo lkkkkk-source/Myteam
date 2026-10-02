@@ -1,18 +1,25 @@
 /**
- * v1.6.3 functional smoke test — Tool Bridge (Capability Binding Layer).
+ * v1.8.4 functional smoke test — Tool Bridge (Capability Binding Layer).
  * Verifies the 5 required scenarios from the spec:
  *   1. architect context: no edit
  *   2. developer: has edit
  *   3. two projects: context isolation
  *   4. MCP only references registry (no config modification)
  *   5. MyTeam Home gets no writes
- * Uses temp project dirs; cleans up after.
+ *
+ * Hermetic fixture: builds a throwaway MyTeam Home with the v1.8.4 architecture
+ * layout (opencode-global/prompts/** + .ai/context/capability registries).
+ * Never depends on the real repo checkout — this is what failed before (the
+ * old test read HOME/source/prompts, which no longer exists).
  */
 
 import * as os from "node:os";
 import * as fsn from "node:fs";
 import * as pathn from "node:path";
-import { loadAgentDefinitions, findAgentDefinition } from "../../../agent-loader";
+import {
+  loadAgentDefinitionsFromHome,
+  findAgentDefinition,
+} from "../../../agent-loader";
 import { create } from "../../../agent-instance";
 import {
   buildExecutionContext,
@@ -21,7 +28,8 @@ import {
 } from "../tool-bridge";
 import type { AgentExecutionContext } from "../context";
 
-const HOME = "D:/data/code/Agent/MyTeam";
+const tmp = fsn.mkdtempSync(pathn.join(os.tmpdir(), "myteam-tb-"));
+const HOME = pathn.join(tmp, "home");
 const HOME_SEP = HOME.replace(/\\/g, "/");
 
 function mkRes(projectRoot: string) {
@@ -44,8 +52,127 @@ function check(name: string, cond: boolean) {
   }
 }
 
-// 载入真实 Agent 定义
-const defs = loadAgentDefinitions(pathn.join(HOME, "source", "prompts"));
+// ---------------------------------------------------------------------------
+// Fixture MyTeam Home（真实架构布局）
+// ---------------------------------------------------------------------------
+
+const prompts: Record<string, string> = {
+  "advisory/solution-architect.md": `# solution-architect
+
+> Advisory Team — 方案架构师。
+
+## Role
+Advisory solution architect; designs technical routes for PM.
+
+## Responsibility
+- design technical route options
+- recommend implementation path
+
+## Workflow
+- read requirement artifact
+- compare options and risks
+
+## Skills
+- \`requirement-analysis\`
+
+## Capabilities
+- \`mcp:confluence\`
+`,
+  "java/java-developer.md": `# java-developer
+
+> Java Team — 编码实现 Agent。
+
+## Role
+Java developer that implements code following TDD.
+
+## Responsibility
+- implement controller / service / mapper
+- follow TDD
+
+## Workflow
+- read current-task
+- write failing test first
+- implement and verify
+
+## Skills
+- \`test-driven-development\`
+- \`java-coding\`
+
+## Capabilities
+- \`mcp:github\`
+- \`mcp:maven\`
+`,
+  "java/java-tester.md": `# java-tester
+
+> Java Team — 测试执行 Agent。
+
+## Role
+Java tester that compiles, runs tests, analyzes failures.
+
+## Responsibility
+- run test suite
+- analyze failures
+
+## Workflow
+- compile
+- run tests
+- report results
+
+## Skills
+- \`test-driven-development\`
+
+## Capabilities
+- \`mcp:maven\`
+`,
+};
+
+function writeFixture() {
+  for (const [rel, body] of Object.entries(prompts)) {
+    const p = pathn.join(HOME, "opencode-global", "prompts", rel);
+    fsn.mkdirSync(pathn.dirname(p), { recursive: true });
+    fsn.writeFileSync(p, body, "utf8");
+  }
+  const capDir = pathn.join(HOME, ".ai", "context", "capability");
+  fsn.mkdirSync(capDir, { recursive: true });
+  fsn.writeFileSync(
+    pathn.join(capDir, "mcp-registry.yaml"),
+    `  - mcp: "github"
+    provides: ["repos", "docs"]
+    agents_using: ["java-developer"]
+    capabilities: ["read-docs"]
+  - mcp: "confluence"
+    provides: ["docs"]
+    agents_using: ["solution-architect"]
+    capabilities: ["read-docs"]
+  - mcp: "maven"
+    provides: ["build", "test"]
+    agents_using: ["java-tester", "java-developer"]
+    capabilities: ["run-test"]
+`,
+    "utf8"
+  );
+  fsn.writeFileSync(
+    pathn.join(capDir, "skill-registry.yaml"),
+    `  - skill: "test-driven-development"
+    provides: ["testing"]
+    agents_using: ["java-developer", "java-tester"]
+  - skill: "requirement-analysis"
+    provides: ["analysis"]
+    agents_using: ["solution-architect"]
+`,
+    "utf8"
+  );
+}
+writeFixture();
+
+// 载入 Agent 定义 —— 必须来自实际架构根（opencode-global/prompts / agents），
+// 绝不依赖已废弃的 source/prompts。
+const defs = loadAgentDefinitionsFromHome(HOME);
+check(
+  "source/prompts NOT required (fixture has none)",
+  !fsn.existsSync(pathn.join(HOME, "source", "prompts"))
+);
+check("defs loaded from architecture roots", defs.length > 0);
 const architectDef = findAgentDefinition(defs, "solution-architect");
 const developerDef = findAgentDefinition(defs, "java-developer");
 const testerDef = findAgentDefinition(defs, "java-tester");
@@ -58,7 +185,6 @@ function mkInstance(
   return create(def, res, { execution_id: exe, permissions: ["workspace-documenter"] });
 }
 
-const tmp = fsn.mkdtempSync(pathn.join(os.tmpdir(), "myteam-tb-"));
 const resA = mkRes(pathn.join(tmp, "projA"));
 const resB = mkRes(pathn.join(tmp, "projB"));
 
@@ -86,6 +212,8 @@ if (developerDef) {
   check("developer execute=true", ctx.permissions.execute === true);
   const editTool = ctx.tools.find((t) => t.tool === "edit");
   check("developer tools has edit allowed=true", editTool?.allowed === true);
+  const bashTool = ctx.tools.find((t) => t.tool === "bash");
+  check("developer tools has bash allowed=true", bashTool?.allowed === true);
 } else {
   check("developer def loaded", false);
 }
@@ -123,6 +251,10 @@ if (developerDef) {
 
 console.log("\n== Scenario 4: MCP only references registry (no config change) ==");
 if (developerDef) {
+  check(
+    "developer prompt_rel under opencode-global/prompts",
+    developerDef.prompt_rel.replace(/\\/g, "/").startsWith("opencode-global/prompts/")
+  );
   const inst = mkInstance(developerDef, resA, "EX-001");
   const ctx = buildExecutionContext(inst, resA);
   // MCP 能力一律来自 registry（合法标识符），不发明新实体。
@@ -132,6 +264,7 @@ if (developerDef) {
   }
   check("all MCP names are declared identifiers (no invented entities)", allValid);
   check("developer has skills array", Array.isArray(ctx.skills));
+  check("developer skills from prompt declaration", ctx.skills.includes("test-driven-development"));
   const mcpRegPath = pathn.join(HOME, ".ai", "context", "capability", "mcp-registry.yaml");
   check("mcp-registry.yaml still exists (not modified/deleted)", fsn.existsSync(mcpRegPath));
 

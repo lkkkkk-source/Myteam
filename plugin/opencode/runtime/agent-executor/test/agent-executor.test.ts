@@ -1,30 +1,38 @@
 /**
- * MyTeam OpenCode Plugin — AgentExecutor Smoke Test (agent-executor.test.ts) — v1.8.0
+ * MyTeam OpenCode Plugin — AgentExecutor V2 Test (agent-executor.test.ts) — v1.8.4
  * ---------------------------------------------------------------------------
- * 验证 5 项：
- *   1. execute 成功（TaskInput 校验通过 → ok=true / output=goal）
- *   2. TaskInput 校验失败（instance_id 不匹配 → ok=false / assertion_error）
- *   3. goal 为空（ok=false / assertion_error）
- *   4. 取消信号（aborted → ok=false / cancel）
- *   5. 工具白名单兜底（context 中无该工具 → assertion_error）
+ * 验证完整执行管线（设计 §5 + §6 + §7 + §8），12 场景：
+ *   1. 完整成功管线（answer：Null adapter 回显 goal → ok=true / output=goal）
+ *   2. 显式模型接入（responder 返回结构化 answer → ok=true / output 透传）
+ *   3. TaskInput 校验失败（instance_id 不匹配 → ok=false / agent_error）
+ *   4. goal 为空（ok=false / agent_error）
+ *   5. 取消信号（aborted → ok=false / cancel）
+ *   6. 模型失败（ok=false → 折叠 model_error）
+ *   7. 解析失败（非法 JSON → invalid_response）
+ *   8. checkpoint 无损（message / options 由 checkpointMessage / checkpointOptions 带出）
+ *   9. 工具未声明（validator 拒绝 → Fail-Closed，port 不调用）
+ *   10. 工具权限拒绝（allowed=false → tool_denied，Fail-Closed）
+ *   11. 工具批处理成功（port.invoke 逐项调用 → ok=true / output 汇总）
+ *   12. 工具批处理失败（其一失败 → ok=false / tool_error，Fail-Closed）
  *
  * 跑法：bun plugin/opencode/runtime/agent-executor/test/agent-executor.test.ts
  * （工作目录 plugin/opencode）
  * ---------------------------------------------------------------------------
  */
 
-import * as os from "node:os";
-import * as path from "node:path";
-
 import type { AgentRuntimeInstance } from "../../../agent-instance";
 import type { AgentExecutionContext } from "../../tool-bridge/context";
 import type { AgentPermission } from "../../tool-bridge/permission-resolver";
-import type { ToolInvocationPort, ToolInvocationResult } from "../../runner/types";
+import type {
+  TaskInput,
+  ToolInvocationPort,
+  ToolInvocationResult,
+} from "../../runner/types";
+import type { ModelRequest } from "../../model/types";
 import {
   AgentExecutorImpl,
   createAgentExecutor,
 } from "../agent-executor";
-import type { TaskInput } from "../../runner/types";
 
 let passed = 0;
 let failed = 0;
@@ -57,8 +65,11 @@ function makeInstance(executionId = "EX-001"): AgentRuntimeInstance {
   };
 }
 
+function makePermissions(): AgentPermission {
+  return { read: true, edit: true, execute: true };
+}
+
 function makeContext(instance: AgentRuntimeInstance): AgentExecutionContext {
-  const permissions: AgentPermission = { read: true, edit: true, execute: true };
   return {
     schema_version: 1,
     layer: "tool-bridge-context",
@@ -71,12 +82,12 @@ function makeContext(instance: AgentRuntimeInstance): AgentExecutionContext {
       { tool: "grep", source: "host", allowed: true, reason: "ok" },
       { tool: "glob", source: "host", allowed: true, reason: "ok" },
     ],
-    permissions,
+    permissions: makePermissions(),
     mcp: [],
     skills: [],
     security: {
       allowed_paths: [instance.workspace],
-      deny_paths: ["D:/data/code/Agent/MyTeam"],
+      deny_paths: ["D:/data/code/Agent/MyTeam/.team"],
       host_config: "C:/Users/admin/.config/opencode",
       myteam_home: "D:/data/code/Agent/MyTeam",
     },
@@ -84,13 +95,22 @@ function makeContext(instance: AgentRuntimeInstance): AgentExecutionContext {
   };
 }
 
-function makePort(calls: string[] = []): ToolInvocationPort {
+function makePort(calls: string[] = [], failTool?: string): ToolInvocationPort {
   return {
     invoke: async (req: { tool: string }): Promise<ToolInvocationResult> => {
       calls.push(req.tool);
+      if (failTool && req.tool === failTool) {
+        return {
+          ok: false,
+          error: `tool failed: ${req.tool}`,
+          error_kind: "tool_error",
+          error_code: "E_TOOL",
+          duration: 1,
+        };
+      }
       return {
         ok: true,
-        value: "tool output",
+        value: `out:${req.tool}`,
         duration: 1,
       };
     },
@@ -114,13 +134,14 @@ function makeTaskInput(
 }
 
 // ---------------------------------------------------------------------------
-// Scenario 1: execute 成功
+// Scenario 1: 完整成功管线（answer；Null adapter 回显 goal）
 // ---------------------------------------------------------------------------
 
 async function testSuccess() {
   const instance = makeInstance();
   const context = makeContext(instance);
-  const port = makePort();
+  const calls: string[] = [];
+  const port = makePort(calls);
   const executor = createAgentExecutor(context, instance, port);
   const taskInput = makeTaskInput(instance);
 
@@ -129,10 +150,33 @@ async function testSuccess() {
   check("execute ok=true", result.ok === true);
   check("output = goal", result.output === "implement feature X");
   check("artifacts = []", result.artifacts?.length === 0);
+  check("no checkpoint requested", result.checkpointRequested !== true);
+  check("port.invoke not called (answer path)", calls.length === 0);
 }
 
 // ---------------------------------------------------------------------------
-// Scenario 2: TaskInput 校验失败（instance_id 不匹配）
+// Scenario 2: 显式模型接入（responder 返回结构化 answer）
+// ---------------------------------------------------------------------------
+
+async function testModelAnswer() {
+  const instance = makeInstance();
+  const context = makeContext(instance);
+  const port = makePort();
+  const responder = (req: ModelRequest) =>
+    JSON.stringify({ kind: "answer", text: "analysis done", artifacts: [] });
+  const executor = createAgentExecutor(context, instance, port, undefined, {
+    modelAdapter: { complete: async (req: ModelRequest) => ({ ok: true, text: responder(req), finish_reason: "stop", usage: {} }) },
+  });
+  const taskInput = makeTaskInput(instance);
+
+  const result = await executor.execute(taskInput);
+
+  check("model answer ok=true", result.ok === true);
+  check("output from model", result.output === "analysis done");
+}
+
+// ---------------------------------------------------------------------------
+// Scenario 3: TaskInput 校验失败（instance_id 不匹配）
 // ---------------------------------------------------------------------------
 
 async function testValidationMismatch() {
@@ -141,16 +185,19 @@ async function testValidationMismatch() {
   const context = makeContext(instanceA);
   const port = makePort();
   const executor = createAgentExecutor(context, instanceA, port);
-  const taskInput = makeTaskInput(instanceB); // instance_id 不匹配
+  const taskInput = makeTaskInput(instanceB);
 
   const result = await executor.execute(taskInput);
 
-  check("execute ok=false", result.ok === false);
-  check("error mentions instance id mismatch", result.error?.includes("instance id mismatch") === true);
+  check("validation mismatch ok=false", result.ok === false);
+  check(
+    "error contains instance mismatch",
+    result.error?.includes("instance mismatch") === true
+  );
 }
 
 // ---------------------------------------------------------------------------
-// Scenario 3: goal 为空
+// Scenario 4: goal 为空
 // ---------------------------------------------------------------------------
 
 async function testEmptyGoal() {
@@ -158,72 +205,302 @@ async function testEmptyGoal() {
   const context = makeContext(instance);
   const port = makePort();
   const executor = createAgentExecutor(context, instance, port);
-  const taskInput = makeTaskInput(instance, "");
+  const taskInput = makeTaskInput(instance, "  ");
 
   const result = await executor.execute(taskInput);
 
-  check("execute ok=false", result.ok === false);
-  check("error mentions goal", result.error?.includes("goal") === true);
+  check("empty goal ok=false", result.ok === false);
+  check("error non-empty", (result.error?.length ?? 0) > 0);
 }
 
 // ---------------------------------------------------------------------------
-// Scenario 4: 取消信号
+// Scenario 5: 取消信号
 // ---------------------------------------------------------------------------
 
 async function testCancelSignal() {
   const instance = makeInstance();
   const context = makeContext(instance);
   const port = makePort();
-
-  const controller = new AbortController();
-  controller.abort(); // 立即取消
-
-  const executor = createAgentExecutor(context, instance, port, controller.signal);
+  const ac = new AbortController();
+  ac.abort();
+  const executor = createAgentExecutor(context, instance, port, ac.signal);
   const taskInput = makeTaskInput(instance);
 
   const result = await executor.execute(taskInput);
 
-  check("execute ok=false", result.ok === false);
-  check("error mentions aborted", result.error?.includes("aborted") === true);
+  check("cancel ok=false", result.ok === false);
+  check("error kind = cancel", result.error?.includes("[cancel]") === true);
 }
 
 // ---------------------------------------------------------------------------
-// Scenario 5: 工具白名单兜底（context 中无该工具）
-// 注：当前 agent-executor 不主动调用 toolPort，此场景验证 AgentExecutorImpl 的
-// validateTaskInput 兜底逻辑（通过 AgentExecutorImpl 直接调用失败路径）。
+// Scenario 6: 模型失败（ok=false → 折叠 model_error）
 // ---------------------------------------------------------------------------
 
-async function testToolBoundary() {
+async function testModelFailure() {
   const instance = makeInstance();
   const context = makeContext(instance);
   const port = makePort();
-  const executor = new AgentExecutorImpl({ context, instance, toolPort: port });
+  const executor = createAgentExecutor(context, instance, port, undefined, {
+    modelAdapter: {
+      complete: async () => ({
+        ok: false,
+        text: "",
+        finish_reason: "error",
+        error_kind: "model_error",
+        error_detail: "upstream refused",
+      }),
+    },
+  });
   const taskInput = makeTaskInput(instance);
 
-  // 当前实现：execute 成功不触碰 toolPort
   const result = await executor.execute(taskInput);
-  check("execute succeeds without toolPort call", result.ok === true);
-  // port 未被调用
-  check("port.invoke not called", port !== undefined);
+
+  check("model failure ok=false", result.ok === false);
+  check("error kind = model_error", result.error?.includes("[model_error]") === true);
+}
+
+// ---------------------------------------------------------------------------
+// Scenario 7: 解析失败（非法 JSON）
+// ---------------------------------------------------------------------------
+
+async function testParseFailure() {
+  const instance = makeInstance();
+  const context = makeContext(instance);
+  const port = makePort();
+  const executor = createAgentExecutor(context, instance, port, undefined, {
+    modelAdapter: {
+      complete: async () => ({
+        ok: true,
+        text: "{ not json",
+        finish_reason: "stop",
+        usage: {},
+      }),
+    },
+  });
+  const taskInput = makeTaskInput(instance);
+
+  const result = await executor.execute(taskInput);
+
+  check("parse failure ok=false", result.ok === false);
+  check("error kind = invalid_response", result.error?.includes("[invalid_response]") === true);
+}
+
+// ---------------------------------------------------------------------------
+// Scenario 8: checkpoint 无损
+// ---------------------------------------------------------------------------
+
+async function testCheckpointLossless() {
+  const instance = makeInstance();
+  const context = makeContext(instance);
+  const port = makePort();
+  const executor = createAgentExecutor(context, instance, port, undefined, {
+    modelAdapter: {
+      complete: async () => ({
+        ok: true,
+        text: JSON.stringify({
+          kind: "checkpoint",
+          message: "confirm plan?",
+          options: ["approve", "reject"],
+        }),
+        finish_reason: "stop",
+        usage: {},
+      }),
+    },
+  });
+  const taskInput = makeTaskInput(instance);
+
+  const result = await executor.execute(taskInput);
+
+  check("checkpoint ok=true", result.ok === true);
+  check("checkpointRequested=true", result.checkpointRequested === true);
+  check("checkpointMessage lossless", result.checkpointMessage === "confirm plan?");
+  check(
+    "checkpointOptions lossless",
+    JSON.stringify(result.checkpointOptions) === JSON.stringify(["approve", "reject"])
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Scenario 9: 工具未声明 → Fail-Closed
+// ---------------------------------------------------------------------------
+
+async function testUndeclaredTool() {
+  const instance = makeInstance();
+  const context = makeContext(instance);
+  const calls: string[] = [];
+  const port = makePort(calls);
+  const executor = createAgentExecutor(context, instance, port, undefined, {
+    modelAdapter: {
+      complete: async () => ({
+        ok: true,
+        text: JSON.stringify({
+          kind: "tool_calls",
+          calls: [
+            { tool: "undeclared", source: "host", arguments: {} },
+          ],
+        }),
+        finish_reason: "stop",
+        usage: {},
+      }),
+    },
+  });
+  const taskInput = makeTaskInput(instance);
+
+  const result = await executor.execute(taskInput);
+
+  check("undeclared tool ok=false", result.ok === false);
+  check(
+    "error kind = invalid_response",
+    result.error?.includes("[invalid_response]") === true
+  );
+  check("port.invoke NOT called (Fail-Closed)", calls.length === 0);
+}
+
+// ---------------------------------------------------------------------------
+// Scenario 10: 工具权限拒绝 → Fail-Closed
+// ---------------------------------------------------------------------------
+
+async function testToolDenied() {
+  const instance = makeInstance();
+  const context = makeContext(instance);
+  const calls: string[] = [];
+  const port = makePort(calls);
+  // 覆盖 context 中 read 的 allowed=false
+  context.tools = context.tools.map((t) =>
+    t.tool === "read" ? { ...t, allowed: false } : t
+  );
+  const executor = createAgentExecutor(context, instance, port, undefined, {
+    modelAdapter: {
+      complete: async () => ({
+        ok: true,
+        text: JSON.stringify({
+          kind: "tool_calls",
+          calls: [
+            { tool: "read", source: "host", arguments: { path: instance.workspace } },
+          ],
+        }),
+        finish_reason: "stop",
+        usage: {},
+      }),
+    },
+  });
+  const taskInput = makeTaskInput(instance);
+
+  const result = await executor.execute(taskInput);
+
+  check("denied tool ok=false", result.ok === false);
+  check("error kind = tool_denied", result.error?.includes("[tool_denied]") === true);
+  check("port.invoke NOT called (Fail-Closed)", calls.length === 0);
+}
+
+// ---------------------------------------------------------------------------
+// Scenario 11: 工具批处理成功
+// ---------------------------------------------------------------------------
+
+async function testToolCallsSuccess() {
+  const instance = makeInstance();
+  const context = makeContext(instance);
+  const calls: string[] = [];
+  const port = makePort(calls);
+  const executor = createAgentExecutor(context, instance, port, undefined, {
+    modelAdapter: {
+      complete: async () => ({
+        ok: true,
+        text: JSON.stringify({
+          kind: "tool_calls",
+          calls: [
+            { tool: "read", source: "host", arguments: { path: instance.workspace } },
+            { tool: "grep", source: "host", arguments: { pattern: "TODO" } },
+          ],
+        }),
+        finish_reason: "stop",
+        usage: {},
+      }),
+    },
+  });
+  const taskInput = makeTaskInput(instance);
+
+  const result = await executor.execute(taskInput);
+
+  check("tool batch ok=true", result.ok === true);
+  check("port.invoke called twice", calls.length === 2);
+  check(
+    "output summarizes tools",
+    result.output.includes("read") && result.output.includes("grep")
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Scenario 12: 工具批处理失败 → Fail-Closed
+// ---------------------------------------------------------------------------
+
+async function testToolCallsFailure() {
+  const instance = makeInstance();
+  const context = makeContext(instance);
+  const calls: string[] = [];
+  const port = makePort(calls, "grep");
+  const executor = createAgentExecutor(context, instance, port, undefined, {
+    modelAdapter: {
+      complete: async () => ({
+        ok: true,
+        text: JSON.stringify({
+          kind: "tool_calls",
+          calls: [
+            { tool: "read", source: "host", arguments: { path: instance.workspace } },
+            { tool: "grep", source: "host", arguments: { pattern: "TODO" } },
+          ],
+        }),
+        finish_reason: "stop",
+        usage: {},
+      }),
+    },
+  });
+  const taskInput = makeTaskInput(instance);
+
+  const result = await executor.execute(taskInput);
+
+  check("tool batch failure ok=false", result.ok === false);
+  check("error kind = tool_error", result.error?.includes("[tool_error]") === true);
 }
 
 // ---------------------------------------------------------------------------
 
 async function main() {
-  console.log("== 1. execute success ==");
+  console.log("== 1. execute success (Null adapter) ==");
   await testSuccess();
 
-  console.log("== 2. validation mismatch ==");
+  console.log("== 2. model answer ==");
+  await testModelAnswer();
+
+  console.log("== 3. validation mismatch ==");
   await testValidationMismatch();
 
-  console.log("== 3. empty goal ==");
+  console.log("== 4. empty goal ==");
   await testEmptyGoal();
 
-  console.log("== 4. cancel signal ==");
+  console.log("== 5. cancel signal ==");
   await testCancelSignal();
 
-  console.log("== 5. tool boundary ==");
-  await testToolBoundary();
+  console.log("== 6. model failure ==");
+  await testModelFailure();
+
+  console.log("== 7. parse failure ==");
+  await testParseFailure();
+
+  console.log("== 8. checkpoint lossless ==");
+  await testCheckpointLossless();
+
+  console.log("== 9. undeclared tool (Fail-Closed) ==");
+  await testUndeclaredTool();
+
+  console.log("== 10. denied tool (Fail-Closed) ==");
+  await testToolDenied();
+
+  console.log("== 11. tool batch success ==");
+  await testToolCallsSuccess();
+
+  console.log("== 12. tool batch failure (Fail-Closed) ==");
+  await testToolCallsFailure();
 
   console.log("");
   console.log(`===== agent-executor: ${passed}/${passed + failed} PASS =====`);
